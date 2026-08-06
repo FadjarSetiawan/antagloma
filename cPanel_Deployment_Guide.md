@@ -4,6 +4,13 @@ Dokumen ini berisi panduan lengkap langkah-demi-langkah untuk melakukan instalas
 
 ---
 
+## 📌 Lokasi Path Direktori Hosting cPanel Anda:
+- **Project Domain Path**: `/home2/kaizorat/florist.kaizoratech.com`
+- **Document Root Public**: `/home2/kaizorat/florist.kaizoratech.com/public`
+- **Git Repository Path**: `/home2/kaizorat/repositories/antagloma`
+
+---
+
 ## 📋 Prasyarat di cPanel:
 - Versi PHP: **PHP 8.2** atau **PHP 8.3** (Aktifkan ekstensi: `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `tokenizer`, `xml`, `ctype`, `json`, `gd`).
 - Fitur cPanel: **Git Version Control**, **MySQL Database Wizard**, **Terminal** (atau SSH), **Domains / Subdomains**.
@@ -15,15 +22,15 @@ Dokumen ini berisi panduan lengkap langkah-demi-langkah untuk melakukan instalas
 2. Buka menu **Domains** (atau **Subdomains**).
 3. Klik **Create A New Domain**.
 4. Masukkan nama domain: **`florist.kaizoratech.com`**.
-5. Pastikan **Document Root** diisi ke: `/home/username/florist.kaizoratech.com/public` *(Sesuaikan `username` dengan username cPanel Anda)*.
+5. Isi **Document Root** persis ke: `/home2/kaizorat/florist.kaizoratech.com/public`.
 6. Klik **Submit**.
 
 ---
 
 ## 🗄️ LANGKAH 2: Buat Database MySQL
 1. Buka menu **MySQL® Database Wizard** di cPanel.
-2. **Step 1 (Nama Database)**: Masukkan nama DB, contoh: `username_antagloma_db` -> Klik **Next Step**.
-3. **Step 2 (Buat User DB)**: Masukkan nama user & password kuat, contoh: `username_antagloma_usr` -> Klik **Create User**.
+2. **Step 1 (Nama Database)**: Masukkan nama DB, contoh: `kaizorat_antagloma_db` -> Klik **Next Step**.
+3. **Step 2 (Buat User DB)**: Masukkan nama user & password kuat, contoh: `kaizorat_antagloma_usr` -> Klik **Create User**.
 4. **Step 3 (Hak Akses)**: Centang **ALL PRIVILEGES** -> Klik **Make Changes**.
 5. Catat **Nama DB**, **User DB**, dan **Password DB** Anda.
 
@@ -34,19 +41,19 @@ Dokumen ini berisi panduan lengkap langkah-demi-langkah untuk melakukan instalas
 2. Klik tombol **Create**.
 3. Isi form berikut:
    - **Clone URL**: `https://github.com/FadjarSetiawan/antagloma.git`
-   - **Repository Path**: `repositories/antagloma`
+   - **Repository Path**: `repositories/antagloma` *(akan berada di `/home2/kaizorat/repositories/antagloma`)*
    - **Repository Name**: `antagloma`
 4. Klik **Create**.
 5. Setelah berhasil di-clone, klik tombol **Manage** di sebelah repositori `antagloma`.
 6. Pindah ke tab **Deploy HEAD Commit**, lalu klik **Update from Remote** diikuti tombol **Deploy HEAD Commit**.
-   *(File aplikasi otomatis ter-deploy ke folder `/home/username/florist.kaizoratech.com` via `.cpanel.yml`)*.
+   *(File aplikasi otomatis ter-deploy ke folder `/home2/kaizorat/florist.kaizoratech.com` via `.cpanel.yml`)*.
 
 ---
 
 ## ⚙️ LANGKAH 4: Konfigurasi File `.env` Live Server
-1. Buka **File Manager** di cPanel, masuk ke folder `/home/username/florist.kaizoratech.com/`.
+1. Buka **File Manager** di cPanel, masuk ke folder `/home2/kaizorat/florist.kaizoratech.com/`.
 2. Klik tombol **Settings** (kanan atas File Manager) -> Centang **Show Hidden Files (dotfiles)** -> Klik **Save**.
-3. Cari file `.env.example`, klik kanan -> **Rename** menjadi `.env` (atau salin isi `.env.example` ke file `.env` baru).
+3. Cari file `.env.example`, klik kanan -> **Rename** menjadi `.env` (atau buat file `.env` baru).
 4. Klik kanan file `.env` -> **Edit**, lalu sesuaikan variabel berikut:
 
 ```env
@@ -62,8 +69,8 @@ LOG_LEVEL=error
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=username_antagloma_db
-DB_USERNAME=username_antagloma_usr
+DB_DATABASE=kaizorat_antagloma_db
+DB_USERNAME=kaizorat_antagloma_usr
 DB_PASSWORD=password_database_anda
 
 BROADCAST_DRIVER=log
@@ -79,11 +86,11 @@ SESSION_LIFETIME=120
 ---
 
 ## 💻 LANGKAH 5: Jalankan Perintah Terminal (Composer, Migration & Symlink)
-Buka menu **Terminal** di cPanel (atau via SSH client seperti PuTTY/VSCode SSH), lalu jalankan perintah berikut:
+Buka menu **Terminal** di cPanel (atau via SSH client), lalu jalankan perintah berikut:
 
 ```bash
 # 1. Pindah ke folder root domain aplikasi
-cd /home/username/florist.kaizoratech.com
+cd /home2/kaizorat/florist.kaizoratech.com
 
 # 2. Install dependensi backend Composer
 composer install --no-dev --optimize-autoloader
@@ -106,7 +113,7 @@ php artisan view:cache
 ---
 
 ## 🔒 LANGKAH 6: Verifikasi `.htaccess` & SSL (HTTPS)
-1. Buka File Manager di folder `/home/username/florist.kaizoratech.com/public/`.
+1. Buka File Manager di folder `/home2/kaizorat/florist.kaizoratech.com/public/`.
 2. Pastikan terdapat file `.htaccess` dengan konfigurasi berikut:
 
 ```apache

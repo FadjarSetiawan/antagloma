@@ -1,9 +1,8 @@
 ---
 deployment:
   tasks:
-    # 1. Tentukan target path folder domain florist.kaizoratech.com di cPanel
-    # Ubah 'username' di cPanel sesuai username akun hosting Anda jika berbeda (misal: /home/username/florist.kaizoratech.com)
-    - export DEPLOYPATH=/home/$USER/florist.kaizoratech.com
+    # 1. Target Directory Domain florist.kaizoratech.com di cPanel
+    - export DEPLOYPATH=/home2/kaizorat/florist.kaizoratech.com
     - /bin/mkdir -p $DEPLOYPATH
 
     # 2. Deploy Aplikasi Backend Laravel ke Folder Domain
@@ -14,6 +13,6 @@ deployment:
     - /bin/mkdir -p $DEPLOYPATH/public
     - /bin/cp -R frontend/dist/* $DEPLOYPATH/public/
 
-    # 4. Seting Izin Akses Folder Storage & Cache
+    # 4. Setting Izin Akses Folder Storage & Cache
     - /bin/chmod -R 775 $DEPLOYPATH/storage
     - /bin/chmod -R 775 $DEPLOYPATH/bootstrap/cache
