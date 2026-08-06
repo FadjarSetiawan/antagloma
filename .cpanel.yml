@@ -12,15 +12,9 @@ deployment:
     - /bin/mkdir -p $DEPLOYPATH/public
     - /bin/cp -R frontend/dist/* $DEPLOYPATH/public/
 
-    # 4. Buat / Update Root .htaccess untuk Forwarding Otomatis ke public/
+    # 4. Update Root .htaccess dengan RewriteCond Aman (Cegah Loop 500 Error)
     - |
-      if [ -f "$DEPLOYPATH/.htaccess" ]; then
-        if ! grep -q "RewriteRule ^\$ public/" "$DEPLOYPATH/.htaccess"; then
-          echo -e "\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteRule ^\$ public/ [L]\n    RewriteRule (.*) public/\$1 [L]\n</IfModule>" >> "$DEPLOYPATH/.htaccess"
-        fi
-      else
-        echo -e "<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteRule ^\$ public/ [L]\n    RewriteRule (.*) public/\$1 [L]\n</IfModule>" > "$DEPLOYPATH/.htaccess"
-      fi
+      echo -e "<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteCond %{REQUEST_URI} !^/public/\n    RewriteRule ^(.*)$ public/\$1 [L]\n</IfModule>" > "$DEPLOYPATH/.htaccess"
 
     # 5. Setting Izin Akses Folder Storage & Cache
     - /bin/chmod -R 775 $DEPLOYPATH/storage
