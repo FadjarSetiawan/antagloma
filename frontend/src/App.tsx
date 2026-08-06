@@ -1,0 +1,56 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LoginPage } from './pages/auth/LoginPage';
+import { DashboardLayout } from './layouts/DashboardLayout';
+import { OwnerDashboard } from './pages/dashboard/OwnerDashboard';
+import { SalesDashboard } from './pages/dashboard/SalesDashboard';
+import { OrderListPage } from './pages/orders/OrderListPage';
+import { OrderCreatePage } from './pages/orders/OrderCreatePage';
+import { PackingQueuePage } from './pages/packing/PackingQueuePage';
+import { ReportsPage } from './pages/reports/ReportsPage';
+import { MasterProductsPage } from './pages/master/MasterProductsPage';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+const RoleDashboardRouter: React.FC = () => {
+  const { user } = useAuth();
+  if (user?.role === 'owner') return <OwnerDashboard />;
+  if (user?.role === 'sales') return <SalesDashboard />;
+  if (user?.role === 'packing') return <PackingQueuePage />;
+  return <OrderListPage />;
+};
+
+export const App: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<DashboardLayout />}>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<RoleDashboardRouter />} />
+              <Route path="orders" element={<OrderListPage />} />
+              <Route path="orders/create" element={<OrderCreatePage />} />
+              <Route path="packing" element={<PackingQueuePage />} />
+              <Route path="reports" element={<ReportsPage />} />
+              <Route path="master/products" element={<MasterProductsPage />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
+
+export default App;
