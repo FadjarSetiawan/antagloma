@@ -1,21 +1,10 @@
 ---
 deployment:
   tasks:
-    # 1. Target Directory Domain florist.kaizoratech.com di cPanel
     - export DEPLOYPATH=/home2/kaizorat/florist.kaizoratech.com
     - /bin/mkdir -p $DEPLOYPATH
-
-    # 2. Deploy Aplikasi Backend Laravel ke Folder Domain
     - /bin/cp -R backend/* $DEPLOYPATH/
-
-    # 3. Deploy Production Build Frontend React (dist/*) ke Public Root
     - /bin/mkdir -p $DEPLOYPATH/public
     - /bin/cp -R frontend/dist/* $DEPLOYPATH/public/
-
-    # 4. Update Root .htaccess dengan RewriteCond Aman (Cegah Loop 500 Error)
-    - |
-      echo -e "<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteCond %{REQUEST_URI} !^/public/\n    RewriteRule ^(.*)$ public/\$1 [L]\n</IfModule>" > "$DEPLOYPATH/.htaccess"
-
-    # 5. Setting Izin Akses Folder Storage & Cache
     - /bin/chmod -R 775 $DEPLOYPATH/storage
     - /bin/chmod -R 775 $DEPLOYPATH/bootstrap/cache
