@@ -1,8 +1,9 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
+import { Order } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
-import { ShoppingBag, Clock, Package, CheckCircle2, ChevronRight, TrendingUp, ArrowRight, Plus } from 'lucide-react';
+import { Clock, Truck, FileText, Send, ChevronRight, TrendingUp, Plus, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const OwnerDashboard: React.FC = () => {
@@ -13,42 +14,45 @@ export const OwnerDashboard: React.FC = () => {
     queryFn: () => orderService.getOrders(),
   });
 
-  const orders = dashboardData?.data || [];
+  const orders: Order[] = dashboardData?.data || [];
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const todayOrders = orders.filter((o) => o.order_date === todayStr).length;
-  const waitingProcess = orders.filter((o) => o.status === 'WAITING_PROCESS').length;
-  const waitingPacking = orders.filter((o) => o.status === 'WAITING_PACKING').length;
-  const completedOrders = orders.filter((o) => o.status === 'COMPLETED' || o.status === 'PACKING_COMPLETED').length;
+  const waitingVerification = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
+  const pendingShipping = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
+  const pendingInvoice = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && !o.tracking_number).length;
+  const waitingTrackingNumber = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' || (o.status === 'COMPLETED' && !o.tracking_number)).length;
 
   const statCards = [
     {
-      title: 'Pesanan Hari Ini',
-      value: isLoading ? '...' : todayOrders,
-      caption: todayOrders > 0 ? `${todayOrders} pesanan hari ini` : 'Belum ada pesanan',
-      icon: ShoppingBag,
-      link: '/orders',
-    },
-    {
-      title: 'Menunggu Diproses',
-      value: isLoading ? '...' : waitingProcess,
-      caption: waitingProcess > 0 ? `${waitingProcess} perlu verifikasi` : 'Menunggu approval',
+      title: 'Menunggu Verifikasi Pembayaran',
+      value: isLoading ? '...' : waitingVerification,
+      caption: waitingVerification > 0 ? `${waitingVerification} order perlu verifikasi` : 'Semua terverifikasi',
+      buttonText: 'Lakukan Verifikasi',
       icon: Clock,
-      link: '/orders?status=WAITING_PROCESS',
+      link: '/orders/verification',
     },
     {
-      title: 'Menunggu Packing',
-      value: isLoading ? '...' : waitingPacking,
-      caption: waitingPacking > 0 ? `${waitingPacking} siap dikemas` : 'Menunggu packing',
-      icon: Package,
+      title: 'Belum Diatur Pengiriman',
+      value: isLoading ? '...' : pendingShipping,
+      caption: pendingShipping > 0 ? `${pendingShipping} order siap kemas` : 'Semua teratur',
+      buttonText: 'Atur Pengiriman',
+      icon: Truck,
       link: '/packing',
     },
     {
-      title: 'Pesanan Selesai',
-      value: isLoading ? '...' : completedOrders,
-      caption: completedOrders > 0 ? `${completedOrders} order selesai` : 'Resi terkirim',
-      icon: CheckCircle2,
-      link: '/orders?status=COMPLETED',
+      title: 'Menunggu Cetak Dokumen',
+      value: isLoading ? '...' : pendingInvoice,
+      caption: pendingInvoice > 0 ? `${pendingInvoice} order perlu dicetak` : 'Semua dokumen dicetak',
+      buttonText: 'Cetak Dokumen',
+      icon: FileText,
+      link: '/documents/print',
+    },
+    {
+      title: 'Menunggu Input Resi',
+      value: isLoading ? '...' : waitingTrackingNumber,
+      caption: waitingTrackingNumber > 0 ? `${waitingTrackingNumber} order perlu resi` : 'Semua resi terinput',
+      buttonText: 'Input Resi',
+      icon: Send,
+      link: '/orders?status=PACKING_COMPLETED',
     },
   ];
 
@@ -58,9 +62,10 @@ export const OwnerDashboard: React.FC = () => {
       <div className="flex items-center justify-between pt-1">
         <div>
           <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Dashboard Owner</h1>
-          <p className="text-xs text-slate-500 font-normal mt-0.5">Ringkasan performa dan transaksi Antagloma Florist.</p>
+          <p className="text-xs text-slate-500 font-normal mt-0.5">Ringkasan performa dan transaksi Antagloma Florist secara real-time.</p>
         </div>
 
+        {/* Desktop-only action button */}
         <button
           onClick={() => navigate('/orders/create')}
           className="hidden sm:flex px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold items-center gap-1.5 shadow-xs cursor-pointer"
@@ -77,21 +82,30 @@ export const OwnerDashboard: React.FC = () => {
             <div
               key={idx}
               onClick={() => navigate(card.link)}
-              className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col justify-between space-y-2 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all cursor-pointer group"
+              className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between">
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center flex-shrink-0">
                   <Icon className="w-4 h-4 text-[#04593f]" />
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#04593f] transition-colors" />
+                <span className="text-xl sm:text-2xl font-black text-slate-900">{card.value}</span>
               </div>
 
               <div>
-                <span className="text-[11px] font-bold text-slate-700 leading-tight block">
+                <h3 className="text-xs font-bold text-slate-800 leading-tight block">
                   {card.title}
-                </span>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{card.value}</h3>
+                </h3>
                 <p className="text-[10px] text-slate-400 font-normal mt-0.5 leading-none">{card.caption}</p>
+              </div>
+
+              <div className="pt-1.5 border-t border-slate-100 flex justify-end">
+                <button
+                  type="button"
+                  className="w-full py-1.5 px-2 bg-emerald-50 group-hover:bg-[#04593f] text-[#04593f] group-hover:text-white rounded-xl text-[10px] sm:text-xs font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"
+                >
+                  <span>{card.buttonText}</span>
+                  <ChevronRight className="w-3 h-3" />
+                </button>
               </div>
             </div>
           );
@@ -139,7 +153,7 @@ export const OwnerDashboard: React.FC = () => {
           <div className="py-6 text-center text-xs font-normal text-slate-400">Belum ada aktivitas transaksi terbaru.</div>
         ) : (
           <div className="divide-y divide-slate-100">
-            {orders.slice(0, 5).map((order) => (
+            {orders.slice(0, 5).map((order: Order) => (
               <div key={order.id} className="py-2.5 flex items-center justify-between text-xs">
                 <div>
                   <span className="font-bold text-slate-900 block">{order.order_number}</span>
