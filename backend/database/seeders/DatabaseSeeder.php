@@ -55,8 +55,8 @@ class DatabaseSeeder extends Seeder
             MasterGrade::updateOrCreate(['grade' => $g['grade']], $g);
         }
 
-        // 3. Clear existing master trees to ensure clean 1-59 order matching document table
-        MasterTree::query()->delete();
+        // 3. Force clean old master_trees data to exactly 59 official rows
+        DB::table('master_trees')->delete();
 
         // 4. Seed Official 59 Adenium Varieties No. 1 - 59
         $trees = [
@@ -122,7 +122,9 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($trees as $t) {
-            MasterTree::create($t);
+            $t['created_at'] = now();
+            $t['updated_at'] = now();
+            DB::table('master_trees')->insert($t);
         }
     }
 }
