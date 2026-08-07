@@ -16,8 +16,8 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
 
   const [selectedTreeId, setSelectedTreeId] = useState<number | ''>('');
   const [selectedGrade, setSelectedGrade] = useState<string>('');
-  const [quantity, setQuantity] = useState<number>(1);
-  const [price, setPrice] = useState<number>(0);
+  const [quantity, setQuantity] = useState<number | ''>(1);
+  const [price, setPrice] = useState<number | ''>(0);
   const [notes, setNotes] = useState<string>('');
   const [error, setError] = useState<string>('');
 
@@ -42,16 +42,20 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
   const chosenGradeObj = grades.find((g) => g.grade === selectedGrade) || null;
 
   const standardPrice = chosenGradeObj ? chosenGradeObj.standard_price : 0;
+  const numQty = Number(quantity) || 1;
 
+  // Auto calculate Harga Jual = Harga Standar x Jumlah (Qty) whenever Grade or Qty changes
   useEffect(() => {
     if (chosenGradeObj) {
       if (chosenGradeObj.grade !== 'J+') {
-        setPrice(chosenGradeObj.standard_price);
+        setPrice(chosenGradeObj.standard_price * numQty);
       }
     }
-  }, [selectedGrade]);
+  }, [selectedGrade, numQty]);
 
-  const discount = standardPrice > price && selectedGrade !== 'J+' ? standardPrice - price : 0;
+  const numPrice = Number(price) || 0;
+  const totalStandardForQty = standardPrice * numQty;
+  const discount = totalStandardForQty > numPrice && selectedGrade !== 'J+' ? totalStandardForQty - numPrice : 0;
 
   if (!isOpen) return null;
 
@@ -67,11 +71,11 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
       setError('Harap pilih Grade Adenium.');
       return;
     }
-    if (quantity < 1) {
+    if (numQty < 1) {
       setError('Jumlah quantity minimal 1.');
       return;
     }
-    if (price < 0) {
+    if (numPrice < 0) {
       setError('Harga jual tidak boleh kurang dari 0.');
       return;
     }
@@ -82,8 +86,8 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
       grade: selectedGrade,
       product_name: chosenTree ? `${chosenTree.name} (Grade ${selectedGrade})` : `Adenium Grade ${selectedGrade}`,
       variant: `Grade ${selectedGrade}`,
-      quantity: Number(quantity),
-      price: Number(price),
+      quantity: numQty,
+      price: numPrice,
       standard_price: standardPrice,
       discount: discount,
       notes: notes,
@@ -172,7 +176,11 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
                 min={1}
                 required
                 value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setQuantity(val === '' ? '' : Math.max(1, Number(val)));
+                }}
                 className="w-full px-3.5 py-3 border border-slate-300 rounded-xl text-xs sm:text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700"
               />
             </div>
@@ -196,7 +204,11 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
                 min={0}
                 required
                 value={price}
-                onChange={(e) => setPrice(Number(e.target.value) || 0)}
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPrice(val === '' ? '' : Math.max(0, Number(val)));
+                }}
                 className="w-full px-3.5 py-3 border border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-700"
               />
             </div>
@@ -227,7 +239,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
           <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between text-xs sm:text-sm font-extrabold">
             <span className="text-slate-700">Subtotal Item</span>
             <span className="text-emerald-800 text-sm sm:text-base font-black">
-              Rp {((Number(quantity) || 1) * (Number(price) || 0)).toLocaleString('id-ID')}
+              Rp {(numQty * numPrice).toLocaleString('id-ID')}
             </span>
           </div>
 

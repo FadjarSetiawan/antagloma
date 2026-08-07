@@ -1,6 +1,8 @@
 import { api } from './api';
 import { Order, OrderItem, Region } from '../types/order';
 
+export type { Region } from '../types/order';
+
 export interface CreateOrderPayload {
   order_date?: string;
   customer_name: string;

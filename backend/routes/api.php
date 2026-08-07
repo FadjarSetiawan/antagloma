@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CommissionController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\MasterDataController;
 use App\Http\Controllers\Api\OrderController;
@@ -38,6 +39,9 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    // Sales Commission Route
+    Route::get('/sales/commission', [CommissionController::class, 'index']);
 
     // Master Products CRUD (Owner & Admin)
     Route::post('/master/trees', [MasterDataController::class, 'storeTree']);

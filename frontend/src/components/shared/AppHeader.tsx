@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { LogOut, User as UserIcon, Sprout, Menu, X, LayoutDashboard, ShoppingBag, PlusCircle, Package, FileText } from 'lucide-react';
+import { LogOut, User as UserIcon, Sprout, Menu, X, LayoutDashboard, ShoppingBag, PlusCircle, Package, FileText, Wallet } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 export const AppHeader: React.FC = () => {
@@ -12,6 +12,7 @@ export const AppHeader: React.FC = () => {
     { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, show: true },
     { label: 'Semua Order', to: '/orders', icon: ShoppingBag, show: role === 'owner' || role === 'admin' || role === 'sales' },
     { label: 'Buat Order', to: '/orders/create', icon: PlusCircle, show: role === 'sales' || role === 'admin' },
+    { label: 'Komisi Saya', to: '/commission', icon: Wallet, show: role === 'sales' || role === 'admin' || role === 'owner' },
     { label: 'Antrean Packing', to: '/packing', icon: Package, show: role === 'packing' || role === 'admin' || role === 'owner' },
     { label: 'Master Produk', to: '/master/products', icon: Sprout, show: role === 'owner' || role === 'admin' },
     { label: 'Laporan', to: '/reports', icon: FileText, show: role === 'owner' },

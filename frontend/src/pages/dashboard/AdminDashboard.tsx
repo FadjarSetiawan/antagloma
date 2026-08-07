@@ -1,10 +1,11 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
-import { ShoppingBag, Clock, Package, CheckCircle2, ChevronRight, TrendingUp, Plus } from 'lucide-react';
+import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
+import { Clock, Truck, FileText, Send, ChevronRight, TrendingUp, Plus, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export const SalesDashboard: React.FC = () => {
+export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const { data: dashboardData, isLoading } = useQuery({
@@ -14,40 +15,39 @@ export const SalesDashboard: React.FC = () => {
 
   const orders = dashboardData?.data || [];
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const todayOrders = orders.filter((o) => o.order_date === todayStr).length;
-  const waitingProcess = orders.filter((o) => o.status === 'WAITING_PROCESS').length;
-  const waitingPacking = orders.filter((o) => o.status === 'WAITING_PACKING').length;
-  const completedOrders = orders.filter((o) => o.status === 'COMPLETED' || o.status === 'PACKING_COMPLETED').length;
+  const waitingVerification = orders.filter((o) => o.status === 'WAITING_PROCESS').length;
+  const pendingShipping = orders.filter((o) => o.status === 'WAITING_PACKING').length;
+  const pendingInvoice = orders.filter((o) => o.status === 'PACKING_COMPLETED' && !o.tracking_number).length;
+  const waitingTrackingNumber = orders.filter((o) => o.status === 'PACKING_COMPLETED' || (o.status === 'COMPLETED' && !o.tracking_number)).length;
 
   const statCards = [
     {
-      title: 'PESANAN HARI INI',
-      value: isLoading ? '...' : todayOrders,
-      caption: todayOrders > 0 ? `${todayOrders} pesanan hari ini` : 'Belum ada pesanan baru',
-      icon: ShoppingBag,
-      link: '/orders',
-    },
-    {
-      title: 'MENUNGGU DIPROSES',
-      value: isLoading ? '...' : waitingProcess,
-      caption: waitingProcess > 0 ? `${waitingProcess} order perlu approval` : 'Menunggu konfirmasi admin',
+      title: 'Menunggu Verifikasi Pembayaran',
+      value: isLoading ? '...' : waitingVerification,
+      caption: waitingVerification > 0 ? `${waitingVerification} order perlu verifikasi` : 'Semua pembayaran terverifikasi',
       icon: Clock,
       link: '/orders?status=WAITING_PROCESS',
     },
     {
-      title: 'MENUNGGU PACKING',
-      value: isLoading ? '...' : waitingPacking,
-      caption: waitingPacking > 0 ? `${waitingPacking} order siap dikemas` : 'Menunggu di packing',
-      icon: Package,
+      title: 'Belum Diatur Pengiriman',
+      value: isLoading ? '...' : pendingShipping,
+      caption: pendingShipping > 0 ? `${pendingShipping} order siap kemas` : 'Semua pengiriman teratur',
+      icon: Truck,
       link: '/packing',
     },
     {
-      title: 'PESANAN SELESAI',
-      value: isLoading ? '...' : completedOrders,
-      caption: completedOrders > 0 ? `${completedOrders} order selesai` : 'Resi sudah dikirim',
-      icon: CheckCircle2,
-      link: '/orders?status=COMPLETED',
+      title: 'Belum Dibuatkan Nota',
+      value: isLoading ? '...' : pendingInvoice,
+      caption: pendingInvoice > 0 ? `${pendingInvoice} order perlu cetak nota` : 'Semua nota dibuatkan',
+      icon: FileText,
+      link: '/orders?status=PACKING_COMPLETED',
+    },
+    {
+      title: 'Menunggu Input Resi',
+      value: isLoading ? '...' : waitingTrackingNumber,
+      caption: waitingTrackingNumber > 0 ? `${waitingTrackingNumber} order perlu nomor resi` : 'Semua resi terinput',
+      icon: Send,
+      link: '/orders?status=PACKING_COMPLETED',
     },
   ];
 
@@ -56,7 +56,7 @@ export const SalesDashboard: React.FC = () => {
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Sales Dashboard</h1>
+          <h1 className="text-2xl font-black text-slate-900">Admin Dashboard</h1>
           <p className="text-xs text-slate-500 font-medium mt-0.5">Kelola dan pantau pesanan pelanggan dengan mudah.</p>
         </div>
         <button
@@ -121,6 +121,39 @@ export const SalesDashboard: React.FC = () => {
           <span>Lihat Laporan</span>
           <ChevronRight className="w-4 h-4" />
         </button>
+      </div>
+
+      {/* Recent Activity List */}
+      <div className="bg-white border-2 border-slate-200 rounded-3xl p-6 space-y-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-extrabold text-slate-900">Transaksi Pesanan Terbaru</h2>
+          <button
+            onClick={() => navigate('/orders')}
+            className="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1"
+          >
+            Lihat Semua <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {isLoading ? (
+          <div className="py-8 text-center text-xs font-bold text-slate-500">Memuat data transaksi...</div>
+        ) : orders.length === 0 ? (
+          <div className="py-8 text-center text-xs font-bold text-slate-500">Belum ada aktivitas transaksi terbaru.</div>
+        ) : (
+          <div className="divide-y divide-slate-200">
+            {orders.slice(0, 5).map((order) => (
+              <div key={order.id} className="py-3 flex items-center justify-between text-xs">
+                <div>
+                  <span className="font-extrabold text-slate-900 block">{order.order_number}</span>
+                  <span className="text-slate-500 font-medium">{order.customer_name} — {order.delivery_method}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <OrderStatusBadge status={order.status} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

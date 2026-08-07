@@ -6,11 +6,13 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { OwnerDashboard } from './pages/dashboard/OwnerDashboard';
 import { SalesDashboard } from './pages/dashboard/SalesDashboard';
+import { AdminDashboard } from './pages/dashboard/AdminDashboard';
 import { OrderListPage } from './pages/orders/OrderListPage';
 import { OrderCreatePage } from './pages/orders/OrderCreatePage';
 import { PackingQueuePage } from './pages/packing/PackingQueuePage';
 import { ReportsPage } from './pages/reports/ReportsPage';
 import { MasterProductsPage } from './pages/master/MasterProductsPage';
+import { SalesCommissionPage } from './pages/sales/SalesCommissionPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,9 +26,10 @@ const queryClient = new QueryClient({
 const RoleDashboardRouter: React.FC = () => {
   const { user } = useAuth();
   if (user?.role === 'owner') return <OwnerDashboard />;
+  if (user?.role === 'admin') return <AdminDashboard />;
   if (user?.role === 'sales') return <SalesDashboard />;
   if (user?.role === 'packing') return <PackingQueuePage />;
-  return <OrderListPage />;
+  return <AdminDashboard />;
 };
 
 export const App: React.FC = () => {
@@ -41,6 +44,7 @@ export const App: React.FC = () => {
               <Route path="dashboard" element={<RoleDashboardRouter />} />
               <Route path="orders" element={<OrderListPage />} />
               <Route path="orders/create" element={<OrderCreatePage />} />
+              <Route path="commission" element={<SalesCommissionPage />} />
               <Route path="packing" element={<PackingQueuePage />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route path="master/products" element={<MasterProductsPage />} />
