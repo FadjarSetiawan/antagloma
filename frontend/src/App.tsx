@@ -15,6 +15,7 @@ import { ReportsPage } from './pages/reports/ReportsPage';
 import { MasterProductsPage } from './pages/master/MasterProductsPage';
 import { SalesCommissionPage } from './pages/sales/SalesCommissionPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
+import { UserManagementPage } from './pages/users/UserManagementPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,6 +50,7 @@ export const App: React.FC = () => {
               <Route path="orders/verification" element={<AdminVerificationPage />} />
               <Route path="commission" element={<SalesCommissionPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="users" element={<UserManagementPage />} />
               <Route path="packing" element={<PackingQueuePage />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route path="master/products" element={<MasterProductsPage />} />

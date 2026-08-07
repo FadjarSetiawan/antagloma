@@ -12,6 +12,7 @@ import {
   FileText,
   Sprout,
   PlusCircle,
+  Users,
 } from 'lucide-react';
 
 export const MobileBottomNav: React.FC = () => {
@@ -118,6 +119,19 @@ export const MobileBottomNav: React.FC = () => {
                 >
                   <PlusCircle className="w-5 h-5 text-white" />
                   <span>+ Buat Pesanan Baru</span>
+                </button>
+              )}
+
+              {role === 'owner' && (
+                <button
+                  onClick={() => {
+                    setIsProfileOpen(false);
+                    navigate('/users');
+                  }}
+                  className="w-full p-3 rounded-2xl bg-purple-100 hover:bg-purple-200 border-2 border-purple-300 flex items-center gap-3 text-purple-950 font-black"
+                >
+                  <Users className="w-5 h-5 text-purple-900" />
+                  <span>Manajemen Akun User Staff</span>
                 </button>
               )}
 

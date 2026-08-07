@@ -8,6 +8,7 @@ import {
   Package,
   FileText,
   Sprout,
+  Users,
 } from 'lucide-react';
 
 export const AppSidebar: React.FC = () => {
@@ -44,6 +45,12 @@ export const AppSidebar: React.FC = () => {
       to: '/master/products',
       icon: Sprout,
       show: role === 'owner' || role === 'admin',
+    },
+    {
+      label: 'Kelola User',
+      to: '/users',
+      icon: Users,
+      show: role === 'owner',
     },
     {
       label: 'Laporan',
