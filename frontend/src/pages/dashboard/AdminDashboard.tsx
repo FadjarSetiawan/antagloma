@@ -22,9 +22,10 @@ export const AdminDashboard: React.FC = () => {
 
   const statCards = [
     {
-      title: 'Menunggu Verifikasi',
+      title: 'Menunggu Verifikasi Pembayaran',
       value: isLoading ? '...' : waitingVerification,
       caption: waitingVerification > 0 ? `${waitingVerification} order perlu verifikasi` : 'Semua terverifikasi',
+      buttonText: 'Lakukan Verifikasi',
       icon: Clock,
       link: '/orders/verification',
     },
@@ -32,6 +33,7 @@ export const AdminDashboard: React.FC = () => {
       title: 'Belum Diatur Pengiriman',
       value: isLoading ? '...' : pendingShipping,
       caption: pendingShipping > 0 ? `${pendingShipping} order siap kemas` : 'Semua teratur',
+      buttonText: 'Atur Pengiriman',
       icon: Truck,
       link: '/packing',
     },
@@ -39,6 +41,7 @@ export const AdminDashboard: React.FC = () => {
       title: 'Belum Dibuatkan Nota',
       value: isLoading ? '...' : pendingInvoice,
       caption: pendingInvoice > 0 ? `${pendingInvoice} order perlu nota` : 'Semua nota dibuat',
+      buttonText: 'Buat Nota',
       icon: FileText,
       link: '/orders?status=PACKING_COMPLETED',
     },
@@ -46,6 +49,7 @@ export const AdminDashboard: React.FC = () => {
       title: 'Menunggu Input Resi',
       value: isLoading ? '...' : waitingTrackingNumber,
       caption: waitingTrackingNumber > 0 ? `${waitingTrackingNumber} order perlu resi` : 'Semua resi terinput',
+      buttonText: 'Input Resi',
       icon: Send,
       link: '/orders?status=PACKING_COMPLETED',
     },
@@ -77,21 +81,30 @@ export const AdminDashboard: React.FC = () => {
             <div
               key={idx}
               onClick={() => navigate(card.link)}
-              className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col justify-between space-y-2 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all cursor-pointer group"
+              className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between">
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center flex-shrink-0">
                   <Icon className="w-4 h-4 text-[#04593f]" />
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#04593f] transition-colors" />
+                <span className="text-xl sm:text-2xl font-black text-slate-900">{card.value}</span>
               </div>
 
               <div>
-                <span className="text-[11px] font-bold text-slate-700 leading-tight block">
+                <h3 className="text-xs font-bold text-slate-800 leading-tight block">
                   {card.title}
-                </span>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{card.value}</h3>
+                </h3>
                 <p className="text-[10px] text-slate-400 font-normal mt-0.5 leading-none">{card.caption}</p>
+              </div>
+
+              <div className="pt-1.5 border-t border-slate-100 flex justify-end">
+                <button
+                  type="button"
+                  className="w-full py-1.5 px-2 bg-emerald-50 group-hover:bg-[#04593f] text-[#04593f] group-hover:text-white rounded-xl text-[10px] sm:text-xs font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"
+                >
+                  <span>{card.buttonText}</span>
+                  <ChevronRight className="w-3 h-3" />
+                </button>
               </div>
             </div>
           );
