@@ -1,6 +1,6 @@
 import React from 'react';
 import { Order } from '../../types/order';
-import { Printer, X, Tag, Truck, Sprout, MapPin, User, Phone } from 'lucide-react';
+import { Printer, X, Tag, Truck, Sprout, Phone } from 'lucide-react';
 
 interface ShippingLabelModalProps {
   order: Order | null;
@@ -29,12 +29,12 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
   const weightText = packageInfo?.weightInfo || 'Tanpa Berat';
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto no-print font-sans">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto no-print font-sans text-slate-900">
       <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
         {/* Header Modal Bar */}
         <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0 no-print">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-purple-700 text-white flex items-center justify-center font-bold">
+            <div className="w-7 h-7 rounded-xl bg-[#04593f] text-white flex items-center justify-center font-bold">
               <Tag className="w-4 h-4" />
             </div>
             <div>
@@ -50,7 +50,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
+              className="px-3 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Cetak Label</span>
@@ -110,7 +110,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
               </div>
 
               <div className="text-right">
-                <span className="inline-block px-2 py-0.5 bg-purple-100 border border-purple-300 text-purple-950 font-black text-[10px] rounded uppercase tracking-wider">
+                <span className="inline-block px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-[#04593f] font-bold text-[10px] rounded uppercase tracking-wider">
                   {pkgType}
                 </span>
                 <p className="font-black text-sm text-slate-900 block mt-0.5">{subOrderNum}</p>
@@ -119,13 +119,13 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
 
             {/* Receiver Name & Address Large Box */}
             <div className="p-3 bg-slate-50 border border-slate-300 rounded-xl space-y-2">
-              <span className="text-[9px] font-black uppercase text-slate-400 block tracking-wider">
+              <span className="text-[9px] font-bold uppercase text-slate-400 block tracking-wider">
                 PENERIMA / ALAMAT PENGIRIMAN:
               </span>
 
               <div>
-                <h2 className="text-base font-black text-slate-900 block leading-tight">{order.customer_name}</h2>
-                <p className="text-xs font-extrabold text-slate-800 flex items-center gap-1 mt-0.5">
+                <h2 className="text-base font-bold text-slate-900 block leading-tight">{order.customer_name}</h2>
+                <p className="text-xs font-bold text-slate-800 flex items-center gap-1 mt-0.5">
                   <Phone className="w-3.5 h-3.5 text-[#04593f]" /> {order.phone}
                 </p>
               </div>
@@ -134,7 +134,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
                 <p className="font-bold text-slate-900">
                   {[order.district_name, order.regency_name, order.province_name].filter(Boolean).join(', ')}
                 </p>
-                <p className="text-slate-700 font-normal text-[11px] mt-0.5">{order.full_address}</p>
+                <p className="text-slate-700 font-medium text-[11px] mt-0.5">{order.full_address}</p>
               </div>
             </div>
 
@@ -142,14 +142,14 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2 bg-slate-100 border border-slate-300 rounded-lg">
                 <span className="text-[9px] text-slate-400 font-bold uppercase block">KURIR / KURIR METODE:</span>
-                <span className="font-black text-slate-900 block flex items-center gap-1 mt-0.5">
+                <span className="font-bold text-slate-900 block flex items-center gap-1 mt-0.5">
                   <Truck className="w-3.5 h-3.5 text-[#04593f]" /> {order.delivery_method}
                 </span>
               </div>
 
               <div className="p-2 bg-slate-100 border border-slate-300 rounded-lg">
                 <span className="text-[9px] text-slate-400 font-bold uppercase block">BERAT PAKET:</span>
-                <span className="font-black text-slate-900 block mt-0.5">{weightText}</span>
+                <span className="font-bold text-slate-900 block mt-0.5">{weightText}</span>
               </div>
             </div>
 
