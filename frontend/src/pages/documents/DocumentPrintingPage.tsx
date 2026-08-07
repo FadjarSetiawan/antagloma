@@ -107,6 +107,22 @@ export const DocumentPrintingPage: React.FC = () => {
     });
   };
 
+  const handlePrintNota = (pkgCard: typeof expandedPackageCards[0]) => {
+    // Record printed timestamp
+    const nowStr = new Date().toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }) + ` • ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
+
+    setPrintedPackages((prev) => ({
+      ...prev,
+      [pkgCard.subOrderNumber]: { printedAt: nowStr },
+    }));
+
+    setSelectedNotaOrder(pkgCard.order);
+  };
+
   return (
     <div className="space-y-4 max-w-xl mx-auto pb-24 font-sans text-slate-900">
       {/* Header Bar */}
@@ -125,6 +141,29 @@ export const DocumentPrintingPage: React.FC = () => {
             Cetak nota packing & label alamat pengiriman
           </p>
         </div>
+      </div>
+
+      {/* Top Batch Action Buttons (Uniform Antagloma Green Palette) */}
+      <div className="grid grid-cols-2 gap-3 pt-1">
+        <button
+          onClick={() => {
+            if (expandedPackageCards.length > 0) setSelectedNotaOrder(expandedPackageCards[0].order);
+          }}
+          className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+        >
+          <Printer className="w-4 h-4 text-white" />
+          <span>Cetak Semua Nota</span>
+        </button>
+
+        <button
+          onClick={() => {
+            if (expandedPackageCards.length > 0) handlePrintResi(expandedPackageCards[0]);
+          }}
+          className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+        >
+          <Tag className="w-4 h-4 text-white" />
+          <span>Cetak Semua Label</span>
+        </button>
       </div>
 
       {/* Top Navigation Tabs: Belum Dicetak vs Sudah Dicetak */}
@@ -228,13 +267,8 @@ export const DocumentPrintingPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <span
-                    className={`px-2.5 py-0.5 font-bold text-[11px] rounded-lg ${
-                      pkgCard.packageType === 'Fullset'
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                        : 'bg-emerald-50 text-[#04593f] border border-emerald-200'
-                    }`}
-                  >
+                  {/* Uniform Soft Blue Badge for both Fullset & Non-fullset */}
+                  <span className="px-2.5 py-0.5 font-bold text-[11px] rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
                     {pkgCard.packageType}
                   </span>
                 </div>
@@ -258,7 +292,7 @@ export const DocumentPrintingPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Action Buttons Row */}
+                {/* Action Buttons Row - Uniform Green Palette */}
                 <div className="grid grid-cols-2 gap-2.5 pt-1">
                   <button
                     type="button"
@@ -272,7 +306,7 @@ export const DocumentPrintingPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setDetailOrder(pkgCard.order)}
-                    className="py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    className="py-2.5 px-3 bg-white border border-[#04593f] text-[#04593f] hover:bg-emerald-50 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                   >
                     <span>Detail Pesanan</span>
                   </button>
@@ -320,13 +354,8 @@ export const DocumentPrintingPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <span
-                      className={`px-2.5 py-0.5 font-bold text-[11px] rounded-lg ${
-                        pkgCard.packageType === 'Fullset'
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                          : 'bg-emerald-50 text-[#04593f] border border-emerald-200'
-                      }`}
-                    >
+                    {/* Uniform Soft Blue Badge for both Fullset & Non-fullset */}
+                    <span className="px-2.5 py-0.5 font-bold text-[11px] rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
                       {pkgCard.packageType}
                     </span>
                   </div>
@@ -364,7 +393,7 @@ export const DocumentPrintingPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Action Buttons Row */}
+                  {/* Action Buttons Row - Uniform Green Palette */}
                   <div className="grid grid-cols-2 gap-2.5 pt-1">
                     <button
                       type="button"
@@ -378,7 +407,7 @@ export const DocumentPrintingPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setDetailOrder(pkgCard.order)}
-                      className="py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      className="py-2.5 px-3 bg-white border border-[#04593f] text-[#04593f] hover:bg-emerald-50 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                     >
                       <span>Detail Pesanan</span>
                     </button>
