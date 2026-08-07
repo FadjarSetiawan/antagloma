@@ -163,6 +163,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
             />
           </div>
 
+          {/* Row 1: Quantity & Readonly Standard Price */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-extrabold text-slate-900 mb-1">Jumlah (Qty) *</label>
@@ -181,8 +182,21 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
             </div>
 
             <div>
+              <label className="block text-xs font-extrabold text-slate-500 mb-1">Harga Standar (Readonly)</label>
+              <input
+                type="text"
+                readOnly
+                value={`Rp ${standardPrice.toLocaleString('id-ID')}`}
+                className="w-full px-3.5 py-3 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-700 cursor-not-allowed"
+              />
+            </div>
+          </div>
+
+          {/* Row 2: Selling Price & Readonly Calculated Discount */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
               <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                Harga Jual Satuan (Rp) *
+                Harga Jual (Rp) *
               </label>
               <input
                 type="number"
@@ -197,23 +211,25 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
                 className="w-full px-3.5 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-extrabold text-slate-500 mb-1">Diskon (Readonly)</label>
+              <input
+                type="text"
+                readOnly
+                value={`Rp ${discount.toLocaleString('id-ID')}`}
+                className="w-full px-3.5 py-3 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-amber-900 cursor-not-allowed"
+              />
+            </div>
           </div>
 
-          {/* Automatic Calculation Summary Box */}
+          {/* Subtotal Item Summary Box */}
           {selectedGrade && (
-            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5 text-xs font-extrabold text-slate-800">
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Harga Standar Grade:</span>
-                <span>Rp {standardPrice.toLocaleString('id-ID')}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Total Harga Standar:</span>
-                <span>Rp {totalStandardForQty.toLocaleString('id-ID')}</span>
-              </div>
-              <div className="flex justify-between text-emerald-800 pt-1.5 border-t border-slate-200 font-black text-sm">
-                <span>Subtotal Item:</span>
-                <span>Rp {(numQty * numPrice).toLocaleString('id-ID')}</span>
-              </div>
+            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex justify-between items-center text-emerald-950 font-black text-xs sm:text-sm">
+              <span>Subtotal Item:</span>
+              <span className="text-emerald-900 text-base font-black">
+                Rp {(numQty * numPrice).toLocaleString('id-ID')}
+              </span>
             </div>
           )}
 
