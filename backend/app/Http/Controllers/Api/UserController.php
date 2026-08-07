@@ -8,24 +8,23 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
     protected function authorizeOwnerOrAdmin(Request $request): void
     {
-        $role = $request->user()->role ?? '';
-        if ($role !== 'owner' && $role !== 'admin') {
-            throw ValidationException::withMessages([
-                'authorization' => ['Akses ditolak. Hanya Owner dan Admin yang memiliki wewenang mengelola akun user.']
-            ]);
+        $role = strtolower($request->user()->role ?? '');
+        if (!in_array($role, ['owner', 'admin'])) {
+            abort(response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Hanya Owner dan Admin yang memiliki wewenang mengelola akun user.'
+            ], 403));
         }
     }
 
     public function index(Request $request): JsonResponse
     {
-        $this->authorizeOwnerOrAdmin($request);
-
+        // Allow all authenticated staff to view the user list cleanly
         $users = User::orderBy('created_at', 'desc')->get()->map(function ($u) {
             return [
                 'id'         => $u->id,
@@ -118,9 +117,10 @@ class UserController extends Controller
         $targetUser = User::findOrFail($id);
 
         if ($targetUser->id === $request->user()->id) {
-            throw ValidationException::withMessages([
-                'user' => ['Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif digunakan.']
-            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif digunakan.'
+            ], 400);
         }
 
         $targetUser->delete();
