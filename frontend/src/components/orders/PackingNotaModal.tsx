@@ -19,43 +19,43 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, onClo
     : '-';
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 sm:p-6 w-full h-full overflow-y-auto no-print">
-      <div className="bg-white rounded-3xl border-2 border-slate-200 w-[95%] max-w-xl md:max-w-3xl lg:max-w-4xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto no-print">
+      <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col font-sans">
         {/* Header Modal Bar */}
-        <div className="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0 no-print">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-white flex items-center justify-center font-bold">
-              <Printer className="w-5 h-5" />
+        <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0 no-print">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#04593f] text-white flex items-center justify-center font-bold">
+              <Printer className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-extrabold text-slate-900 leading-tight">
-                PRATINJAU NOTA PACKING TANAMAN
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                Pratinjau Nota Packing
               </h3>
-              <p className="text-xs text-slate-500 font-medium hidden sm:block">
-                Nota pengemasan & pemeriksaan fisik kebun
+              <p className="text-[10px] text-slate-400 font-normal">
+                Format nota thermal pengemasan
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={handlePrint}
-              className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
+              className="px-3 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-3.5 h-3.5" />
               <span>Cetak Nota</span>
             </button>
             <button
               onClick={onClose}
-              className="p-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition-colors"
+              className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-xl transition-colors cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Printable Nota Body Container */}
-        <div className="p-5 sm:p-8 overflow-y-auto space-y-5 print-area text-slate-900 font-sans text-xs sm:text-sm">
+        <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 print-area text-slate-900 font-sans text-xs">
           {/* Print specific style overrides */}
           <style>{`
             @media print {
@@ -70,7 +70,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, onClo
                 left: 0;
                 top: 0;
                 width: 100%;
-                padding: 10mm !important;
+                padding: 5mm !important;
                 margin: 0 !important;
               }
               .no-print {
@@ -78,102 +78,100 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, onClo
               }
               @page {
                 size: portrait;
-                margin: 10mm;
+                margin: 5mm;
               }
             }
           `}</style>
 
           {/* Header Store & Order Info Block */}
-          <div className="border-b-2 border-slate-900 pb-4 flex justify-between items-start gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Sprout className="w-6 h-6 text-emerald-800 flex-shrink-0" />
-                <span className="font-black text-base sm:text-lg uppercase tracking-wider text-emerald-900 block leading-none">
+          <div className="border-b border-slate-300 pb-2.5 flex justify-between items-start gap-2">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <Sprout className="w-4 h-4 text-[#04593f] flex-shrink-0" />
+                <span className="font-extrabold text-xs uppercase tracking-wide text-slate-900 block leading-none">
                   ANTAGLOMA FLORIST
                 </span>
               </div>
-              <p className="text-xs font-extrabold text-slate-800">
-                Spesialis Tanaman Hias Adenium Bunga Tumpuk
+              <p className="text-[10px] font-bold text-slate-700">
+                Spesialis Adenium Bunga Tumpuk
               </p>
-              <p className="text-[11px] text-slate-600 font-medium leading-tight">
-                Kebun 1: Jl. Ternate No. 23 | Kebun 2: Jl. Sulawesi No. 19 | Kebun 3: Jl. Natuna
-                <br />
-                WA Order: +62 858-8180-8740
+              <p className="text-[9px] text-slate-500 leading-tight">
+                Kebun 1, 2, 3 | WA: +62 858-8180-8740
               </p>
             </div>
 
             <div className="text-right flex-shrink-0">
-              <span className="inline-block px-3 py-1 bg-emerald-100 border border-emerald-300 text-emerald-950 font-black text-xs rounded-lg uppercase tracking-wider mb-1">
+              <span className="inline-block px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-[#04593f] font-bold text-[9px] rounded uppercase tracking-wider mb-0.5">
                 NOTA PACKING
               </span>
-              <p className="font-black text-sm text-slate-900 block">{order.order_number}</p>
-              <p className="text-xs text-slate-600 font-bold">Tgl: {formattedDate}</p>
+              <p className="font-bold text-xs text-slate-900 block">{order.order_number}</p>
+              <p className="text-[10px] text-slate-400 font-medium">Tgl: {formattedDate}</p>
             </div>
           </div>
 
           {/* Receiver & Address Box */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 border border-slate-300 rounded-2xl p-4 text-xs sm:text-sm">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 text-xs">
             <div>
-              <span className="text-xs font-extrabold uppercase text-slate-500 block mb-1">
+              <span className="text-[9px] font-bold uppercase text-slate-400 block mb-0.5">
                 PENERIMA / CUSTOMER
               </span>
-              <span className="font-black text-slate-900 block text-sm">{order.customer_name}</span>
-              <span className="font-bold text-slate-700 block">{order.phone}</span>
-              <span className="inline-block mt-1 px-2.5 py-0.5 bg-emerald-800 text-white font-extrabold text-xs rounded-md">
+              <span className="font-bold text-slate-900 block text-xs">{order.customer_name}</span>
+              <span className="font-medium text-slate-600 text-[11px] block">{order.phone}</span>
+              <span className="inline-block mt-1 px-2 py-0.5 bg-[#04593f] text-white font-bold text-[10px] rounded">
                 Metode: {order.delivery_method}
               </span>
             </div>
 
-            <div>
-              <span className="text-xs font-extrabold uppercase text-slate-500 block mb-1">
+            <div className="pt-1.5 border-t border-slate-200/80">
+              <span className="text-[9px] font-bold uppercase text-slate-400 block mb-0.5">
                 ALAMAT PENGIRIMAN TANAMAN
               </span>
-              <p className="font-semibold text-slate-800 leading-snug">
+              <p className="font-medium text-slate-700 leading-snug text-[11px]">
                 {[order.district_name, order.regency_name, order.province_name]
                   .filter(Boolean)
                   .join(', ')}
               </p>
-              <p className="text-xs text-slate-700 font-bold mt-1">{order.full_address}</p>
+              <p className="text-[11px] text-slate-800 font-bold mt-0.5">{order.full_address}</p>
             </div>
           </div>
 
           {/* Table Items */}
-          <div className="space-y-2">
-            <span className="text-xs font-extrabold uppercase text-slate-700 block">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold uppercase text-slate-400 block">
               ITEM TANAMAN & BONSAI POT
             </span>
-            <div className="border border-slate-300 rounded-xl overflow-hidden">
-              <table className="w-full text-left text-xs sm:text-sm">
-                <thead className="bg-slate-100 border-b border-slate-300 text-slate-700 font-extrabold text-xs">
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-bold text-[10px]">
                   <tr>
-                    <th className="py-2.5 px-3 text-center w-10">No</th>
-                    <th className="py-2.5 px-3">Jenis Varian Tanaman Adenium</th>
-                    <th className="py-2.5 px-3">Ukuran / Bonggol</th>
-                    <th className="py-2.5 px-3 text-center w-16">Qty</th>
+                    <th className="py-1.5 px-2 text-center w-7">No</th>
+                    <th className="py-1.5 px-2">Varian Adenium</th>
+                    <th className="py-1.5 px-2">Ukuran</th>
+                    <th className="py-1.5 px-2 text-center w-10">Qty</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 font-bold text-slate-900">
+                <tbody className="divide-y divide-slate-100 font-semibold text-slate-800 text-[11px]">
                   {order.items && order.items.length > 0 ? (
                     order.items.map((item, idx) => (
                       <tr key={idx} className="hover:bg-slate-50">
-                        <td className="py-2.5 px-3 text-center">{idx + 1}</td>
-                        <td className="py-2.5 px-3">
-                          <span className="font-black text-slate-900 block text-xs sm:text-sm">{item.tree_name || item.product_name}</span>
+                        <td className="py-1.5 px-2 text-center">{idx + 1}</td>
+                        <td className="py-1.5 px-2">
+                          <span className="font-bold text-slate-900 block">{item.tree_name || item.product_name}</span>
                           {item.tree_code && (
-                            <span className="text-xs text-slate-500 font-bold">Code: {item.tree_code}</span>
+                            <span className="text-[9px] text-slate-400 font-normal">Code: {item.tree_code}</span>
                           )}
                         </td>
-                        <td className="py-2.5 px-3">
-                          <span className="px-2 py-1 bg-slate-100 border border-slate-300 rounded text-xs font-extrabold">
+                        <td className="py-1.5 px-2">
+                          <span className="px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-[9px] font-bold">
                             Grade {item.grade || 'A'}
                           </span>
                         </td>
-                        <td className="py-2.5 px-3 text-center font-black text-sm">{item.quantity}</td>
+                        <td className="py-1.5 px-2 text-center font-bold">{item.quantity}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="py-4 text-center text-slate-500 font-medium">
+                      <td colSpan={4} className="py-3 text-center text-slate-400 font-normal">
                         Tidak ada detail item tanaman.
                       </td>
                     </tr>
@@ -185,44 +183,44 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, onClo
 
           {/* Notes Callout Box */}
           {order.notes && (
-            <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs">
-              <span className="font-extrabold text-amber-950 uppercase block">
-                CATATAN KHUSUS KARAKTER TANAMAN / PACKING KAYU:
+            <div className="p-2 bg-amber-50/80 border border-amber-200/80 rounded-xl text-[11px]">
+              <span className="font-bold text-amber-950 uppercase block text-[9px]">
+                CATATAN PENGIRIMAN / PACKING KAYU:
               </span>
-              <p className="text-amber-900 font-bold italic mt-0.5">"{order.notes}"</p>
+              <p className="text-amber-900 font-medium italic mt-0.5">"{order.notes}"</p>
             </div>
           )}
 
           {/* Signatures Section */}
-          <div className="pt-6 border-t border-slate-300 grid grid-cols-3 gap-3 text-center text-xs">
+          <div className="pt-3 border-t border-slate-200 grid grid-cols-3 gap-2 text-center text-[10px]">
             <div>
-              <span className="text-slate-500 font-bold block mb-10">Sales Pembuat</span>
-              <span className="font-black text-slate-900 block border-t border-dashed border-slate-400 pt-1 mx-2">
+              <span className="text-slate-400 font-normal block mb-6">Sales Pembuat</span>
+              <span className="font-bold text-slate-800 block border-t border-dashed border-slate-300 pt-0.5">
                 {order.creator?.name || 'Sales Staff'}
               </span>
             </div>
 
             <div>
-              <span className="text-slate-500 font-bold block mb-10">Verifikasi Admin</span>
-              <span className="font-black text-slate-900 block border-t border-dashed border-slate-400 pt-1 mx-2">
-                {order.verifier?.name || 'Owner / Admin'}
+              <span className="text-slate-400 font-normal block mb-6">Verifikasi Admin</span>
+              <span className="font-bold text-slate-800 block border-t border-dashed border-slate-300 pt-0.5">
+                {order.verifier?.name || 'Admin'}
               </span>
             </div>
 
             <div>
-              <span className="text-slate-500 font-bold block mb-10">Petugas Packing Kebun</span>
-              <span className="font-black text-slate-900 block border-t border-dashed border-slate-400 pt-1 mx-2">
-                ( Staff Packing )
+              <span className="text-slate-400 font-normal block mb-6">Staff Packing</span>
+              <span className="font-bold text-slate-800 block border-t border-dashed border-slate-300 pt-0.5">
+                ( Packing )
               </span>
             </div>
           </div>
         </div>
 
         {/* Modal Footer Bar */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end flex-shrink-0 no-print">
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-end flex-shrink-0 no-print">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-extrabold transition-colors"
+            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
           >
             Tutup Pratinjau
           </button>
