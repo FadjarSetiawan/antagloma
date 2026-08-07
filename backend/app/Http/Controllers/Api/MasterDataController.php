@@ -13,7 +13,7 @@ class MasterDataController extends Controller
 {
     public function trees(): JsonResponse
     {
-        $trees = MasterTree::orderBy('code', 'asc')->get();
+        $trees = MasterTree::orderBy('id', 'asc')->get();
         return response()->json([
             'success' => true,
             'data'    => $trees,
@@ -59,7 +59,7 @@ class MasterDataController extends Controller
         $tree = MasterTree::findOrFail($id);
 
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:20', 'unique:master_trees,code,' . $tree->id],
+            'code' => ['required', 'string', 'max:20', 'unique:master_trees,code,' . $id],
             'name' => ['required', 'string', 'max:255'],
         ]);
 
@@ -84,12 +84,16 @@ class MasterDataController extends Controller
     public function destroyTree(Request $request, int $id): JsonResponse
     {
         $tree = MasterTree::findOrFail($id);
-        $code = $tree->code;
+        $treeId = $tree->id;
+        $treeCode = $tree->code;
+        $treeName = $tree->name;
+
         $tree->delete();
 
         AuditLogService::logSecurityEvent('MASTER_TREE_DELETED', $request->user(), [
-            'tree_id' => $id,
-            'code'    => $code,
+            'tree_id' => $treeId,
+            'code'    => $treeCode,
+            'name'    => $treeName,
         ]);
 
         return response()->json([
@@ -98,15 +102,42 @@ class MasterDataController extends Controller
         ]);
     }
 
+    public function storeGrade(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'grade'          => ['required', 'string', 'max:10', 'unique:master_grades,grade'],
+            'standard_price' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $grade = MasterGrade::create([
+            'grade'          => strtoupper(trim($validated['grade'])),
+            'standard_price' => $validated['standard_price'],
+        ]);
+
+        AuditLogService::logSecurityEvent('MASTER_GRADE_CREATED', $request->user(), [
+            'grade_id'       => $grade->id,
+            'grade'          => $grade->grade,
+            'standard_price' => $grade->standard_price,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Grade adenium berhasil ditambahkan.',
+            'data'    => $grade,
+        ], 201);
+    }
+
     public function updateGrade(Request $request, int $id): JsonResponse
     {
         $grade = MasterGrade::findOrFail($id);
 
         $validated = $request->validate([
+            'grade'          => ['required', 'string', 'max:10', 'unique:master_grades,grade,' . $id],
             'standard_price' => ['required', 'numeric', 'min:0'],
         ]);
 
         $grade->update([
+            'grade'          => strtoupper(trim($validated['grade'])),
             'standard_price' => $validated['standard_price'],
         ]);
 
@@ -118,8 +149,27 @@ class MasterDataController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Harga standar grade berhasil diperbarui.',
+            'message' => 'Grade adenium berhasil diperbarui.',
             'data'    => $grade,
+        ]);
+    }
+
+    public function destroyGrade(Request $request, int $id): JsonResponse
+    {
+        $grade = MasterGrade::findOrFail($id);
+        $gradeId = $grade->id;
+        $gradeName = $grade->grade;
+
+        $grade->delete();
+
+        AuditLogService::logSecurityEvent('MASTER_GRADE_DELETED', $request->user(), [
+            'grade_id' => $gradeId,
+            'grade'    => $gradeName,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Grade adenium berhasil dihapus.',
         ]);
     }
 }
