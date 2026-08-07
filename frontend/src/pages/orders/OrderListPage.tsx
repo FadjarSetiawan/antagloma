@@ -1,29 +1,45 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService, UpdateOrderPayload } from '../../services/orderService';
+import { Order, OrderItem } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
 import { OrderEditModal } from '../../components/orders/OrderEditModal';
 import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
 import { CompleteShipmentModal } from '../../components/orders/CompleteShipmentModal';
-import { Order, OrderItem } from '../../types/order';
 import { CustomSelect } from '../../components/shared/CustomSelect';
-import { Search, Eye, Edit3, Printer, CheckCircle, PackageCheck, Plus, Phone, Calendar, Truck, FileText, Lightbulb } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Eye,
+  Edit3,
+  Trash2,
+  CheckCircle,
+  Printer,
+  PackageCheck,
+  Calendar,
+  Phone,
+  Truck,
+  Lightbulb,
+  FileText,
+  AlertTriangle,
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export const OrderListPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [deletingOrder, setDeletingOrder] = useState<Order | null>(null);
   const [notaOrder, setNotaOrder] = useState<Order | null>(null);
   const [shipmentOrder, setShipmentOrder] = useState<Order | null>(null);
-
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
     queryKey: ['orders-list', search, statusFilter],
@@ -52,6 +68,7 @@ export const OrderListPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders-list'] });
       setSelectedOrder(null);
+      setDeletingOrder(null);
     },
   });
 
@@ -76,37 +93,37 @@ export const OrderListPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-5 max-w-7xl pb-12">
+    <div className="space-y-4 max-w-7xl pb-24 font-sans">
       {/* Title & Subtitle */}
       <div>
-        <h1 className="text-2xl font-black text-slate-900">Daftar Order Penjualan</h1>
-        <p className="text-xs text-slate-500 font-medium mt-0.5">Kelola dan pantau transaksi order Tanaman Adenium secara real-time.</p>
+        <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Daftar Order Penjualan</h1>
+        <p className="text-xs text-slate-500 font-normal mt-0.5">Kelola dan pantau transaksi order Tanaman Adenium secara real-time.</p>
       </div>
 
       {/* Action Card: + Buat Order Baru */}
       {(role === 'sales' || role === 'admin') && (
         <div
           onClick={() => navigate('/orders/create')}
-          className="p-5 bg-emerald-50/70 border-2 border-dashed border-emerald-300 rounded-3xl text-center flex flex-col items-center justify-center space-y-1.5 cursor-pointer hover:bg-emerald-100/50 transition-all shadow-xs group"
+          className="p-4 bg-emerald-50/70 border border-dashed border-emerald-300 rounded-2xl text-center flex flex-col items-center justify-center space-y-1 cursor-pointer hover:bg-emerald-100/50 transition-all shadow-2xs group"
         >
-          <div className="w-10 h-10 rounded-full bg-emerald-800 text-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-            <Plus className="w-6 h-6" />
+          <div className="w-8 h-8 rounded-full bg-[#04593f] text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+            <Plus className="w-5 h-5" />
           </div>
-          <span className="font-extrabold text-sm text-emerald-900 block">Buat Order Baru</span>
-          <span className="text-[11px] text-slate-500 font-medium">Tambah order penjualan baru</span>
+          <span className="font-bold text-xs text-[#04593f] block">Buat Order Baru</span>
+          <span className="text-[10px] text-slate-500 font-normal">Tambah order penjualan baru</span>
         </div>
       )}
 
       {/* Search Input & Custom Filter Dropdown */}
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         <div className="relative">
-          <Search className="w-4 h-4 text-emerald-800 absolute left-4 top-3.5" />
+          <Search className="w-4 h-4 text-[#04593f] absolute left-3.5 top-3" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari nomor order, nama customer, atau WA..."
-            className="w-full pl-11 pr-4 py-3 bg-white border-2 border-slate-200 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 shadow-xs"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 shadow-2xs"
           />
         </div>
 
@@ -121,30 +138,30 @@ export const OrderListPage: React.FC = () => {
       {/* Orders List Container */}
       <div className="space-y-3">
         {isLoading ? (
-          <div className="p-12 text-center text-xs text-slate-500 font-bold bg-white rounded-3xl border-2 border-slate-200">
+          <div className="p-8 text-center text-xs text-slate-400 font-normal bg-white rounded-2xl border border-slate-200">
             Memuat daftar order...
           </div>
         ) : data?.data?.length === 0 ? (
           /* Empty State Graphic */
-          <div className="py-12 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-3xl border-2 border-slate-200 shadow-xs">
-            <div className="w-20 h-20 bg-emerald-50 rounded-3xl border-2 border-emerald-200 flex items-center justify-center text-emerald-800 relative">
-              <FileText className="w-10 h-10 text-emerald-700" />
+          <div className="py-12 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-2xl border border-slate-200 shadow-2xs">
+            <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#04593f]">
+              <FileText className="w-8 h-8" />
             </div>
 
-            <div className="space-y-1">
-              <h3 className="text-base font-black text-slate-900">Belum Ada Transaksi Pesanan</h3>
-              <p className="text-xs text-slate-500 font-medium max-w-sm mx-auto">
-                Belum ada transaksi order penjualan yang tercatat dalam sistem. Klik tombol di bawah untuk membuat order baru.
+            <div className="space-y-0.5">
+              <h3 className="text-sm font-bold text-slate-900">Belum Ada Transaksi Pesanan</h3>
+              <p className="text-xs text-slate-500 font-normal max-w-xs mx-auto">
+                Belum ada transaksi order penjualan yang tercatat dalam sistem.
               </p>
             </div>
 
             {(role === 'sales' || role === 'admin') && (
               <button
                 onClick={() => navigate('/orders/create')}
-                className="mt-2 px-5 py-3 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-extrabold flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
+                className="mt-1 px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ Buat Order Baru Sekarang</span>
+                <span>+ Buat Order Baru</span>
               </button>
             )}
           </div>
@@ -155,19 +172,22 @@ export const OrderListPage: React.FC = () => {
             const plantTotalPrice = order.items ? order.items.reduce((sum: number, item: OrderItem) => sum + (item.quantity * item.price), 0) : 0;
             const totalOrderAmount = plantTotalPrice + (order.buyer_shipping_cost || 0);
 
+            // ALLOW EDIT & DELETE FOR SALES ONLY WHEN UNVERIFIED (WAITING_PROCESS). AUTOMATICALLY HIDE WHEN VERIFIED BY ADMIN.
+            const canModifySalesOrder = role === 'admin' || role === 'owner' || (role === 'sales' && order.status === 'WAITING_PROCESS');
+
             return (
               <div
                 key={order.id}
                 onClick={() => setSelectedOrder(order)}
-                className="bg-white border-2 border-slate-200 rounded-3xl p-5 space-y-3 hover:border-emerald-800 transition-all shadow-xs cursor-pointer relative group"
+                className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 hover:border-[#04593f] transition-all shadow-2xs cursor-pointer relative group"
               >
                 {/* Header Row: Order Number & Status Badge */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-black text-slate-900 text-sm">{order.order_number}</span>
-                    <span className="text-[11px] font-bold text-slate-400">•</span>
-                    <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="font-bold text-slate-900 text-xs sm:text-sm">{order.order_number}</span>
+                    <span className="text-[11px] font-medium text-slate-300">•</span>
+                    <span className="text-[10px] font-normal text-slate-400 flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-slate-400" />
                       {order.order_date}
                     </span>
                   </div>
@@ -175,23 +195,23 @@ export const OrderListPage: React.FC = () => {
                 </div>
 
                 {/* Body Details: Customer Info & Items Count */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-slate-600 bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-normal text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400 block">Pemesan</span>
-                    <span className="font-extrabold text-slate-900 text-sm block">{order.customer_name}</span>
-                    <span className="text-slate-500 font-bold flex items-center gap-1 mt-0.5">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Pemesan</span>
+                    <span className="font-bold text-slate-900 text-xs block">{order.customer_name}</span>
+                    <span className="text-slate-500 text-[11px] font-medium flex items-center gap-1 mt-0.5">
                       <Phone className="w-3 h-3 text-slate-400" />
                       {order.phone}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400 block">Pengiriman & Item</span>
-                    <span className="font-extrabold text-slate-900 block flex items-center gap-1">
-                      <Truck className="w-3.5 h-3.5 text-emerald-800" />
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Pengiriman & Item</span>
+                    <span className="font-bold text-slate-900 block flex items-center gap-1 text-xs">
+                      <Truck className="w-3.5 h-3.5 text-[#04593f]" />
                       {order.delivery_method}
                     </span>
-                    <span className="text-slate-500 font-bold block mt-0.5">
+                    <span className="text-slate-500 font-normal text-[11px] block mt-0.5">
                       {itemCount} tanaman • Rp {totalOrderAmount.toLocaleString('id-ID')}
                     </span>
                   </div>
@@ -199,23 +219,23 @@ export const OrderListPage: React.FC = () => {
 
                 {/* Bottom Action Bar inside Order Card */}
                 <div className="flex items-center justify-between pt-1 text-xs">
-                  <span className="text-[11px] text-slate-500 font-bold flex items-center gap-1">
-                    <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Klik kartu untuk lihat rincian lengkap
+                  <span className="text-[10px] text-slate-400 font-normal flex items-center gap-1">
+                    <Lightbulb className="w-3 h-3 text-amber-500" /> Klik kartu untuk detail
                   </span>
 
-                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => setSelectedOrder(order)}
-                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 cursor-pointer"
                     >
-                      <Eye className="w-3.5 h-3.5 text-slate-600" /> Detail
+                      <Eye className="w-3.5 h-3.5 text-slate-500" /> Detail
                     </button>
 
                     {(role === 'admin' || role === 'owner') && order.status === 'WAITING_PROCESS' && (
                       <button
                         onClick={() => approveMutation.mutate(order.id)}
                         disabled={approveMutation.isPending}
-                        className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-extrabold flex items-center gap-1 shadow-xs cursor-pointer"
+                        className="px-2.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer"
                       >
                         <CheckCircle className="w-3.5 h-3.5 text-white" /> Verifikasi
                       </button>
@@ -224,28 +244,40 @@ export const OrderListPage: React.FC = () => {
                     {(role === 'admin' || role === 'owner') && (order.status === 'WAITING_PACKING' || order.status === 'PACKING_COMPLETED' || order.status === 'COMPLETED') && (
                       <button
                         onClick={() => setNotaOrder(order)}
-                        className="px-3 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl font-extrabold flex items-center gap-1 shadow-xs cursor-pointer"
+                        className="px-2.5 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer"
                       >
-                        <Printer className="w-3.5 h-3.5 text-white" /> Cetak Nota
+                        <Printer className="w-3.5 h-3.5 text-white" /> Nota
                       </button>
                     )}
 
                     {(role === 'admin' || role === 'owner') && order.status === 'PACKING_COMPLETED' && (
                       <button
                         onClick={() => setShipmentOrder(order)}
-                        className="px-3 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-xl font-extrabold flex items-center gap-1 shadow-xs cursor-pointer"
+                        className="px-2.5 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer"
                       >
-                        <PackageCheck className="w-3.5 h-3.5 text-white" /> Input Resi
+                        <PackageCheck className="w-3.5 h-3.5 text-white" /> Resi
                       </button>
                     )}
 
-                    {(role === 'admin' || role === 'owner' || (role === 'sales' && order.status === 'WAITING_PROCESS')) && (
+                    {/* EDIT BUTTON (AUTO HIDDEN IF SALES & ORDER IS ALREADY VERIFIED) */}
+                    {canModifySalesOrder && (
                       <button
                         onClick={() => setEditingOrder(order)}
-                        className="px-2.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-bold cursor-pointer"
+                        className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer transition-colors"
                         title="Edit order"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+
+                    {/* DELETE BUTTON WITH CONFIRMATION POPUP (AUTO HIDDEN IF SALES & ORDER IS ALREADY VERIFIED) */}
+                    {canModifySalesOrder && (
+                      <button
+                        onClick={() => setDeletingOrder(order)}
+                        className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl cursor-pointer transition-colors"
+                        title="Hapus order"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
@@ -256,12 +288,58 @@ export const OrderListPage: React.FC = () => {
         )}
       </div>
 
+      {/* Delete Order Confirmation Modal Popup */}
+      {deletingOrder && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl max-w-sm w-full p-5 space-y-4 text-slate-900">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-slate-900">Hapus Pesanan?</h3>
+                <p className="text-xs text-slate-500 font-bold">{deletingOrder.order_number}</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 font-medium leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-200">
+              Apakah Anda yakin ingin menghapus pesanan atas nama <strong className="text-slate-900">{deletingOrder.customer_name}</strong>? Data yang dihapus tidak dapat dikembalikan.
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setDeletingOrder(null)}
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-extrabold transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={deleteMutation.isPending}
+                onClick={() => deleteMutation.mutate(deletingOrder.id)}
+                className="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{deleteMutation.isPending ? 'Menghapus...' : 'Ya, Hapus Pesanan'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Order Detail Modal */}
       <OrderDetailModal
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
         onApprove={(id: number) => approveMutation.mutate(id)}
-        onDelete={(id: number) => deleteMutation.mutate(id)}
+        onDelete={(id: number) => {
+          const ord = data?.data?.find((o: Order) => o.id === id);
+          if (ord) {
+            setSelectedOrder(null);
+            setDeletingOrder(ord);
+          }
+        }}
         onOpenNota={(ord: Order) => setNotaOrder(ord)}
         onOpenShipmentModal={(ord: Order) => setShipmentOrder(ord)}
         onEdit={(ord: Order) => setEditingOrder(ord)}
