@@ -637,22 +637,22 @@ export const OrderCreatePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Step 2 Bottom Navigation Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          {/* Step 2 Bottom Navigation Buttons (Side-by-Side Kanan Kiri) */}
+          <div className="grid grid-cols-2 gap-2.5 pt-2">
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="py-3.5 px-4 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black cursor-pointer shadow-xs"
+              className="py-3 px-2.5 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-[11px] sm:text-xs font-black cursor-pointer shadow-xs truncate text-center"
             >
-              ← Kembali ke Langkah 1 (Data Pesanan)
+              ← Kembali ke Langkah 1
             </button>
             <button
               type="button"
               disabled={!isStep2Valid}
               onClick={() => setStep(3)}
-              className="py-3.5 px-4 bg-[#04593f] hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-md transition-all cursor-pointer"
+              className="py-3 px-2.5 bg-[#04593f] hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-[11px] sm:text-xs font-black shadow-md transition-all cursor-pointer truncate text-center"
             >
-              Lanjut ke Langkah 3 (Pembayaran) →
+              Lanjut ke Langkah 3 →
             </button>
           </div>
         </div>
@@ -770,11 +770,12 @@ export const OrderCreatePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          {/* Step 3 Bottom Navigation Buttons (Side-by-Side Kanan Kiri) */}
+          <div className="grid grid-cols-2 gap-2.5 pt-2">
             <button
               type="button"
               onClick={() => setStep(2)}
-              className="py-3.5 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black cursor-pointer shadow-xs"
+              className="py-3 px-2.5 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-[11px] sm:text-xs font-black cursor-pointer shadow-xs truncate text-center"
             >
               ← Kembali ke Langkah 2
             </button>
@@ -782,9 +783,9 @@ export const OrderCreatePage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading || !isStep3Valid}
-              className="py-3.5 bg-[#04593f] hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-lg transition-all active:scale-95 cursor-pointer"
+              className="py-3 px-2.5 bg-[#04593f] hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-[11px] sm:text-xs font-black shadow-lg transition-all cursor-pointer truncate text-center"
             >
-              {isLoading ? 'Memproses Pesanan...' : '✓ Simpan & Proses Pesanan'}
+              {isLoading ? 'Memproses...' : '✓ Simpan Pesanan'}
             </button>
           </div>
         </form>
