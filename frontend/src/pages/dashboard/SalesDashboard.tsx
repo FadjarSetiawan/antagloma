@@ -22,105 +22,103 @@ export const SalesDashboard: React.FC = () => {
 
   const statCards = [
     {
-      title: 'PESANAN HARI INI',
+      title: 'Pesanan Hari Ini',
       value: isLoading ? '...' : todayOrders,
-      caption: todayOrders > 0 ? `${todayOrders} pesanan hari ini` : 'Belum ada pesanan baru',
+      caption: todayOrders > 0 ? `${todayOrders} pesanan baru` : 'Belum ada order',
       icon: ShoppingBag,
       link: '/orders',
     },
     {
-      title: 'MENUNGGU DIPROSES',
+      title: 'Menunggu Diproses',
       value: isLoading ? '...' : waitingProcess,
-      caption: waitingProcess > 0 ? `${waitingProcess} order perlu approval` : 'Menunggu konfirmasi admin',
+      caption: waitingProcess > 0 ? `${waitingProcess} perlu verifikasi` : 'Menunggu admin',
       icon: Clock,
       link: '/orders?status=WAITING_PROCESS',
     },
     {
-      title: 'MENUNGGU PACKING',
+      title: 'Menunggu Packing',
       value: isLoading ? '...' : waitingPacking,
-      caption: waitingPacking > 0 ? `${waitingPacking} order siap dikemas` : 'Menunggu di packing',
+      caption: waitingPacking > 0 ? `${waitingPacking} siap dikemas` : 'Dalam pengemasan',
       icon: Package,
       link: '/packing',
     },
     {
-      title: 'PESANAN SELESAI',
+      title: 'Pesanan Selesai',
       value: isLoading ? '...' : completedOrders,
-      caption: completedOrders > 0 ? `${completedOrders} order selesai` : 'Resi sudah dikirim',
+      caption: completedOrders > 0 ? `${completedOrders} order selesai` : 'Resi terkirim',
       icon: CheckCircle2,
       link: '/orders?status=COMPLETED',
     },
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl pb-12">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-4 max-w-7xl pb-24">
+      {/* Header Banner - Streamlined & Clean */}
+      <div className="flex items-center justify-between pt-1">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Sales Dashboard</h1>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">Kelola dan pantau pesanan pelanggan dengan mudah.</p>
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Sales Dashboard</h1>
+          <p className="text-xs text-slate-500 font-normal mt-0.5">Kelola dan pantau transaksi penjualan tokomu.</p>
         </div>
+
+        {/* Desktop-only action button (Mobile uses center floating bottom nav button) */}
         <button
           onClick={() => navigate('/orders/create')}
-          className="w-full sm:w-auto px-5 py-3 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
+          className="hidden sm:flex px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold items-center gap-1.5 shadow-xs cursor-pointer"
         >
-          <Plus className="w-4 h-4" /> + Buat Pesanan
+          <Plus className="w-4 h-4" /> + Buat Order
         </button>
       </div>
 
-      {/* 2x2 Grid Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      {/* Sleek Compact 2x2 Grid Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
         {statCards.map((card, idx) => {
           const Icon = card.icon;
           return (
             <div
               key={idx}
               onClick={() => navigate(card.link)}
-              className="bg-white border-2 border-slate-200 rounded-3xl p-4 md:p-5 flex flex-col justify-between space-y-3 shadow-xs hover:shadow-md transition-all cursor-pointer relative group"
+              className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col justify-between space-y-2 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between">
-                <div className="w-11 h-11 rounded-2xl bg-emerald-800 border-2 border-emerald-900 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                  <Icon className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-4 h-4 text-[#04593f]" />
                 </div>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#04593f] transition-colors" />
               </div>
 
               <div>
-                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block mb-1">
+                <span className="text-[11px] font-bold text-slate-700 leading-tight block">
                   {card.title}
                 </span>
-                <h3 className="text-2xl md:text-3xl font-black text-slate-900">{card.value}</h3>
-                <p className="text-[11px] text-slate-500 font-medium mt-1 leading-snug">{card.caption}</p>
-              </div>
-
-              <div className="flex justify-end pt-1">
-                <div className="w-7 h-7 rounded-full bg-slate-100 group-hover:bg-emerald-800 group-hover:text-white text-slate-600 border border-slate-200 flex items-center justify-center transition-colors">
-                  <ChevronRight className="w-4 h-4" />
-                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{card.value}</h3>
+                <p className="text-[10px] text-slate-400 font-normal mt-0.5 leading-none">{card.caption}</p>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Ringkasan Penjualan Banner */}
-      <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+      {/* Sleek Sales Report Banner */}
+      <div
+        onClick={() => navigate('/reports')}
+        className="bg-[#04593f] text-white rounded-2xl p-4 flex items-center justify-between shadow-xs cursor-pointer hover:bg-emerald-900 transition-colors"
+      >
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-            <TrendingUp className="w-6 h-6 text-white" />
+          <div className="w-9 h-9 rounded-xl bg-white/10 text-white flex items-center justify-center flex-shrink-0">
+            <TrendingUp className="w-5 h-5 text-emerald-300" />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-slate-900">Ringkasan Penjualan</h3>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Pantau performa penjualan tokomu dari laporan harian hingga bulanan.
+            <h3 className="text-xs sm:text-sm font-bold text-white leading-tight">Ringkasan Penjualan</h3>
+            <p className="text-[11px] text-emerald-100/80 font-normal mt-0.5">
+              Pantau laporan omset harian hingga bulanan toko.
             </p>
           </div>
         </div>
-        <button
-          onClick={() => navigate('/reports')}
-          className="w-full sm:w-auto px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
-        >
-          <span>Lihat Laporan</span>
-          <ChevronRight className="w-4 h-4 text-white" />
-        </button>
+
+        <div className="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-xl text-xs font-bold text-white flex items-center gap-1 flex-shrink-0">
+          <span>Laporan</span>
+          <ChevronRight className="w-3.5 h-3.5" />
+        </div>
       </div>
     </div>
   );

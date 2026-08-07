@@ -6,7 +6,7 @@ import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { UploadPackingProofModal } from '../../components/orders/UploadPackingProofModal';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
 import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
-import { Upload, Eye, Printer, Package, Phone, Calendar, Truck, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Upload, Eye, Printer, Package, Calendar, Truck, CheckCircle2 } from 'lucide-react';
 
 export const PackingQueuePage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -36,45 +36,45 @@ export const PackingQueuePage: React.FC = () => {
   const orders = data?.data || [];
 
   return (
-    <div className="space-y-5 max-w-7xl pb-12">
+    <div className="space-y-4 max-w-7xl pb-24">
       {/* Title & Subtitle */}
       <div>
-        <h1 className="text-2xl font-black text-slate-900">Antrean Packing Tanaman</h1>
-        <p className="text-xs text-slate-500 font-medium mt-0.5">
-          Daftar pesanan Adenium yang disetujui admin, siap dikemas, dan diunggah foto buktinya.
+        <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Antrean Packing Tanaman</h1>
+        <p className="text-xs text-slate-500 font-normal mt-0.5">
+          Daftar pesanan Adenium yang disetujui, siap dikemas, dan diunggah foto buktinya.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="p-12 text-center text-xs text-slate-500 font-bold bg-white rounded-3xl border-2 border-slate-200 shadow-xs">
+        <div className="p-8 text-center text-xs text-slate-400 font-normal bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
           Memuat antrean packing...
         </div>
       ) : orders.length === 0 ? (
-        <div className="py-12 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-3xl border-2 border-slate-200 shadow-xs">
-          <div className="w-16 h-16 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-center text-emerald-800">
-            <Package className="w-8 h-8" />
+        <div className="py-12 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
+          <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#04593f]">
+            <Package className="w-7 h-7" />
           </div>
           <div>
-            <h3 className="text-base font-extrabold text-slate-900">Tidak ada antrean packing</h3>
-            <p className="text-xs text-slate-500 mt-1 font-medium max-w-xs mx-auto">
+            <h3 className="text-sm font-bold text-slate-900">Tidak Ada Antrean Packing</h3>
+            <p className="text-xs text-slate-500 mt-0.5 font-normal max-w-xs mx-auto">
               Semua pesanan saat ini sudah dikemas atau belum disetujui oleh Admin/Owner.
             </p>
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {orders.map((order: Order) => (
             <div
               key={order.id}
-              className="bg-white border-2 border-slate-200 rounded-3xl p-4 sm:p-5 space-y-3 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+              className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 shadow-2xs hover:border-[#04593f] transition-all flex flex-col justify-between"
             >
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {/* Header Card */}
-                <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                   <div>
-                    <span className="font-extrabold text-sm text-slate-900 block">{order.order_number}</span>
-                    <span className="text-[10px] text-slate-500 font-bold flex items-center gap-1 mt-0.5">
-                      <Calendar className="w-3 h-3 text-slate-400" /> Tgl Order:{' '}
+                    <span className="font-bold text-xs sm:text-sm text-slate-900 block">{order.order_number}</span>
+                    <span className="text-[10px] text-slate-400 font-normal flex items-center gap-1 mt-0.5">
+                      <Calendar className="w-3 h-3 text-slate-400" />
                       {order.order_date ? new Date(order.order_date).toLocaleDateString('id-ID') : '-'}
                     </span>
                   </div>
@@ -82,90 +82,89 @@ export const PackingQueuePage: React.FC = () => {
                 </div>
 
                 {/* Customer Details */}
-                <div className="space-y-1 text-xs">
-                  <div className="font-extrabold text-slate-900 flex items-center justify-between">
-                    <span>Customer:</span>
-                    <span className="text-slate-700 font-normal">{order.customer_name} ({order.phone})</span>
+                <div className="space-y-1 text-xs font-normal">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Customer:</span>
+                    <span className="font-bold text-slate-900">{order.customer_name}</span>
                   </div>
-                  <div className="font-extrabold text-slate-900 flex items-center justify-between">
-                    <span>Metode Pengiriman:</span>
-                    <span className="text-emerald-800 font-bold flex items-center gap-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Pengiriman:</span>
+                    <span className="text-[#04593f] font-bold flex items-center gap-1">
                       <Truck className="w-3.5 h-3.5" /> {order.delivery_method}
                     </span>
                   </div>
                 </div>
 
                 {/* Items Summary */}
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] space-y-1">
-                  <span className="text-[10px] font-extrabold uppercase text-slate-500 block">
-                    RINCIAN BARANG RANGKAIAN:
+                <div className="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-[11px] space-y-1">
+                  <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                    Daftar Tanaman ({order.items?.length || 0} Varian):
                   </span>
-                  {order.items && order.items.length > 0 ? (
-                    <ul className="list-disc list-inside font-bold text-slate-800 space-y-0.5">
-                      {order.items.map((item: OrderItem, i: number) => (
-                        <li key={i} className="truncate">
-                          {item.tree_name || item.product_name} (Grade {item.grade || 'A'}) — {item.quantity} Qty
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <span className="text-slate-400 font-medium">Tidak ada rincian barang</span>
-                  )}
-                </div>
-
-                {/* Special Notes Callout */}
-                {order.notes && (
-                  <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-2xl text-[10px]">
-                    <span className="font-extrabold text-amber-950 uppercase block">
-                      Catatan Tanaman / Packing:
-                    </span>
-                    <p className="text-amber-900 font-bold italic mt-0.5">"{order.notes}"</p>
+                  <div className="space-y-0.5 max-h-24 overflow-y-auto">
+                    {order.items?.map((item: OrderItem, i: number) => (
+                      <div key={i} className="flex justify-between font-bold text-slate-800">
+                        <span className="truncate pr-2">• {item.tree_name || item.product_name}</span>
+                        <span className="flex-shrink-0 text-slate-600">{item.quantity}x</span>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
               </div>
 
-              {/* Action Buttons Footer Grid */}
-              <div className="pt-3 border-t border-slate-200 space-y-2">
+              {/* Action Buttons */}
+              <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
                 <button
-                  onClick={() => setSelectedProofOrder(order)}
-                  className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg transition-all active:scale-98"
+                  onClick={() => setSelectedDetailOrder(order)}
+                  className="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                  title="Lihat Detail"
                 >
-                  <Upload className="w-4 h-4" /> Upload Foto Packing
+                  <Eye className="w-3.5 h-3.5" />
                 </button>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setSelectedDetailOrder(order)}
-                    className="py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1 transition-colors"
-                  >
-                    <Eye className="w-3.5 h-3.5 text-emerald-800" /> Detail
-                  </button>
+                <button
+                  onClick={() => setSelectedNotaOrder(order)}
+                  className="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                  title="Cetak Nota"
+                >
+                  <Printer className="w-3.5 h-3.5 text-amber-700" />
+                </button>
 
+                {order.status === 'WAITING_PACKING' ? (
                   <button
-                    onClick={() => setSelectedNotaOrder(order)}
-                    className="py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1 transition-colors"
+                    onClick={() => setSelectedProofOrder(order)}
+                    className="flex-1 py-2 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                   >
-                    <Printer className="w-3.5 h-3.5 text-amber-700" /> Nota
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload Foto Packing</span>
                   </button>
-                </div>
+                ) : (
+                  <div className="flex-1 py-2 px-3 bg-emerald-50 text-[#04593f] rounded-xl text-xs font-bold flex items-center justify-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Sudah Dikemas</span>
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Modals */}
+      {/* Upload Packing Proof Modal */}
       <UploadPackingProofModal
         order={selectedProofOrder}
         onClose={() => setSelectedProofOrder(null)}
-        onUpload={(orderId, file, notes) => uploadProofMutation.mutateAsync({ orderId, file, notes })}
+        onUpload={async (orderId: number, file: File, notes?: string) => {
+          await uploadProofMutation.mutateAsync({ orderId, file, notes });
+        }}
       />
 
+      {/* Order Detail Modal */}
       <OrderDetailModal
         order={selectedDetailOrder}
         onClose={() => setSelectedDetailOrder(null)}
       />
 
+      {/* Packing Nota Thermal Modal */}
       <PackingNotaModal
         order={selectedNotaOrder}
         onClose={() => setSelectedNotaOrder(null)}
