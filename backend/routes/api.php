@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommissionController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\MasterDataController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PackingController;
 use App\Http\Controllers\Api\RegionController;
@@ -39,6 +40,11 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
     // Sales Commission Route
     Route::get('/sales/commission', [CommissionController::class, 'index']);

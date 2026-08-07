@@ -7,6 +7,7 @@ use App\Http\Requests\UploadPackingImageRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\PackingImageResource;
 use App\Models\Order;
+use App\Services\NotificationService;
 use App\Services\PackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,6 +44,9 @@ class PackingController extends Controller
             $request->input('notes'),
             $request->user()
         );
+
+        // Trigger Notification to Admin & Owner
+        NotificationService::notifyPackingCompleted($order->fresh(), $request->user());
 
         return response()->json([
             'success' => true,

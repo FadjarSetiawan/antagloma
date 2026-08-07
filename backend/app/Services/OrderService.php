@@ -106,6 +106,9 @@ class OrderService
                 'order_number' => $order->order_number,
             ]);
 
+            // Trigger Notification to Admin & Owner
+            NotificationService::notifyOrderCreated($order, $user);
+
             return $order->fresh(['creator', 'items']);
         });
     }
@@ -132,6 +135,9 @@ class OrderService
                 'order_id'     => $lockedOrder->id,
                 'order_number' => $lockedOrder->order_number,
             ]);
+
+            // Trigger Notification to Packing & Sales
+            NotificationService::notifyOrderApproved($lockedOrder, $user);
 
             return $lockedOrder->fresh(['creator', 'verifier', 'items', 'packingImages']);
         });
@@ -161,6 +167,9 @@ class OrderService
                 'order_id'     => $lockedOrder->id,
                 'order_number' => $lockedOrder->order_number,
             ]);
+
+            // Trigger Notification to Sales & Owner
+            NotificationService::notifyShipmentCompleted($lockedOrder);
 
             return $lockedOrder->fresh(['creator', 'verifier', 'items', 'packingImages']);
         });
