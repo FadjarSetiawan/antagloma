@@ -10,8 +10,6 @@ import {
   Trash2,
   X,
   Mail,
-  UserCheck,
-  ShieldCheck,
   CheckCircle2,
   Lock,
 } from 'lucide-react';
@@ -115,9 +113,9 @@ export const UserManagementPage: React.FC = () => {
     setEditPassword('');
   };
 
-  const users = data?.data || [];
+  const users: UserAccount[] = data?.data || [];
 
-  const filteredUsers = users.filter((u) => {
+  const filteredUsers = users.filter((u: UserAccount) => {
     const matchSearch =
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase());
@@ -219,7 +217,7 @@ export const UserManagementPage: React.FC = () => {
             Tidak ada data user yang sesuai.
           </div>
         ) : (
-          filteredUsers.map((u) => (
+          filteredUsers.map((u: UserAccount) => (
             <div
               key={u.id}
               className="bg-white border-2 border-slate-200 rounded-3xl p-5 space-y-4 shadow-sm relative flex flex-col justify-between"
