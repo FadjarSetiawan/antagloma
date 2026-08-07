@@ -9,10 +9,8 @@ import {
   Filter,
   CheckCircle2,
   XCircle,
-  FileText,
   Phone,
   ZoomIn,
-  ChevronDown,
   Info,
   X,
   Check,
@@ -47,6 +45,8 @@ export const AdminVerificationPage: React.FC = () => {
     mutationFn: (id: number) => orderService.approveOrder(id),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['orders-verification'] });
+      queryClient.invalidateQueries({ queryKey: ['orders-list'] });
+      queryClient.invalidateQueries({ queryKey: ['packing-queue'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       setVerifiedSuccessNum(res.data.order_number);
       setVerifyingOrder(null);
@@ -59,6 +59,8 @@ export const AdminVerificationPage: React.FC = () => {
     mutationFn: (id: number) => orderService.deleteOrder(id),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['orders-verification'] });
+      queryClient.invalidateQueries({ queryKey: ['orders-list'] });
+      queryClient.invalidateQueries({ queryKey: ['packing-queue'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       setRejectedSuccessNum(`Pesanan telah berhasil ditolak`);
       setRejectingOrder(null);
@@ -100,13 +102,13 @@ export const AdminVerificationPage: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari nama, no, pesanan, atau no. WhatsApp..."
-            className="w-full pl-11 pr-4 py-3 bg-white border-2 border-slate-200 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 shadow-xs"
+            placeholder="Cari nama customer / no order..."
+            className="w-full pl-11 pr-4 py-3 bg-white border-2 border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 shadow-xs"
           />
         </div>
       </div>
 
-      {/* Verified Success Alert Banner */}
+      {/* Verification Success Alert Banner */}
       {verifiedSuccessNum && (
         <div className="p-4 bg-emerald-50 border-2 border-emerald-300 rounded-3xl flex items-start justify-between shadow-sm">
           <div className="flex items-start gap-3">
@@ -114,13 +116,13 @@ export const AdminVerificationPage: React.FC = () => {
               <Check className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm">Pembayaran berhasil diverifikasi</h4>
+              <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm">Pembayaran Berhasil Diverifikasi</h4>
               <p className="text-xs text-slate-600 font-medium mt-0.5">
-                Pesanan <span className="font-extrabold text-emerald-900">{verifiedSuccessNum}</span> dipindahkan ke "Belum Diatur Pengiriman"
+                Pesanan <span className="font-extrabold text-emerald-900">{verifiedSuccessNum}</span> otomatis hilang dari antrean ini dan dipindahkan ke kartu <span className="font-extrabold text-emerald-900 font-black">"Belum Diatur Pengiriman" (Packing Queue)</span>.
               </p>
             </div>
           </div>
-          <button onClick={() => setVerifiedSuccessNum(null)} className="text-slate-400 hover:text-slate-700 p-1">
+          <button onClick={() => setVerifiedSuccessNum(null)} className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -138,7 +140,7 @@ export const AdminVerificationPage: React.FC = () => {
               <p className="text-xs text-rose-800 font-medium mt-0.5">{rejectedSuccessNum}</p>
             </div>
           </div>
-          <button onClick={() => setRejectedSuccessNum(null)} className="text-slate-400 hover:text-slate-700 p-1">
+          <button onClick={() => setRejectedSuccessNum(null)} className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -158,123 +160,104 @@ export const AdminVerificationPage: React.FC = () => {
           </div>
         ) : orders.length === 0 ? (
           <div className="py-12 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-3xl border-2 border-slate-200 shadow-xs">
-            <div className="w-16 h-16 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-center text-emerald-800">
-              <CheckCircle2 className="w-8 h-8" />
+            <div className="w-16 h-16 bg-emerald-50 rounded-full border-2 border-emerald-200 flex items-center justify-center text-emerald-800">
+              <CheckCircle2 className="w-8 h-8 text-emerald-700" />
             </div>
-            <div>
-              <h3 className="text-base font-extrabold text-slate-900">Semua Pembayaran Terverifikasi</h3>
-              <p className="text-xs text-slate-500 mt-1 font-medium max-w-xs mx-auto">
-                Tidak ada pesanan baru yang menunggu verifikasi pembayaran saat ini.
-              </p>
-            </div>
+            <h3 className="text-base font-black text-slate-900">Semua Pembayaran Terverifikasi</h3>
+            <p className="text-xs text-slate-500 font-medium max-w-sm">
+              Tidak ada antrean pesanan yang menunggu verifikasi saat ini.
+            </p>
           </div>
         ) : (
-          orders.map((order, idx) => {
-            const itemCount = order.items?.length || 1;
-            const plantTotal = order.items?.reduce((acc, i) => acc + Number(i.quantity) * Number(i.price), 0) || 0;
-            const shippingCost = Number(order.buyer_shipping_cost) || 0;
-            const grandTotal = plantTotal + shippingCost;
-            const proofUrl = order.payment_proof_url
-              ? order.payment_proof_url
-              : 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=300&q=80';
+          orders.map((order) => {
+            const plantTotalPrice = order.items ? order.items.reduce((s, item) => s + (item.quantity * item.price), 0) : 0;
+            const totalAmount = plantTotalPrice + (order.buyer_shipping_cost || 0);
 
             return (
-              <div key={order.id} className="bg-white border-2 border-slate-200 rounded-3xl p-4 sm:p-5 space-y-4 shadow-sm relative">
-                {/* Header Row */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    {/* Queue Badge */}
-                    <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-black text-xs flex items-center justify-center flex-shrink-0">
-                      #{idx + 1}
-                    </div>
-
-                    <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-5 h-5" />
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-black text-sm text-emerald-900">{order.order_number}</span>
-                      </div>
-                      <h3 className="text-xs font-black text-slate-900">{order.customer_name}</h3>
-                      <div className="flex items-center gap-2 flex-wrap text-xs">
-                        <a
-                          href={`https://wa.me/${order.phone?.replace(/[^0-9]/g, '')}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-slate-600 hover:text-emerald-800 font-bold flex items-center gap-1 text-[11px]"
-                        >
-                          <Phone className="w-3 h-3 text-emerald-700" />
-                          <span>{order.phone}</span>
-                        </a>
-
-                        <span className="px-2 py-0.5 bg-purple-100 border border-purple-200 text-purple-900 rounded-md font-extrabold text-[10px] uppercase">
-                          {order.bank_name || order.payment_method || 'Transfer Bank'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Info: Status & Price */}
-                  <div className="text-right space-y-1">
-                    <span className="px-2.5 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-[10px] font-extrabold inline-block">
-                      Menunggu Verifikasi
+              <div
+                key={order.id}
+                className="bg-white border-2 border-slate-200 rounded-3xl p-5 space-y-4 shadow-sm relative hover:border-emerald-800 transition-all"
+              >
+                {/* Card Top Details */}
+                <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <span className="text-base font-black text-slate-900 block">{order.customer_name}</span>
+                    <span className="text-xs text-slate-500 font-bold flex items-center gap-1 mt-0.5">
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      {order.phone}
                     </span>
-                    <div className="text-[11px] text-slate-400 font-bold">Total diterima</div>
-                    <div className="text-sm sm:text-base font-black text-emerald-800">
-                      Rp {grandTotal.toLocaleString('id-ID')}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-slate-400 font-extrabold block">TOTAL PEMBAYARAN</span>
+                    <span className="text-sm font-black text-emerald-900">Rp {totalAmount.toLocaleString('id-ID')}</span>
+                  </div>
+                </div>
+
+                {/* Bank / Payment Method Badges */}
+                <div className="grid grid-cols-2 gap-2 text-xs font-bold">
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-emerald-800 flex-shrink-0" />
+                    <div>
+                      <span className="text-[9px] text-slate-400 font-black block uppercase">Metode</span>
+                      <span className="text-slate-900 text-[11px] font-black">{order.payment_method || 'Transfer Bank'}</span>
                     </div>
-                    <div className="text-[10px] text-slate-500 font-bold">{itemCount} item</div>
                   </div>
 
-                  {/* Payment Proof Thumbnail */}
-                  <div
-                    onClick={() => setZoomProofUrl(proofUrl)}
-                    className="relative w-16 h-20 rounded-2xl border-2 border-slate-200 overflow-hidden cursor-pointer group flex-shrink-0 bg-slate-100"
-                  >
-                    <img src={proofUrl} alt="Bukti Transfer" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                    <div className="absolute inset-0 bg-slate-900/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ZoomIn className="w-5 h-5 text-white" />
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-2">
+                    <Wallet className="w-4 h-4 text-emerald-800 flex-shrink-0" />
+                    <div>
+                      <span className="text-[9px] text-slate-400 font-black block uppercase">Bank Tujuan</span>
+                      <span className="text-slate-900 text-[11px] font-black">{order.bank_name || 'BCA'}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Top Action Button: Lihat Detail Pesanan */}
-                <div>
+                {/* Payment Proof Thumbnail */}
+                {order.payment_proof_url && (
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Foto Bukti Transfer</span>
+                    <div
+                      onClick={() => setZoomProofUrl(order.payment_proof_url || null)}
+                      className="relative w-full h-36 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 cursor-pointer group"
+                    >
+                      <img src={order.payment_proof_url} alt="Bukti Pembayaran" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white font-extrabold text-xs transition-opacity gap-1.5">
+                        <ZoomIn className="w-4 h-4" /> Perbesar Bukti
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons: Lihat Detail, Tolak, Verifikasi */}
+                <div className="space-y-2 pt-2 border-t border-slate-100">
                   <button
                     onClick={() => setSelectedOrder(order)}
-                    className="w-full py-2.5 px-4 bg-white border-2 border-slate-300 hover:bg-slate-50 text-slate-800 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl text-xs font-black transition-colors cursor-pointer"
                   >
-                    <span>Lihat Detail Pesanan</span>
-                    <ChevronDown className="w-4 h-4 text-slate-500" />
-                  </button>
-                </div>
-
-                {/* Bottom Row Action Buttons: Tolak (Left) & Verifikasi (Right) */}
-                <div className="grid grid-cols-2 gap-3 pt-1 border-t border-slate-100">
-                  <button
-                    disabled={rejectMutation.isPending}
-                    onClick={() => {
-                      setRejectingOrder(order);
-                      setIsRejectChecked(false);
-                    }}
-                    className="py-3 px-4 bg-white border-2 border-rose-300 hover:bg-rose-50 text-rose-800 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <XCircle className="w-4 h-4 text-rose-600" />
-                    <span>Tolak Pembayaran</span>
+                    Lihat Detail Pesanan
                   </button>
 
-                  <button
-                    disabled={approveMutation.isPending}
-                    onClick={() => {
-                      setVerifyingOrder(order);
-                      setIsVerifyChecked(false);
-                    }}
-                    className="py-3 px-4 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
-                  >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                    <span>Verifikasi Pembayaran</span>
-                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => {
+                        setRejectingOrder(order);
+                        setIsRejectChecked(false);
+                      }}
+                      className="py-3 px-3 bg-white border-2 border-rose-200 hover:bg-rose-50 text-rose-800 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <XCircle className="w-4 h-4 text-rose-600" /> Tolak Pembayaran
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setVerifyingOrder(order);
+                        setIsVerifyChecked(false);
+                      }}
+                      className="py-3 px-3 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-white" /> Verifikasi Pembayaran
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -282,231 +265,136 @@ export const AdminVerificationPage: React.FC = () => {
         )}
       </div>
 
-      {/* MODAL POPUP 1: VERIFIKASI PEMBAYARAN (Replicating Screenshot Exactly) */}
+      {/* POPUP MODAL 1: VERIFIKASI PEMBAYARAN */}
       {verifyingOrder && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 sm:p-6 w-full h-full overflow-y-auto">
-          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl w-[95%] max-w-md overflow-hidden my-auto p-6 space-y-5 text-center">
-            {/* Header Circle Icon */}
-            <div className="w-12 h-12 rounded-full bg-emerald-100 border-2 border-emerald-300 text-emerald-800 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
-
-            {/* Title & Subtitle */}
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-black text-slate-900">Verifikasi Pembayaran</h3>
-              <p className="text-xs text-slate-600 font-semibold leading-relaxed">
-                Apakah Anda yakin pembayaran ini sudah sesuai? Pastikan nominal pembayaran, bank tujuan, dan bukti transfer sudah sesuai.
-              </p>
-            </div>
-
-            {/* Order Details Info Box */}
-            {(() => {
-              const plantTot = verifyingOrder.items?.reduce((acc, i) => acc + Number(i.quantity) * Number(i.price), 0) || 0;
-              const shipCost = Number(verifyingOrder.buyer_shipping_cost) || 0;
-              const gTotal = plantTot + shipCost;
-
-              return (
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left text-xs space-y-2.5 font-bold text-slate-800">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
-                      <FileText className="w-4 h-4 text-slate-400" /> No. Pesanan
-                    </span>
-                    <span className="font-extrabold text-emerald-900">{verifyingOrder.order_number}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-slate-200 pt-2">
-                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
-                      <UserIcon className="w-4 h-4 text-slate-400" /> Customer
-                    </span>
-                    <span className="font-extrabold text-slate-900">{verifyingOrder.customer_name}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-slate-200 pt-2">
-                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
-                      <Building2 className="w-4 h-4 text-slate-400" /> Metode Pembayaran
-                    </span>
-                    <span className="font-extrabold text-slate-900 flex items-center gap-1.5">
-                      <span className="px-2 py-0.5 bg-purple-100 text-purple-900 border border-purple-200 rounded text-[10px]">
-                        {verifyingOrder.bank_name || 'BCA'}
-                      </span>
-                      <span>{verifyingOrder.payment_method || 'Transfer Bank'} - {verifyingOrder.bank_name || 'BCA'}</span>
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-slate-200 pt-2">
-                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
-                      <Wallet className="w-4 h-4 text-slate-400" /> Total diterima
-                    </span>
-                    <span className="font-black text-emerald-800 text-sm">
-                      Rp {gTotal.toLocaleString('id-ID')}
-                    </span>
-                  </div>
+          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl w-[95%] max-w-md my-auto p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-emerald-800 text-white flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5" />
                 </div>
-              );
-            })()}
+                <h3 className="text-base font-black text-slate-900">Verifikasi Pembayaran</h3>
+              </div>
+              <button onClick={() => setVerifyingOrder(null)} className="p-1.5 text-slate-400 hover:text-slate-700 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            {/* Mandatory Checkbox */}
-            <label className="flex items-center gap-2.5 text-xs font-extrabold text-slate-800 text-left cursor-pointer pt-1">
+            <p className="text-xs text-slate-600 font-semibold leading-relaxed">
+              Apakah Anda yakin ingin memverifikasi pembayaran pesanan <span className="font-extrabold text-slate-900">{verifyingOrder.order_number}</span> atas nama <span className="font-extrabold text-slate-900">{verifyingOrder.customer_name}</span>?
+            </p>
+
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-bold text-emerald-950">
+              ✓ Pesanan yang diverifikasi akan otomatis dipindahkan ke kartu <span className="font-black">"Belum Diatur Pengiriman" (Antrean Packing)</span>.
+            </div>
+
+            {/* Checkbox Confirmation */}
+            <label className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl cursor-pointer text-xs font-extrabold text-slate-900">
               <input
                 type="checkbox"
                 checked={isVerifyChecked}
                 onChange={(e) => setIsVerifyChecked(e.target.checked)}
-                className="w-4 h-4 text-emerald-800 rounded focus:ring-emerald-700 cursor-pointer"
+                className="w-4 h-4 text-emerald-800 rounded focus:ring-emerald-700 mt-0.5 cursor-pointer"
               />
-              <span>Saya sudah memastikan nominal pembayaran sesuai.</span>
+              <span>Saya sudah memeriksa bukti transfer dan dana masuk dengan benar.</span>
             </label>
 
-            {/* Modal Actions */}
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setVerifyingOrder(null)}
-                className="w-full py-3 px-4 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black transition-colors cursor-pointer"
+                className="py-3 px-4 bg-white border-2 border-slate-300 text-slate-800 rounded-2xl text-xs font-black cursor-pointer"
               >
                 Batal
               </button>
-
               <button
                 type="button"
                 disabled={!isVerifyChecked || approveMutation.isPending}
                 onClick={() => approveMutation.mutate(verifyingOrder.id)}
-                className="w-full py-3 px-4 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-md transition-all cursor-pointer"
+                className="py-3 px-4 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-40 text-white rounded-2xl text-xs font-black shadow-md cursor-pointer"
               >
-                {approveMutation.isPending ? 'Memproses...' : 'Ya, Verifikasi'}
+                {approveMutation.isPending ? 'Proses...' : 'Ya, Verifikasi'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL POPUP 2: TOLAK PEMBAYARAN */}
+      {/* POPUP MODAL 2: TOLAK PEMBAYARAN */}
       {rejectingOrder && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 sm:p-6 w-full h-full overflow-y-auto">
-          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl w-[95%] max-w-md overflow-hidden my-auto p-6 space-y-5 text-center">
-            {/* Header Circle Icon */}
-            <div className="w-12 h-12 rounded-full bg-rose-100 border-2 border-rose-300 text-rose-800 flex items-center justify-center mx-auto">
-              <XCircle className="w-6 h-6" />
-            </div>
-
-            {/* Title & Subtitle */}
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-black text-slate-900">Tolak Pembayaran</h3>
-              <p className="text-xs text-slate-600 font-semibold leading-relaxed">
-                Apakah Anda yakin ingin menolak pembayaran pesanan ini? Pesanan yang ditolak akan dibatalkan.
-              </p>
-            </div>
-
-            {/* Order Details Info Box */}
-            {(() => {
-              const plantTot = rejectingOrder.items?.reduce((acc, i) => acc + Number(i.quantity) * Number(i.price), 0) || 0;
-              const shipCost = Number(rejectingOrder.buyer_shipping_cost) || 0;
-              const gTotal = plantTot + shipCost;
-
-              return (
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left text-xs space-y-2.5 font-bold text-slate-800">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
-                      <FileText className="w-4 h-4 text-slate-400" /> No. Pesanan
-                    </span>
-                    <span className="font-extrabold text-rose-900">{rejectingOrder.order_number}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-slate-200 pt-2">
-                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
-                      <UserIcon className="w-4 h-4 text-slate-400" /> Customer
-                    </span>
-                    <span className="font-extrabold text-slate-900">{rejectingOrder.customer_name}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-slate-200 pt-2">
-                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
-                      <Wallet className="w-4 h-4 text-slate-400" /> Total diterima
-                    </span>
-                    <span className="font-black text-slate-900 text-sm">
-                      Rp {gTotal.toLocaleString('id-ID')}
-                    </span>
-                  </div>
+          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl w-[95%] max-w-md my-auto p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-rose-800 text-white flex items-center justify-center">
+                  <XCircle className="w-5 h-5" />
                 </div>
-              );
-            })()}
+                <h3 className="text-base font-black text-slate-900">Tolak Pembayaran</h3>
+              </div>
+              <button onClick={() => setRejectingOrder(null)} className="p-1.5 text-slate-400 hover:text-slate-700 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            {/* Mandatory Checkbox */}
-            <label className="flex items-center gap-2.5 text-xs font-extrabold text-slate-800 text-left cursor-pointer pt-1">
+            <p className="text-xs text-slate-600 font-semibold leading-relaxed">
+              Apakah Anda yakin ingin menolak pembayaran pesanan <span className="font-extrabold text-slate-900">{rejectingOrder.order_number}</span> atas nama <span className="font-extrabold text-slate-900">{rejectingOrder.customer_name}</span>?
+            </p>
+
+            {/* Checkbox Confirmation */}
+            <label className="flex items-start gap-3 p-3 bg-rose-50 border border-rose-200 rounded-2xl cursor-pointer text-xs font-extrabold text-rose-950">
               <input
                 type="checkbox"
                 checked={isRejectChecked}
                 onChange={(e) => setIsRejectChecked(e.target.checked)}
-                className="w-4 h-4 text-rose-800 rounded focus:ring-rose-700 cursor-pointer"
+                className="w-4 h-4 text-rose-800 rounded focus:ring-rose-700 mt-0.5 cursor-pointer"
               />
-              <span>Saya sudah memastikan bukti transfer tidak valid / belum diterima.</span>
+              <span>Saya yakin bukti pembayaran ini tidak valid / belum masuk.</span>
             </label>
 
-            {/* Modal Actions */}
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setRejectingOrder(null)}
-                className="w-full py-3 px-4 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black transition-colors cursor-pointer"
+                className="py-3 px-4 bg-white border-2 border-slate-300 text-slate-800 rounded-2xl text-xs font-black cursor-pointer"
               >
                 Batal
               </button>
-
               <button
                 type="button"
                 disabled={!isRejectChecked || rejectMutation.isPending}
                 onClick={() => rejectMutation.mutate(rejectingOrder.id)}
-                className="w-full py-3 px-4 bg-rose-800 hover:bg-rose-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-md transition-all cursor-pointer"
+                className="py-3 px-4 bg-rose-800 hover:bg-rose-900 disabled:opacity-40 text-white rounded-2xl text-xs font-black shadow-md cursor-pointer"
               >
-                {rejectMutation.isPending ? 'Memproses...' : 'Ya, Tolak Pembayaran'}
+                {rejectMutation.isPending ? 'Menolak...' : 'Ya, Tolak Pembayaran'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Zoom Proof */}
+      {/* POPUP ZOOM PROOF IMAGE */}
       {zoomProofUrl && (
-        <div
-          onClick={() => setZoomProofUrl(null)}
-          className="fixed inset-0 z-[9999] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
-        >
-          <div className="relative max-w-lg w-full bg-white rounded-3xl p-3 border-2 border-slate-200 shadow-2xl">
-            <img src={zoomProofUrl} alt="Bukti Transfer Zoom" className="w-full max-h-[80vh] object-contain rounded-2xl" />
-            <p className="text-center text-xs font-bold text-slate-600 mt-2">Klik di mana saja untuk menutup</p>
+        <div className="fixed inset-0 z-[9999] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="relative max-w-2xl w-full bg-white rounded-3xl p-3 shadow-2xl space-y-3">
+            <div className="flex justify-between items-center px-2">
+              <span className="text-xs font-black text-slate-900">Bukti Pembayaran / Transfer</span>
+              <button onClick={() => setZoomProofUrl(null)} className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <img src={zoomProofUrl} alt="Zoom Bukti" className="w-full max-h-[80vh] object-contain rounded-2xl border border-slate-200" />
           </div>
         </div>
       )}
 
       {/* Order Detail Modal */}
-      {selectedOrder && (
-        <OrderDetailModal
-          order={selectedOrder}
-          onClose={() => setSelectedOrder(null)}
-          onApprove={(id) => approveMutation.mutate(id)}
-          onDelete={(id) => rejectMutation.mutate(id)}
-          isActionLoading={approveMutation.isPending || rejectMutation.isPending}
-        />
-      )}
+      <OrderDetailModal
+        order={selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        onApprove={(id) => approveMutation.mutate(id)}
+        onDelete={(id) => rejectMutation.mutate(id)}
+      />
     </div>
   );
 };
-
-function UserIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
