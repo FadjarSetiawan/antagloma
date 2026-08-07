@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { orderService, Region } from '../../services/orderService';
 import { AddPlantModal } from '../../components/orders/AddPlantModal';
 import { OrderItem } from '../../types/order';
@@ -15,11 +14,11 @@ import {
   ChevronUp,
   FileText,
   User as UserIcon,
-  CreditCard,
-  Building2,
-  QrCode,
-  DollarSign,
+  Truck,
   Sprout,
+  Package,
+  Tag,
+  DollarSign,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -31,7 +30,7 @@ export const OrderCreatePage: React.FC = () => {
   // Wizard Step State (1: Data Pesanan & Pengiriman, 2: Detail Tanaman, 3: Pembayaran & Konfirmasi)
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
-  // Accordion Section States inside Step 1 & 3
+  // Accordion Section States inside Step 1
   const [isSection1Open, setIsSection1Open] = useState(true);
   const [isSection2Open, setIsSection2Open] = useState(true);
 
@@ -42,7 +41,11 @@ export const OrderCreatePage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [deliveryMethod, setDeliveryMethod] = useState<string>('Kirim Paket');
   const [fullAddress, setFullAddress] = useState('');
+
+  // Form Fields - Step 2 (Detail Tanaman & Catatan Pengiriman)
+  const [items, setItems] = useState<OrderItem[]>([]);
   const [notes, setNotes] = useState('');
+  const [isAddPlantModalOpen, setIsAddPlantModalOpen] = useState(false);
 
   // Regions State
   const [provinces, setProvinces] = useState<Region[]>([]);
@@ -52,10 +55,6 @@ export const OrderCreatePage: React.FC = () => {
   const [selectedProvince, setSelectedProvince] = useState<Region | null>(null);
   const [selectedRegency, setSelectedRegency] = useState<Region | null>(null);
   const [selectedDistrict, setSelectedDistrict] = useState<Region | null>(null);
-
-  // Form Fields - Step 2: Items List
-  const [items, setItems] = useState<OrderItem[]>([]);
-  const [isAddPlantModalOpen, setIsAddPlantModalOpen] = useState(false);
 
   // Form Fields - Step 3: Payment
   const [paymentMethod, setPaymentMethod] = useState<string>('Transfer Bank');
@@ -156,6 +155,7 @@ export const OrderCreatePage: React.FC = () => {
 
   // Financial Computations
   const totalItemCount = items.reduce((acc, curr) => acc + (Number(curr.quantity) || 0), 0);
+  const totalDiscount = items.reduce((acc, curr) => acc + (Number(curr.discount) || 0) * (Number(curr.quantity) || 1), 0);
   const totalPlantPrice = items.reduce((acc, curr) => acc + (Number(curr.quantity) || 0) * (Number(curr.price) || 0), 0);
   const actualShippingCost = deliveryMethod === 'Kirim Paket' ? Number(buyerShippingCost) || 0 : 0;
   const grandTotal = totalPlantPrice + actualShippingCost;
@@ -245,7 +245,7 @@ export const OrderCreatePage: React.FC = () => {
         </p>
       </div>
 
-      {/* STEPPER PROGRESS BAR (Matches Screenshot 2 Exactly: Data Pesanan, Detail Tanaman, Pembayaran) */}
+      {/* STEPPER PROGRESS BAR */}
       <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 shadow-xs">
         <div className="flex items-center justify-between max-w-lg mx-auto relative">
           {/* Connecting Lines */}
@@ -266,7 +266,7 @@ export const OrderCreatePage: React.FC = () => {
               {isStep1Valid ? <Check className="w-5 h-5" /> : '1'}
             </div>
             <span className={`text-xs mt-2 ${step === 1 ? 'font-extrabold text-emerald-800' : 'font-bold text-slate-700'}`}>Data Pesanan</span>
-            <span className="text-[10px] text-slate-400 font-medium">{isStep1Valid ? 'Wajib diisi' : 'Kosong'}</span>
+            <span className="text-[10px] text-slate-400 font-medium">{isStep1Valid ? 'Lengkap' : 'Kosong'}</span>
           </div>
 
           {/* Step 2 Circle */}
@@ -280,7 +280,7 @@ export const OrderCreatePage: React.FC = () => {
               {isStep2Valid ? <Check className="w-5 h-5" /> : '2'}
             </div>
             <span className={`text-xs mt-2 ${step === 2 ? 'font-extrabold text-emerald-800' : 'font-bold text-slate-700'}`}>Detail Tanaman</span>
-            <span className="text-[10px] text-slate-400 font-medium">{isStep2Valid ? `${items.length} Item` : 'Kosong'}</span>
+            <span className="text-[10px] text-slate-400 font-medium">{isStep2Valid ? `${totalItemCount} tanaman` : 'Kosong'}</span>
           </div>
 
           {/* Step 3 Circle */}
@@ -294,7 +294,7 @@ export const OrderCreatePage: React.FC = () => {
               {isStep3Valid ? <Check className="w-5 h-5" /> : '3'}
             </div>
             <span className={`text-xs mt-2 ${step === 3 ? 'font-extrabold text-emerald-800' : 'font-bold text-slate-700'}`}>Pembayaran</span>
-            <span className="text-[10px] text-slate-400 font-medium">{isStep3Valid ? 'Siap Proses' : 'Konfirmasi'}</span>
+            <span className="text-[10px] text-slate-400 font-medium">{isStep3Valid ? 'Konfirmasi' : 'Kosong'}</span>
           </div>
         </div>
       </div>
@@ -469,17 +469,6 @@ export const OrderCreatePage: React.FC = () => {
                     className="w-full p-3 border border-slate-200 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-900 mb-1">Catatan Pesanan (Opsional)</label>
-                  <input
-                    type="text"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Contoh: Titip di satpam jika rumah kosong..."
-                    className="w-full px-3 py-3 border border-slate-200 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700"
-                  />
-                </div>
               </div>
             )}
           </div>
@@ -497,82 +486,159 @@ export const OrderCreatePage: React.FC = () => {
         </div>
       )}
 
-      {/* STEP 2: Detail Tanaman */}
+      {/* STEP 2: Detail Tanaman & Summary */}
       {step === 2 && (
         <div className="space-y-4">
-          <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wide">DETAIL TANAMAN ADENIUM</h3>
-                <p className="text-xs text-slate-500 font-medium">Tambahkan item varian pohon yang dipesan.</p>
+          <div className="bg-white border-2 border-slate-200 rounded-3xl p-4 sm:p-6 space-y-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <Sprout className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-wide">DAFTAR TANAMAN ADENIUM</h3>
+                  <p className="text-xs text-slate-500 font-medium">Tambahkan varian pohon dan grade yang dipesan.</p>
+                </div>
               </div>
+
               <button
                 type="button"
                 onClick={() => setIsAddPlantModalOpen(true)}
-                className="px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+                className="w-full sm:w-auto px-5 py-3 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
               >
-                <Plus className="w-4 h-4 text-white" /> + Tambah Tanaman
+                <Plus className="w-4 h-4 text-white" />
+                <span>+ Tambah Tanaman</span>
               </button>
             </div>
 
+            {/* Mobile & Desktop Optimized Item List */}
             {items.length === 0 ? (
-              <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl space-y-2">
-                <Sprout className="w-10 h-10 text-slate-300 mx-auto" />
+              <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-3xl space-y-2 bg-slate-50/50">
+                <Sprout className="w-12 h-12 text-slate-300 mx-auto" />
                 <p className="text-xs font-bold text-slate-500">Belum ada tanaman yang ditambahkan.</p>
                 <button
                   type="button"
                   onClick={() => setIsAddPlantModalOpen(true)}
-                  className="text-xs font-black text-emerald-800 hover:underline"
+                  className="text-xs font-black text-emerald-800 hover:underline cursor-pointer"
                 >
                   Klik di sini untuk memilih varian pohon
                 </button>
               </div>
             ) : (
               <div className="space-y-3">
+                {/* Responsive Card Item View for Ultra-Clean Mobile Layout */}
                 {items.map((item, idx) => (
-                  <div key={idx} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3 text-xs">
-                    <div>
-                      <div className="font-extrabold text-slate-900 text-sm">
-                        {item.product_name}
+                  <div
+                    key={idx}
+                    className="p-4 bg-slate-50/80 border-2 border-slate-200 rounded-3xl space-y-3 shadow-xs hover:border-emerald-800 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-black text-slate-900 text-sm">{item.product_name}</span>
+                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg text-[10px] font-black uppercase">
+                            Grade {item.grade || 'A'}
+                          </span>
+                        </div>
+                        {item.notes && (
+                          <p className="text-[11px] text-slate-500 font-semibold italic">Catatan: "{item.notes}"</p>
+                        )}
                       </div>
-                      <div className="text-slate-500 font-medium mt-0.5">
-                        {item.quantity} × Rp {Number(item.price).toLocaleString('id-ID')} = <span className="font-bold text-slate-900">Rp {(item.quantity * item.price).toLocaleString('id-ID')}</span>
-                      </div>
-                      {item.notes && <div className="text-[11px] text-slate-400 font-medium italic mt-0.5">Catatan: {item.notes}</div>}
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItem(idx)}
+                        className="p-2 text-rose-600 hover:bg-rose-100/60 rounded-xl transition-colors cursor-pointer flex-shrink-0"
+                        title="Hapus tanaman"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem(idx)}
-                      className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl"
-                      title="Hapus tanaman"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200 text-xs font-bold text-slate-700">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-black block uppercase">QTY</span>
+                        <span className="font-black text-slate-900">{item.quantity} Tanaman</span>
+                      </div>
+
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-black block uppercase">HARGA SATUAN</span>
+                        <span className="font-black text-slate-900">Rp {Number(item.price).toLocaleString('id-ID')}</span>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 font-black block uppercase">SUBTOTAL</span>
+                        <span className="font-black text-emerald-900">
+                          Rp {(item.quantity * item.price).toLocaleString('id-ID')}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))}
-
-                <div className="pt-2 border-t border-slate-200 flex justify-between items-center text-xs font-black text-slate-900">
-                  <span>Total Item: {totalItemCount} Tanaman</span>
-                  <span className="text-emerald-800 text-sm">Rp {totalPlantPrice.toLocaleString('id-ID')}</span>
-                </div>
               </div>
             )}
+
+            {/* Kolom Catatan Pengiriman (Directly under plant list) */}
+            <div className="pt-2">
+              <label className="block text-xs font-black text-slate-900 mb-1.5 flex items-center gap-1.5">
+                <Truck className="w-4 h-4 text-emerald-800" />
+                <span>Catatan Pengiriman (Opsional)</span>
+              </label>
+              <textarea
+                rows={2}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Contoh: Packing kayu rapat, titip di satpam jika rumah kosong..."
+                className="w-full p-3.5 bg-white border-2 border-slate-200 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 shadow-xs"
+              />
+            </div>
+
+            {/* Financial Summary Box (Total Item, Total Diskon, Total Harga) */}
+            <div className="p-4 bg-emerald-50/80 border-2 border-emerald-200 rounded-3xl space-y-2 text-xs font-extrabold text-slate-900 shadow-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600 font-semibold flex items-center gap-1.5">
+                  <Package className="w-4 h-4 text-emerald-800" />
+                  <span>Total Item:</span>
+                </span>
+                <span className="font-black text-slate-900">{totalItemCount} Tanaman</span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600 font-semibold flex items-center gap-1.5">
+                  <Tag className="w-4 h-4 text-emerald-800" />
+                  <span>Total Diskon:</span>
+                </span>
+                <span className="font-black text-emerald-900">
+                  {totalDiscount > 0 ? `- Rp ${totalDiscount.toLocaleString('id-ID')}` : 'Rp 0'}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center pt-2.5 border-t border-emerald-300 text-sm font-black text-slate-900">
+                <span className="flex items-center gap-1.5">
+                  <DollarSign className="w-4.5 h-4.5 text-emerald-900" />
+                  <span>Total Harga Tanaman:</span>
+                </span>
+                <span className="text-emerald-950 text-base font-black">
+                  Rp {totalPlantPrice.toLocaleString('id-ID')}
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          {/* Step 2 Bottom Navigation Buttons */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="py-3.5 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black"
+              className="py-3.5 px-4 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black cursor-pointer shadow-xs"
             >
-              ← Kembali ke Langkah 1
+              ← Kembali ke Langkah 1 (Data Pesanan)
             </button>
             <button
               type="button"
               disabled={!isStep2Valid}
               onClick={() => setStep(3)}
-              className="py-3.5 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-md transition-all"
+              className="py-3.5 px-4 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-md transition-all cursor-pointer"
             >
               Lanjut ke Langkah 3 (Pembayaran) →
             </button>
@@ -584,7 +650,7 @@ export const OrderCreatePage: React.FC = () => {
       {step === 3 && (
         <form onSubmit={handleSubmitFinal} className="space-y-4">
           <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 space-y-4 shadow-xs">
-            <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wide">INFORMASI PEMBAYARAN & ONGIR</h3>
+            <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wide">INFORMASI PEMBAYARAN & ONGKIR</h3>
 
             {/* Delivery Method Shipping Cost */}
             {deliveryMethod === 'Kirim Paket' && (
@@ -653,7 +719,7 @@ export const OrderCreatePage: React.FC = () => {
             </div>
 
             {/* Summary Total Financial Box */}
-            <div className="p-4 bg-emerald-50/70 border-2 border-emerald-200 rounded-2xl space-y-2 text-xs font-extrabold text-slate-900">
+            <div className="p-4 bg-emerald-50/70 border-2 border-emerald-200 rounded-3xl space-y-2 text-xs font-extrabold text-slate-900">
               <div className="flex justify-between">
                 <span className="text-slate-600 font-medium">Subtotal Harga Tanaman ({totalItemCount} item):</span>
                 <span>Rp {totalPlantPrice.toLocaleString('id-ID')}</span>
@@ -669,11 +735,11 @@ export const OrderCreatePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button
               type="button"
               onClick={() => setStep(2)}
-              className="py-3.5 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black"
+              className="py-3.5 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black cursor-pointer"
             >
               ← Kembali ke Langkah 2
             </button>
@@ -683,7 +749,7 @@ export const OrderCreatePage: React.FC = () => {
               disabled={isLoading || !isStep3Valid}
               className="py-3.5 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-lg transition-all active:scale-95 cursor-pointer"
             >
-              {isLoading ? 'Memproses Pesanan...' : '✓ Simpan & Prosed Pesanan'}
+              {isLoading ? 'Memproses Pesanan...' : '✓ Simpan & Proses Pesanan'}
             </button>
           </div>
         </form>
