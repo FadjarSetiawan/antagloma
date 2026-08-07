@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
 import { Order } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
-import { Clock, Truck, FileText, Send, ChevronRight, TrendingUp, Plus, ArrowRight } from 'lucide-react';
+import { ShoppingBag, Clock, Users, BarChart3, ChevronRight, TrendingUp, Plus, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const OwnerDashboard: React.FC = () => {
@@ -16,48 +16,48 @@ export const OwnerDashboard: React.FC = () => {
 
   const orders: Order[] = dashboardData?.data || [];
 
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayOrders = orders.filter((o: Order) => o.order_date === todayStr).length;
   const waitingVerification = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
-  const pendingShipping = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
-  const pendingInvoice = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && !o.tracking_number).length;
-  const waitingTrackingNumber = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' || (o.status === 'COMPLETED' && !o.tracking_number)).length;
+  const completedOrders = orders.filter((o: Order) => o.status === 'COMPLETED' || o.status === 'PACKING_COMPLETED').length;
 
   const statCards = [
+    {
+      title: 'Pesanan Masuk Hari Ini',
+      value: isLoading ? '...' : todayOrders,
+      caption: todayOrders > 0 ? `${todayOrders} pesanan hari ini` : 'Belum ada pesanan',
+      buttonText: 'Lihat Order',
+      icon: ShoppingBag,
+      link: '/orders',
+    },
     {
       title: 'Menunggu Verifikasi Pembayaran',
       value: isLoading ? '...' : waitingVerification,
       caption: waitingVerification > 0 ? `${waitingVerification} order perlu verifikasi` : 'Semua terverifikasi',
-      buttonText: 'Lakukan Verifikasi',
+      buttonText: 'Verifikasi',
       icon: Clock,
       link: '/orders/verification',
     },
     {
-      title: 'Belum Diatur Pengiriman',
-      value: isLoading ? '...' : pendingShipping,
-      caption: pendingShipping > 0 ? `${pendingShipping} order siap kemas` : 'Semua teratur',
-      buttonText: 'Atur Pengiriman',
-      icon: Truck,
-      link: '/packing',
+      title: 'Manajemen Akun User Staff',
+      value: 'Staff',
+      caption: 'Kelola akses akun admin & sales',
+      buttonText: 'Kelola User',
+      icon: Users,
+      link: '/users',
     },
     {
-      title: 'Menunggu Cetak Dokumen',
-      value: isLoading ? '...' : pendingInvoice,
-      caption: pendingInvoice > 0 ? `${pendingInvoice} order perlu dicetak` : 'Semua dokumen dicetak',
-      buttonText: 'Cetak Dokumen',
-      icon: FileText,
-      link: '/documents/print',
-    },
-    {
-      title: 'Menunggu Input Resi',
-      value: isLoading ? '...' : waitingTrackingNumber,
-      caption: waitingTrackingNumber > 0 ? `${waitingTrackingNumber} order perlu resi` : 'Semua resi terinput',
-      buttonText: 'Input Resi',
-      icon: Send,
-      link: '/orders?status=PACKING_COMPLETED',
+      title: 'Laporan Penjualan & Omset',
+      value: isLoading ? '...' : completedOrders,
+      caption: completedOrders > 0 ? `${completedOrders} order selesai` : 'Analisis omset toko',
+      buttonText: 'Lihat Laporan',
+      icon: BarChart3,
+      link: '/reports',
     },
   ];
 
   return (
-    <div className="space-y-4 max-w-7xl pb-24">
+    <div className="space-y-4 max-w-7xl pb-24 font-sans text-slate-900">
       {/* Header Banner - Streamlined & Clean */}
       <div className="flex items-center justify-between pt-1">
         <div>
