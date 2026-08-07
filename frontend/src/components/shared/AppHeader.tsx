@@ -33,7 +33,6 @@ export const AppHeader: React.FC = () => {
           </div>
           <div>
             <span className="font-extrabold text-slate-900 block leading-tight text-sm md:text-base">Antagloma Florist</span>
-            <span className="text-[10px] text-slate-600 font-bold tracking-wide uppercase block">Tanaman Hias Adenium</span>
           </div>
         </div>
 

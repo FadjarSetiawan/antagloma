@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
-import { ShoppingBag, Clock, Package, CheckCircle2, MoreVertical, ChevronRight, TrendingUp, ArrowRight } from 'lucide-react';
+import { ShoppingBag, Clock, Package, CheckCircle2, ChevronRight, TrendingUp, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const OwnerDashboard: React.FC = () => {
@@ -32,21 +32,21 @@ export const OwnerDashboard: React.FC = () => {
     {
       title: 'MENUNGGU DIPROSES',
       value: isLoading ? '...' : waitingProcess,
-      caption: waitingProcess > 0 ? `${waitingProcess} order perlu approval` : 'Order menunggu diproses',
+      caption: waitingProcess > 0 ? `${waitingProcess} order perlu approval` : 'Menunggu konfirmasi admin',
       icon: Clock,
       link: '/orders?status=WAITING_PROCESS',
     },
     {
       title: 'MENUNGGU PACKING',
       value: isLoading ? '...' : waitingPacking,
-      caption: waitingPacking > 0 ? `${waitingPacking} order siap dikemas` : 'Order siap untuk dikemas',
+      caption: waitingPacking > 0 ? `${waitingPacking} order siap dikemas` : 'Menunggu di packing',
       icon: Package,
       link: '/packing',
     },
     {
-      title: 'ORDER SELESAI',
+      title: 'PESANAN SELESAI',
       value: isLoading ? '...' : completedOrders,
-      caption: completedOrders > 0 ? `${completedOrders} order telah selesai` : 'Order telah selesai',
+      caption: completedOrders > 0 ? `${completedOrders} order selesai` : 'Resi sudah dikirim',
       icon: CheckCircle2,
       link: '/orders?status=COMPLETED',
     },
@@ -55,8 +55,8 @@ export const OwnerDashboard: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl pb-12">
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900">Dashboard Owner</h1>
-        <p className="text-xs text-slate-500 font-medium">Monitoring aktivitas penjualan & status transaksi kebun Antagloma Florist secara real-time.</p>
+        <h1 className="text-2xl font-black text-slate-900">Dashboard Owner</h1>
+        <p className="text-xs text-slate-500 font-medium mt-0.5">Selamat datang di antagloma florist</p>
       </div>
 
       {/* 2x2 Grid Stat Cards */}
@@ -73,9 +73,6 @@ export const OwnerDashboard: React.FC = () => {
                 <div className="w-11 h-11 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center flex-shrink-0">
                   <Icon className="w-5 h-5" />
                 </div>
-                <button className="p-1 text-slate-400 hover:text-slate-700">
-                  <MoreVertical className="w-4 h-4" />
-                </button>
               </div>
 
               <div>
@@ -96,7 +93,7 @@ export const OwnerDashboard: React.FC = () => {
         })}
       </div>
 
-      {/* Ringkasan Penjualan Banner (Using Consistent Primary Forest Green Button & Styling) */}
+      {/* Ringkasan Penjualan Banner */}
       <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-white flex items-center justify-center flex-shrink-0 shadow-sm">

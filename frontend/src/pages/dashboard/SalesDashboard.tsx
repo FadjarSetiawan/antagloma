@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
-import { ShoppingBag, Clock, Package, CheckCircle2, MoreVertical, ChevronRight, TrendingUp, Plus } from 'lucide-react';
+import { ShoppingBag, Clock, Package, CheckCircle2, ChevronRight, TrendingUp, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const SalesDashboard: React.FC = () => {
@@ -31,21 +31,21 @@ export const SalesDashboard: React.FC = () => {
     {
       title: 'MENUNGGU DIPROSES',
       value: isLoading ? '...' : waitingProcess,
-      caption: waitingProcess > 0 ? `${waitingProcess} order perlu approval` : 'Order menunggu diproses',
+      caption: waitingProcess > 0 ? `${waitingProcess} order perlu approval` : 'Menunggu konfirmasi admin',
       icon: Clock,
       link: '/orders?status=WAITING_PROCESS',
     },
     {
       title: 'MENUNGGU PACKING',
       value: isLoading ? '...' : waitingPacking,
-      caption: waitingPacking > 0 ? `${waitingPacking} order siap dikemas` : 'Order siap untuk dikemas',
+      caption: waitingPacking > 0 ? `${waitingPacking} order siap dikemas` : 'Menunggu di packing',
       icon: Package,
       link: '/packing',
     },
     {
-      title: 'ORDER SELESAI',
+      title: 'PESANAN SELESAI',
       value: isLoading ? '...' : completedOrders,
-      caption: completedOrders > 0 ? `${completedOrders} order selesai` : 'Order telah selesai',
+      caption: completedOrders > 0 ? `${completedOrders} order selesai` : 'Resi sudah dikirim',
       icon: CheckCircle2,
       link: '/orders?status=COMPLETED',
     },
@@ -56,14 +56,14 @@ export const SalesDashboard: React.FC = () => {
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900">Sales Dashboard</h1>
-          <p className="text-xs text-slate-500 font-medium">Kelola dan pantau pesanan pelanggan dengan mudah.</p>
+          <h1 className="text-2xl font-black text-slate-900">Sales Dashboard</h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">Selamat datang di antagloma florist</p>
         </div>
         <button
           onClick={() => navigate('/orders/create')}
           className="w-full sm:w-auto px-5 py-3 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
         >
-          <Plus className="w-4 h-4" /> Tambah Order Baru
+          <Plus className="w-4 h-4" /> + Buat Pesanan
         </button>
       </div>
 
@@ -81,9 +81,6 @@ export const SalesDashboard: React.FC = () => {
                 <div className="w-11 h-11 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center flex-shrink-0">
                   <Icon className="w-5 h-5" />
                 </div>
-                <button className="p-1 text-slate-400 hover:text-slate-700">
-                  <MoreVertical className="w-4 h-4" />
-                </button>
               </div>
 
               <div>
@@ -104,7 +101,7 @@ export const SalesDashboard: React.FC = () => {
         })}
       </div>
 
-      {/* Ringkasan Penjualan Banner (Using Consistent Primary Forest Green Button & Styling) */}
+      {/* Ringkasan Penjualan Banner */}
       <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
