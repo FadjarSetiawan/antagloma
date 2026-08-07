@@ -16,6 +16,8 @@ import {
   Info,
   X,
   Check,
+  Building2,
+  Wallet,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,6 +31,13 @@ export const AdminVerificationPage: React.FC = () => {
   const [verifiedSuccessNum, setVerifiedSuccessNum] = useState<string | null>(null);
   const [rejectedSuccessNum, setRejectedSuccessNum] = useState<string | null>(null);
 
+  // Popup Modal States
+  const [verifyingOrder, setVerifyingOrder] = useState<Order | null>(null);
+  const [isVerifyChecked, setIsVerifyChecked] = useState(false);
+
+  const [rejectingOrder, setRejectingOrder] = useState<Order | null>(null);
+  const [isRejectChecked, setIsRejectChecked] = useState(false);
+
   const { data, isLoading } = useQuery({
     queryKey: ['orders-verification', search],
     queryFn: () => orderService.getOrders({ status: 'WAITING_PROCESS', search }),
@@ -40,6 +49,8 @@ export const AdminVerificationPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['orders-verification'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       setVerifiedSuccessNum(res.data.order_number);
+      setVerifyingOrder(null);
+      setIsVerifyChecked(false);
       setTimeout(() => setVerifiedSuccessNum(null), 5000);
     },
   });
@@ -49,7 +60,9 @@ export const AdminVerificationPage: React.FC = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['orders-verification'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
-      setRejectedSuccessNum(`Pesanan #${variables} telah ditolak`);
+      setRejectedSuccessNum(`Pesanan telah berhasil ditolak`);
+      setRejectingOrder(null);
+      setIsRejectChecked(false);
       setTimeout(() => setRejectedSuccessNum(null), 4000);
     },
   });
@@ -196,7 +209,7 @@ export const AdminVerificationPage: React.FC = () => {
                         </a>
 
                         <span className="px-2 py-0.5 bg-purple-100 border border-purple-200 text-purple-900 rounded-md font-extrabold text-[10px] uppercase">
-                          {order.payment_method || 'Transfer Bank'}
+                          {order.bank_name || order.payment_method || 'Transfer Bank'}
                         </span>
                       </div>
                     </div>
@@ -242,9 +255,8 @@ export const AdminVerificationPage: React.FC = () => {
                   <button
                     disabled={rejectMutation.isPending}
                     onClick={() => {
-                      if (confirm(`Apakah Anda yakin ingin menolak pembayaran pesanan ${order.order_number}?`)) {
-                        rejectMutation.mutate(order.id);
-                      }
+                      setRejectingOrder(order);
+                      setIsRejectChecked(false);
                     }}
                     className="py-3 px-4 bg-white border-2 border-rose-300 hover:bg-rose-50 text-rose-800 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
@@ -254,7 +266,10 @@ export const AdminVerificationPage: React.FC = () => {
 
                   <button
                     disabled={approveMutation.isPending}
-                    onClick={() => approveMutation.mutate(order.id)}
+                    onClick={() => {
+                      setVerifyingOrder(order);
+                      setIsVerifyChecked(false);
+                    }}
                     className="py-3 px-4 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
                   >
                     <CheckCircle2 className="w-4 h-4 text-emerald-300" />
@@ -266,6 +281,188 @@ export const AdminVerificationPage: React.FC = () => {
           })
         )}
       </div>
+
+      {/* MODAL POPUP 1: VERIFIKASI PEMBAYARAN (Replicating Screenshot Exactly) */}
+      {verifyingOrder && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 sm:p-6 w-full h-full overflow-y-auto">
+          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl w-[95%] max-w-md overflow-hidden my-auto p-6 space-y-5 text-center">
+            {/* Header Circle Icon */}
+            <div className="w-12 h-12 rounded-full bg-emerald-100 border-2 border-emerald-300 text-emerald-800 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+
+            {/* Title & Subtitle */}
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-black text-slate-900">Verifikasi Pembayaran</h3>
+              <p className="text-xs text-slate-600 font-semibold leading-relaxed">
+                Apakah Anda yakin pembayaran ini sudah sesuai? Pastikan nominal pembayaran, bank tujuan, dan bukti transfer sudah sesuai.
+              </p>
+            </div>
+
+            {/* Order Details Info Box */}
+            {(() => {
+              const plantTot = verifyingOrder.items?.reduce((acc, i) => acc + Number(i.quantity) * Number(i.price), 0) || 0;
+              const shipCost = Number(verifyingOrder.buyer_shipping_cost) || 0;
+              const gTotal = plantTot + shipCost;
+
+              return (
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left text-xs space-y-2.5 font-bold text-slate-800">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-slate-400" /> No. Pesanan
+                    </span>
+                    <span className="font-extrabold text-emerald-900">{verifyingOrder.order_number}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-slate-200 pt-2">
+                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
+                      <UserIcon className="w-4 h-4 text-slate-400" /> Customer
+                    </span>
+                    <span className="font-extrabold text-slate-900">{verifyingOrder.customer_name}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-slate-200 pt-2">
+                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-slate-400" /> Metode Pembayaran
+                    </span>
+                    <span className="font-extrabold text-slate-900 flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 bg-purple-100 text-purple-900 border border-purple-200 rounded text-[10px]">
+                        {verifyingOrder.bank_name || 'BCA'}
+                      </span>
+                      <span>{verifyingOrder.payment_method || 'Transfer Bank'} - {verifyingOrder.bank_name || 'BCA'}</span>
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-slate-200 pt-2">
+                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
+                      <Wallet className="w-4 h-4 text-slate-400" /> Total diterima
+                    </span>
+                    <span className="font-black text-emerald-800 text-sm">
+                      Rp {gTotal.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Mandatory Checkbox */}
+            <label className="flex items-center gap-2.5 text-xs font-extrabold text-slate-800 text-left cursor-pointer pt-1">
+              <input
+                type="checkbox"
+                checked={isVerifyChecked}
+                onChange={(e) => setIsVerifyChecked(e.target.checked)}
+                className="w-4 h-4 text-emerald-800 rounded focus:ring-emerald-700 cursor-pointer"
+              />
+              <span>Saya sudah memastikan nominal pembayaran sesuai.</span>
+            </label>
+
+            {/* Modal Actions */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setVerifyingOrder(null)}
+                className="w-full py-3 px-4 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+
+              <button
+                type="button"
+                disabled={!isVerifyChecked || approveMutation.isPending}
+                onClick={() => approveMutation.mutate(verifyingOrder.id)}
+                className="w-full py-3 px-4 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-md transition-all cursor-pointer"
+              >
+                {approveMutation.isPending ? 'Memproses...' : 'Ya, Verifikasi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL POPUP 2: TOLAK PEMBAYARAN */}
+      {rejectingOrder && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 sm:p-6 w-full h-full overflow-y-auto">
+          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl w-[95%] max-w-md overflow-hidden my-auto p-6 space-y-5 text-center">
+            {/* Header Circle Icon */}
+            <div className="w-12 h-12 rounded-full bg-rose-100 border-2 border-rose-300 text-rose-800 flex items-center justify-center mx-auto">
+              <XCircle className="w-6 h-6" />
+            </div>
+
+            {/* Title & Subtitle */}
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-black text-slate-900">Tolak Pembayaran</h3>
+              <p className="text-xs text-slate-600 font-semibold leading-relaxed">
+                Apakah Anda yakin ingin menolak pembayaran pesanan ini? Pesanan yang ditolak akan dibatalkan.
+              </p>
+            </div>
+
+            {/* Order Details Info Box */}
+            {(() => {
+              const plantTot = rejectingOrder.items?.reduce((acc, i) => acc + Number(i.quantity) * Number(i.price), 0) || 0;
+              const shipCost = Number(rejectingOrder.buyer_shipping_cost) || 0;
+              const gTotal = plantTot + shipCost;
+
+              return (
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left text-xs space-y-2.5 font-bold text-slate-800">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-slate-400" /> No. Pesanan
+                    </span>
+                    <span className="font-extrabold text-rose-900">{rejectingOrder.order_number}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-slate-200 pt-2">
+                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
+                      <UserIcon className="w-4 h-4 text-slate-400" /> Customer
+                    </span>
+                    <span className="font-extrabold text-slate-900">{rejectingOrder.customer_name}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-slate-200 pt-2">
+                    <span className="text-slate-500 font-semibold flex items-center gap-1.5">
+                      <Wallet className="w-4 h-4 text-slate-400" /> Total diterima
+                    </span>
+                    <span className="font-black text-slate-900 text-sm">
+                      Rp {gTotal.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Mandatory Checkbox */}
+            <label className="flex items-center gap-2.5 text-xs font-extrabold text-slate-800 text-left cursor-pointer pt-1">
+              <input
+                type="checkbox"
+                checked={isRejectChecked}
+                onChange={(e) => setIsRejectChecked(e.target.checked)}
+                className="w-4 h-4 text-rose-800 rounded focus:ring-rose-700 cursor-pointer"
+              />
+              <span>Saya sudah memastikan bukti transfer tidak valid / belum diterima.</span>
+            </label>
+
+            {/* Modal Actions */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setRejectingOrder(null)}
+                className="w-full py-3 px-4 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+
+              <button
+                type="button"
+                disabled={!isRejectChecked || rejectMutation.isPending}
+                onClick={() => rejectMutation.mutate(rejectingOrder.id)}
+                className="w-full py-3 px-4 bg-rose-800 hover:bg-rose-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-md transition-all cursor-pointer"
+              >
+                {rejectMutation.isPending ? 'Memproses...' : 'Ya, Tolak Pembayaran'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal Zoom Proof */}
       {zoomProofUrl && (
@@ -293,3 +490,23 @@ export const AdminVerificationPage: React.FC = () => {
     </div>
   );
 };
+
+function UserIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
