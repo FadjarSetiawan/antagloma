@@ -9,6 +9,7 @@ import { SalesDashboard } from './pages/dashboard/SalesDashboard';
 import { AdminDashboard } from './pages/dashboard/AdminDashboard';
 import { OrderListPage } from './pages/orders/OrderListPage';
 import { OrderCreatePage } from './pages/orders/OrderCreatePage';
+import { AdminVerificationPage } from './pages/orders/AdminVerificationPage';
 import { PackingQueuePage } from './pages/packing/PackingQueuePage';
 import { ReportsPage } from './pages/reports/ReportsPage';
 import { MasterProductsPage } from './pages/master/MasterProductsPage';
@@ -44,6 +45,7 @@ export const App: React.FC = () => {
               <Route path="dashboard" element={<RoleDashboardRouter />} />
               <Route path="orders" element={<OrderListPage />} />
               <Route path="orders/create" element={<OrderCreatePage />} />
+              <Route path="orders/verification" element={<AdminVerificationPage />} />
               <Route path="commission" element={<SalesCommissionPage />} />
               <Route path="packing" element={<PackingQueuePage />} />
               <Route path="reports" element={<ReportsPage />} />

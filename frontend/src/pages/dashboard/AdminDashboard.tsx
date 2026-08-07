@@ -26,7 +26,7 @@ export const AdminDashboard: React.FC = () => {
       value: isLoading ? '...' : waitingVerification,
       caption: waitingVerification > 0 ? `${waitingVerification} order perlu verifikasi` : 'Semua pembayaran terverifikasi',
       icon: Clock,
-      link: '/orders?status=WAITING_PROCESS',
+      link: '/orders/verification',
     },
     {
       title: 'Belum Diatur Pengiriman',
