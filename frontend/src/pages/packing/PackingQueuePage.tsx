@@ -3,54 +3,58 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
 import { Order, OrderItem } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
-import { UploadPackingProofModal } from '../../components/orders/UploadPackingProofModal';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
-import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
-import { Upload, Eye, Printer, Package, Calendar, Truck, CheckCircle2 } from 'lucide-react';
+import { OrderPackagesModal } from '../../components/orders/OrderPackagesModal';
+import { Eye, Package, Calendar, Truck, CheckCircle2 } from 'lucide-react';
 
 export const PackingQueuePage: React.FC = () => {
   const queryClient = useQueryClient();
 
-  const [selectedProofOrder, setSelectedProofOrder] = useState<Order | null>(null);
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<Order | null>(null);
-  const [selectedNotaOrder, setSelectedNotaOrder] = useState<Order | null>(null);
+  const [selectedPackageOrder, setSelectedPackageOrder] = useState<Order | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['packing-queue'],
     queryFn: () => orderService.getPackingQueue(),
   });
 
-  const uploadProofMutation = useMutation({
-    mutationFn: async ({ orderId, file, notes }: { orderId: number; file: File; notes?: string }) => {
+  const handleSavePackages = async (orderId: number, packages: any[]) => {
+    const firstPacked = packages.find((p) => p.proof_file);
+    if (firstPacked) {
       const formData = new FormData();
-      formData.append('image', file);
-      if (notes) formData.append('notes', notes);
-      return orderService.uploadPackingProof(orderId, formData);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['packing-queue'] });
-      setSelectedProofOrder(null);
-    },
-  });
+      formData.append('image', firstPacked.proof_file);
+      if (firstPacked.notes) formData.append('notes', firstPacked.notes);
+      await orderService.uploadPackingProof(orderId, formData);
+    } else {
+      // Automatically transition order to PACKING_COMPLETED (moving it to "Belum Dibuatkan Nota")
+      await orderService.updateOrder(orderId, {
+        status: 'PACKING_COMPLETED',
+      });
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['packing-queue'] });
+    queryClient.invalidateQueries({ queryKey: ['orders-list'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+  };
 
   const orders = data?.data || [];
 
   return (
-    <div className="space-y-4 max-w-7xl pb-24">
+    <div className="space-y-4 max-w-7xl pb-24 font-sans">
       {/* Title & Subtitle */}
       <div>
         <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Antrean Packing Tanaman</h1>
         <p className="text-xs text-slate-500 font-normal mt-0.5">
-          Daftar pesanan Adenium yang disetujui, siap dikemas, dan diunggah foto buktinya.
+          Daftar pesanan Adenium yang disetujui admin, siap dikemas, dan diatur paket pengirimannya.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="p-8 text-center text-xs text-slate-400 font-normal bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
+        <div className="p-8 text-center text-xs text-slate-400 font-normal bg-white rounded-2xl border border-slate-200 shadow-2xs">
           Memuat antrean packing...
         </div>
       ) : orders.length === 0 ? (
-        <div className="py-12 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
+        <div className="py-12 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-2xl border border-slate-200 shadow-2xs">
           <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#04593f]">
             <Package className="w-7 h-7" />
           </div>
@@ -69,7 +73,7 @@ export const PackingQueuePage: React.FC = () => {
               className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 shadow-2xs hover:border-[#04593f] transition-all flex flex-col justify-between"
             >
               <div className="space-y-2.5">
-                {/* Header Card */}
+                {/* Header Card: Order Number & Status Badge */}
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                   <div>
                     <span className="font-bold text-xs sm:text-sm text-slate-900 block">{order.order_number}</span>
@@ -78,6 +82,7 @@ export const PackingQueuePage: React.FC = () => {
                       {order.order_date ? new Date(order.order_date).toLocaleDateString('id-ID') : '-'}
                     </span>
                   </div>
+                  {/* Status Badge displays "Belum Diatur" */}
                   <OrderStatusBadge status={order.status} />
                 </div>
 
@@ -85,10 +90,10 @@ export const PackingQueuePage: React.FC = () => {
                 <div className="space-y-1 text-xs font-normal">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500">Customer:</span>
-                    <span className="font-bold text-slate-900">{order.customer_name}</span>
+                    <span className="font-bold text-slate-900">{order.customer_name} ({order.phone})</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500">Pengiriman:</span>
+                    <span className="text-slate-500">Metode Pengiriman:</span>
                     <span className="text-[#04593f] font-bold flex items-center gap-1">
                       <Truck className="w-3.5 h-3.5" /> {order.delivery_method}
                     </span>
@@ -98,65 +103,51 @@ export const PackingQueuePage: React.FC = () => {
                 {/* Items Summary */}
                 <div className="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-[11px] space-y-1">
                   <span className="text-[10px] font-bold uppercase text-slate-400 block">
-                    Daftar Tanaman ({order.items?.length || 0} Varian):
+                    RINCIAN BARANG RANGKAIAN ({order.items?.length || 0} Item):
                   </span>
                   <div className="space-y-0.5 max-h-24 overflow-y-auto">
                     {order.items?.map((item: OrderItem, i: number) => (
-                      <div key={i} className="flex justify-between font-bold text-slate-800">
-                        <span className="truncate pr-2">• {item.tree_name || item.product_name}</span>
-                        <span className="flex-shrink-0 text-slate-600">{item.quantity}x</span>
+                      <div key={i} className="flex justify-between font-semibold text-slate-800">
+                        <span className="truncate pr-2">• {item.tree_name || item.product_name} (Grade {item.grade || 'A'})</span>
+                        <span className="flex-shrink-0 text-slate-600 font-bold">— {item.quantity} Qty</span>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
 
-              {/* Action Buttons */}
-              <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
-                <button
-                  onClick={() => setSelectedDetailOrder(order)}
-                  className="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 cursor-pointer"
-                  title="Lihat Detail"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                </button>
-
-                <button
-                  onClick={() => setSelectedNotaOrder(order)}
-                  className="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 cursor-pointer"
-                  title="Cetak Nota"
-                >
-                  <Printer className="w-3.5 h-3.5 text-amber-700" />
-                </button>
-
-                {order.status === 'WAITING_PACKING' ? (
-                  <button
-                    onClick={() => setSelectedProofOrder(order)}
-                    className="flex-1 py-2 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Upload Foto Packing</span>
-                  </button>
-                ) : (
-                  <div className="flex-1 py-2 px-3 bg-emerald-50 text-[#04593f] rounded-xl text-xs font-bold flex items-center justify-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Sudah Dikemas</span>
+                {/* Notes if available */}
+                {order.notes && (
+                  <div className="p-2.5 bg-amber-50/80 border border-amber-200/80 rounded-xl text-[11px]">
+                    <span className="font-bold text-amber-950 uppercase block text-[9px]">CATATAN TANAMAN / PACKING:</span>
+                    <p className="text-amber-900 font-medium italic mt-0.5">"{order.notes}"</p>
                   </div>
                 )}
+              </div>
+
+              {/* EXACT 2 BUTTONS SIDE-BY-SIDE: TOMBOL KIRI (Lihat Detail), TOMBOL KANAN (Atur Paket) */}
+              <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDetailOrder(order)}
+                  className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Eye className="w-4 h-4 text-slate-600" />
+                  <span>Lihat Detail</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedPackageOrder(order)}
+                  className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                >
+                  <Package className="w-4 h-4" />
+                  <span>Atur Paket</span>
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
-
-      {/* Upload Packing Proof Modal */}
-      <UploadPackingProofModal
-        order={selectedProofOrder}
-        onClose={() => setSelectedProofOrder(null)}
-        onUpload={async (orderId: number, file: File, notes?: string) => {
-          await uploadProofMutation.mutateAsync({ orderId, file, notes });
-        }}
-      />
 
       {/* Order Detail Modal */}
       <OrderDetailModal
@@ -164,10 +155,11 @@ export const PackingQueuePage: React.FC = () => {
         onClose={() => setSelectedDetailOrder(null)}
       />
 
-      {/* Packing Nota Thermal Modal */}
-      <PackingNotaModal
-        order={selectedNotaOrder}
-        onClose={() => setSelectedNotaOrder(null)}
+      {/* Order Packages Multi-Package Modal */}
+      <OrderPackagesModal
+        order={selectedPackageOrder}
+        onClose={() => setSelectedPackageOrder(null)}
+        onSavePackages={handleSavePackages}
       />
     </div>
   );

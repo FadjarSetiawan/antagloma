@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
+import { Order } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { Clock, Truck, FileText, Send, ChevronRight, TrendingUp, Plus, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -13,12 +14,12 @@ export const AdminDashboard: React.FC = () => {
     queryFn: () => orderService.getOrders(),
   });
 
-  const orders = dashboardData?.data || [];
+  const orders: Order[] = dashboardData?.data || [];
 
-  const waitingVerification = orders.filter((o) => o.status === 'WAITING_PROCESS').length;
-  const pendingShipping = orders.filter((o) => o.status === 'WAITING_PACKING').length;
-  const pendingInvoice = orders.filter((o) => o.status === 'PACKING_COMPLETED' && !o.tracking_number).length;
-  const waitingTrackingNumber = orders.filter((o) => o.status === 'PACKING_COMPLETED' || (o.status === 'COMPLETED' && !o.tracking_number)).length;
+  const waitingVerification = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
+  const pendingShipping = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
+  const pendingInvoice = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && !o.tracking_number).length;
+  const waitingTrackingNumber = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' || (o.status === 'COMPLETED' && !o.tracking_number)).length;
 
   const statCards = [
     {
@@ -38,12 +39,12 @@ export const AdminDashboard: React.FC = () => {
       link: '/packing',
     },
     {
-      title: 'Belum Dibuatkan Nota',
+      title: 'Menunggu Cetak Dokumen',
       value: isLoading ? '...' : pendingInvoice,
-      caption: pendingInvoice > 0 ? `${pendingInvoice} order perlu nota` : 'Semua nota dibuat',
-      buttonText: 'Buat Nota',
+      caption: pendingInvoice > 0 ? `${pendingInvoice} order perlu dicetak` : 'Semua dokumen dicetak',
+      buttonText: 'Cetak Dokumen',
       icon: FileText,
-      link: '/orders?status=PACKING_COMPLETED',
+      link: '/documents/print',
     },
     {
       title: 'Menunggu Input Resi',
@@ -152,7 +153,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="py-6 text-center text-xs font-normal text-slate-400">Belum ada aktivitas transaksi terbaru.</div>
         ) : (
           <div className="divide-y divide-slate-100">
-            {orders.slice(0, 5).map((order) => (
+            {orders.slice(0, 5).map((order: Order) => (
               <div key={order.id} className="py-2.5 flex items-center justify-between text-xs">
                 <div>
                   <span className="font-bold text-slate-900 block">{order.order_number}</span>

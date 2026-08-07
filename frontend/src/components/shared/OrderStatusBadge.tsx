@@ -6,11 +6,11 @@ interface Props {
 }
 
 const statusConfig: Record<OrderStatus, { label: string; className: string }> = {
-  WAITING_PROCESS: { label: 'Menunggu Diproses', className: 'bg-amber-600 text-white font-bold shadow-xs' },
-  WAITING_PACKING: { label: 'Menunggu Packing', className: 'bg-blue-600 text-white font-bold shadow-xs' },
-  PACKING_COMPLETED: { label: 'Packing Selesai', className: 'bg-emerald-800 text-white font-extrabold shadow-xs' },
-  COMPLETED: { label: 'Selesai', className: 'bg-emerald-900 text-white font-black shadow-xs' },
-  CANCELLED: { label: 'Dibatalkan', className: 'bg-slate-600 text-white font-bold shadow-xs' },
+  WAITING_PROCESS: { label: 'Menunggu Diproses', className: 'bg-amber-600 text-white font-bold shadow-2xs' },
+  WAITING_PACKING: { label: 'Belum Diatur', className: 'bg-blue-600 text-white font-bold shadow-2xs' },
+  PACKING_COMPLETED: { label: 'Packing Selesai', className: 'bg-[#04593f] text-white font-extrabold shadow-2xs' },
+  COMPLETED: { label: 'Selesai', className: 'bg-emerald-900 text-white font-black shadow-2xs' },
+  CANCELLED: { label: 'Dibatalkan', className: 'bg-slate-600 text-white font-bold shadow-2xs' },
 };
 
 export const OrderStatusBadge: React.FC<Props> = ({ status }) => {

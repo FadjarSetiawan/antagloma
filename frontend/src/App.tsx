@@ -11,6 +11,7 @@ import { OrderListPage } from './pages/orders/OrderListPage';
 import { OrderCreatePage } from './pages/orders/OrderCreatePage';
 import { AdminVerificationPage } from './pages/orders/AdminVerificationPage';
 import { PackingQueuePage } from './pages/packing/PackingQueuePage';
+import { DocumentPrintingPage } from './pages/documents/DocumentPrintingPage';
 import { ReportsPage } from './pages/reports/ReportsPage';
 import { MasterProductsPage } from './pages/master/MasterProductsPage';
 import { SalesCommissionPage } from './pages/sales/SalesCommissionPage';
@@ -52,6 +53,7 @@ export const App: React.FC = () => {
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="users" element={<UserManagementPage />} />
               <Route path="packing" element={<PackingQueuePage />} />
+              <Route path="documents/print" element={<DocumentPrintingPage />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route path="master/products" element={<MasterProductsPage />} />
             </Route>
