@@ -19,7 +19,6 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
   const [selectedGrade, setSelectedGrade] = useState<string>('');
   const [quantity, setQuantity] = useState<number | ''>(1);
   const [price, setPrice] = useState<number | ''>(0);
-  const [notes, setNotes] = useState<string>('');
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
@@ -91,7 +90,6 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
       price: numPrice,
       standard_price: standardPrice,
       discount: discount,
-      notes: notes,
     };
 
     onAddPlant(newItem);
@@ -99,7 +97,6 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
     setSelectedGrade('');
     setQuantity(1);
     setPrice(0);
-    setNotes('');
   };
 
   const treeOptions = trees.map((t) => ({
@@ -128,7 +125,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition-colors"
+            className="p-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -204,7 +201,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
 
           {/* Automatic Calculation Summary Box */}
           {selectedGrade && (
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1 text-xs font-extrabold text-slate-800">
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5 text-xs font-extrabold text-slate-800">
               <div className="flex justify-between">
                 <span className="text-slate-500 font-semibold">Harga Standar Grade:</span>
                 <span>Rp {standardPrice.toLocaleString('id-ID')}</span>
@@ -213,23 +210,12 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
                 <span className="text-slate-500 font-semibold">Total Harga Standar:</span>
                 <span>Rp {totalStandardForQty.toLocaleString('id-ID')}</span>
               </div>
-              <div className="flex justify-between text-emerald-800 pt-1 border-t border-slate-200 font-black">
-                <span>Diskon Terhitung:</span>
-                <span>Rp {discount.toLocaleString('id-ID')}</span>
+              <div className="flex justify-between text-emerald-800 pt-1.5 border-t border-slate-200 font-black text-sm">
+                <span>Subtotal Item:</span>
+                <span>Rp {(numQty * numPrice).toLocaleString('id-ID')}</span>
               </div>
             </div>
           )}
-
-          <div>
-            <label className="block text-xs font-extrabold text-slate-900 mb-1">Catatan Khusus (Opsional)</label>
-            <input
-              type="text"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Contoh: Pilihkan bunga warna merah pekat"
-              className="w-full px-3.5 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
-            />
-          </div>
 
           <div className="pt-2 flex items-center justify-end gap-3">
             <button
@@ -244,7 +230,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
               className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold rounded-2xl text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Tambah ke Order</span>
+              <span>+ Tambahkan</span>
             </button>
           </div>
         </form>
