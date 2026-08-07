@@ -22,132 +22,130 @@ export const AdminDashboard: React.FC = () => {
 
   const statCards = [
     {
-      title: 'Menunggu Verifikasi Pembayaran',
+      title: 'Menunggu Verifikasi',
       value: isLoading ? '...' : waitingVerification,
-      caption: waitingVerification > 0 ? `${waitingVerification} order perlu verifikasi` : 'Semua pembayaran terverifikasi',
+      caption: waitingVerification > 0 ? `${waitingVerification} order perlu verifikasi` : 'Semua terverifikasi',
       icon: Clock,
       link: '/orders/verification',
     },
     {
       title: 'Belum Diatur Pengiriman',
       value: isLoading ? '...' : pendingShipping,
-      caption: pendingShipping > 0 ? `${pendingShipping} order siap kemas` : 'Semua pengiriman teratur',
+      caption: pendingShipping > 0 ? `${pendingShipping} order siap kemas` : 'Semua teratur',
       icon: Truck,
       link: '/packing',
     },
     {
       title: 'Belum Dibuatkan Nota',
       value: isLoading ? '...' : pendingInvoice,
-      caption: pendingInvoice > 0 ? `${pendingInvoice} order perlu cetak nota` : 'Semua nota dibuatkan',
+      caption: pendingInvoice > 0 ? `${pendingInvoice} order perlu nota` : 'Semua nota dibuat',
       icon: FileText,
       link: '/orders?status=PACKING_COMPLETED',
     },
     {
       title: 'Menunggu Input Resi',
       value: isLoading ? '...' : waitingTrackingNumber,
-      caption: waitingTrackingNumber > 0 ? `${waitingTrackingNumber} order perlu nomor resi` : 'Semua resi terinput',
+      caption: waitingTrackingNumber > 0 ? `${waitingTrackingNumber} order perlu resi` : 'Semua resi terinput',
       icon: Send,
       link: '/orders?status=PACKING_COMPLETED',
     },
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl pb-12">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-4 max-w-7xl pb-24">
+      {/* Header Banner - Streamlined & Clean */}
+      <div className="flex items-center justify-between pt-1">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Admin Dashboard</h1>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">Kelola dan pantau pesanan pelanggan dengan mudah.</p>
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Admin Dashboard</h1>
+          <p className="text-xs text-slate-500 font-normal mt-0.5">Pantau dan kelola operasional toko secara real-time.</p>
         </div>
+
+        {/* Desktop-only action button (Mobile uses center floating bottom nav button) */}
         <button
           onClick={() => navigate('/orders/create')}
-          className="w-full sm:w-auto px-5 py-3 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
+          className="hidden sm:flex px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold items-center gap-1.5 shadow-xs cursor-pointer"
         >
-          <Plus className="w-4 h-4" /> + Buat Pesanan
+          <Plus className="w-4 h-4" /> + Buat Order
         </button>
       </div>
 
-      {/* 2x2 Grid Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      {/* Sleek Compact 2x2 Grid Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
         {statCards.map((card, idx) => {
           const Icon = card.icon;
           return (
             <div
               key={idx}
               onClick={() => navigate(card.link)}
-              className="bg-white border-2 border-slate-200 rounded-3xl p-4 md:p-5 flex flex-col justify-between space-y-3 shadow-xs hover:shadow-md transition-all cursor-pointer relative group"
+              className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col justify-between space-y-2 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between">
-                <div className="w-11 h-11 rounded-2xl bg-emerald-800 border-2 border-emerald-900 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                  <Icon className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-4 h-4 text-[#04593f]" />
                 </div>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#04593f] transition-colors" />
               </div>
 
               <div>
-                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block mb-1">
+                <span className="text-[11px] font-bold text-slate-700 leading-tight block">
                   {card.title}
                 </span>
-                <h3 className="text-2xl md:text-3xl font-black text-slate-900">{card.value}</h3>
-                <p className="text-[11px] text-slate-500 font-medium mt-1 leading-snug">{card.caption}</p>
-              </div>
-
-              <div className="flex justify-end pt-1">
-                <div className="w-7 h-7 rounded-full bg-slate-100 group-hover:bg-emerald-800 group-hover:text-white text-slate-600 border border-slate-200 flex items-center justify-center transition-colors">
-                  <ChevronRight className="w-4 h-4" />
-                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{card.value}</h3>
+                <p className="text-[10px] text-slate-400 font-normal mt-0.5 leading-none">{card.caption}</p>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Ringkasan Penjualan Banner */}
-      <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+      {/* Sleek Sales Report Banner */}
+      <div
+        onClick={() => navigate('/reports')}
+        className="bg-[#04593f] text-white rounded-2xl p-4 flex items-center justify-between shadow-xs cursor-pointer hover:bg-emerald-900 transition-colors"
+      >
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-            <TrendingUp className="w-6 h-6 text-white" />
+          <div className="w-9 h-9 rounded-xl bg-white/10 text-white flex items-center justify-center flex-shrink-0">
+            <TrendingUp className="w-5 h-5 text-emerald-300" />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-slate-900">Ringkasan Penjualan</h3>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Pantau performa penjualan tokomu dari laporan harian hingga bulanan.
+            <h3 className="text-xs sm:text-sm font-bold text-white leading-tight">Ringkasan Penjualan</h3>
+            <p className="text-[11px] text-emerald-100/80 font-normal mt-0.5">
+              Pantau laporan omset harian hingga bulanan toko.
             </p>
           </div>
         </div>
-        <button
-          onClick={() => navigate('/reports')}
-          className="w-full sm:w-auto px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
-        >
-          <span>Lihat Laporan</span>
-          <ChevronRight className="w-4 h-4 text-white" />
-        </button>
+
+        <div className="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-xl text-xs font-bold text-white flex items-center gap-1 flex-shrink-0">
+          <span>Laporan</span>
+          <ChevronRight className="w-3.5 h-3.5" />
+        </div>
       </div>
 
       {/* Recent Activity List */}
-      <div className="bg-white border-2 border-slate-200 rounded-3xl p-6 space-y-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-extrabold text-slate-900">Transaksi Pesanan Terbaru</h2>
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <h2 className="text-xs sm:text-sm font-bold text-slate-900">Transaksi Pesanan Terbaru</h2>
           <button
             onClick={() => navigate('/orders')}
-            className="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1"
+            className="text-[11px] font-semibold text-[#04593f] hover:underline flex items-center gap-1 cursor-pointer"
           >
-            Lihat Semua <ArrowRight className="w-3.5 h-3.5" />
+            Lihat Semua <ArrowRight className="w-3 h-3" />
           </button>
         </div>
 
         {isLoading ? (
-          <div className="py-8 text-center text-xs font-bold text-slate-500">Memuat data transaksi...</div>
+          <div className="py-6 text-center text-xs font-normal text-slate-400">Memuat data...</div>
         ) : orders.length === 0 ? (
-          <div className="py-8 text-center text-xs font-bold text-slate-500">Belum ada aktivitas transaksi terbaru.</div>
+          <div className="py-6 text-center text-xs font-normal text-slate-400">Belum ada aktivitas transaksi terbaru.</div>
         ) : (
-          <div className="divide-y divide-slate-200">
+          <div className="divide-y divide-slate-100">
             {orders.slice(0, 5).map((order) => (
-              <div key={order.id} className="py-3 flex items-center justify-between text-xs">
+              <div key={order.id} className="py-2.5 flex items-center justify-between text-xs">
                 <div>
-                  <span className="font-extrabold text-slate-900 block">{order.order_number}</span>
-                  <span className="text-slate-500 font-medium">{order.customer_name} — {order.delivery_method}</span>
+                  <span className="font-bold text-slate-900 block">{order.order_number}</span>
+                  <span className="text-[11px] text-slate-500 font-normal">{order.customer_name} • {order.delivery_method}</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <OrderStatusBadge status={order.status} />
                 </div>
               </div>
