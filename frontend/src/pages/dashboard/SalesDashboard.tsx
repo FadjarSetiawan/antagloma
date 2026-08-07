@@ -78,8 +78,8 @@ export const SalesDashboard: React.FC = () => {
               className="bg-white border-2 border-slate-200 rounded-3xl p-4 md:p-5 flex flex-col justify-between space-y-3 shadow-xs hover:shadow-md transition-all cursor-pointer relative group"
             >
               <div className="flex items-center justify-between">
-                <div className="w-11 h-11 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-5 h-5" />
+                <div className="w-11 h-11 rounded-2xl bg-emerald-800 border-2 border-emerald-900 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <Icon className="w-5 h-5 text-white" />
                 </div>
               </div>
 
@@ -105,7 +105,7 @@ export const SalesDashboard: React.FC = () => {
       <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-            <TrendingUp className="w-6 h-6" />
+            <TrendingUp className="w-6 h-6 text-white" />
           </div>
           <div>
             <h3 className="text-sm font-extrabold text-slate-900">Ringkasan Penjualan</h3>
@@ -119,7 +119,7 @@ export const SalesDashboard: React.FC = () => {
           className="w-full sm:w-auto px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
         >
           <span>Lihat Laporan</span>
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4 text-white" />
         </button>
       </div>
     </div>
