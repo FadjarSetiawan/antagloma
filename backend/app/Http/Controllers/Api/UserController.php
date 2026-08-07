@@ -12,18 +12,19 @@ use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
-    protected function authorizeOwner(Request $request): void
+    protected function authorizeOwnerOrAdmin(Request $request): void
     {
-        if ($request->user()->role !== 'owner') {
+        $role = $request->user()->role ?? '';
+        if ($role !== 'owner' && $role !== 'admin') {
             throw ValidationException::withMessages([
-                'authorization' => ['Akses ditolak. Hanya Owner yang memiliki wewenang mengelola akun user.']
+                'authorization' => ['Akses ditolak. Hanya Owner dan Admin yang memiliki wewenang mengelola akun user.']
             ]);
         }
     }
 
     public function index(Request $request): JsonResponse
     {
-        $this->authorizeOwner($request);
+        $this->authorizeOwnerOrAdmin($request);
 
         $users = User::orderBy('created_at', 'desc')->get()->map(function ($u) {
             return [
@@ -31,7 +32,7 @@ class UserController extends Controller
                 'name'       => $u->name,
                 'email'      => $u->email,
                 'role'       => $u->role,
-                'created_at' => $u->created_at->toISOString(),
+                'created_at' => $u->created_at ? $u->created_at->toISOString() : now()->toISOString(),
             ];
         });
 
@@ -43,7 +44,7 @@ class UserController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $this->authorizeOwner($request);
+        $this->authorizeOwnerOrAdmin($request);
 
         $validated = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
@@ -67,14 +68,14 @@ class UserController extends Controller
                 'name'       => $user->name,
                 'email'      => $user->email,
                 'role'       => $user->role,
-                'created_at' => $user->created_at->toISOString(),
+                'created_at' => $user->created_at ? $user->created_at->toISOString() : now()->toISOString(),
             ],
         ], 201);
     }
 
     public function update(Request $request, int $id): JsonResponse
     {
-        $this->authorizeOwner($request);
+        $this->authorizeOwnerOrAdmin($request);
 
         $targetUser = User::findOrFail($id);
 
@@ -105,14 +106,14 @@ class UserController extends Controller
                 'name'       => $targetUser->name,
                 'email'      => $targetUser->email,
                 'role'       => $targetUser->role,
-                'created_at' => $targetUser->created_at->toISOString(),
+                'created_at' => $targetUser->created_at ? $targetUser->created_at->toISOString() : now()->toISOString(),
             ],
         ]);
     }
 
     public function destroy(Request $request, int $id): JsonResponse
     {
-        $this->authorizeOwner($request);
+        $this->authorizeOwnerOrAdmin($request);
 
         $targetUser = User::findOrFail($id);
 
