@@ -26,6 +26,7 @@ export const AdminDashboard: React.FC = () => {
       title: 'Menunggu Verifikasi Pembayaran',
       value: isLoading ? '...' : waitingVerification,
       caption: waitingVerification > 0 ? `${waitingVerification} order perlu verifikasi` : 'Semua terverifikasi',
+      hasNotification: waitingVerification > 0,
       buttonText: 'Lakukan Verifikasi',
       icon: Clock,
       link: '/orders/verification',
@@ -34,14 +35,16 @@ export const AdminDashboard: React.FC = () => {
       title: 'Belum Diatur Pengiriman',
       value: isLoading ? '...' : pendingShipping,
       caption: pendingShipping > 0 ? `${pendingShipping} order siap kemas` : 'Semua teratur',
+      hasNotification: pendingShipping > 0,
       buttonText: 'Atur Pengiriman',
       icon: Truck,
       link: '/packing',
     },
     {
-      title: 'Menunggu Cetak Dokumen',
+      title: 'Dokumen Pengiriman',
       value: isLoading ? '...' : pendingInvoice,
-      caption: pendingInvoice > 0 ? `${pendingInvoice} order perlu dicetak` : 'Semua dokumen dicetak',
+      caption: pendingInvoice > 0 ? `${pendingInvoice} Dokumen baru menunggu dicetak` : 'Semua dokumen dicetak',
+      hasNotification: pendingInvoice > 0,
       buttonText: 'Cetak Dokumen',
       icon: FileText,
       link: '/documents/print',
@@ -50,6 +53,7 @@ export const AdminDashboard: React.FC = () => {
       title: 'Menunggu Input Resi',
       value: isLoading ? '...' : waitingTrackingNumber,
       caption: waitingTrackingNumber > 0 ? `${waitingTrackingNumber} order perlu resi` : 'Semua resi terinput',
+      hasNotification: waitingTrackingNumber > 0,
       buttonText: 'Input Resi',
       icon: Send,
       link: '/orders?status=PACKING_COMPLETED',
@@ -57,7 +61,7 @@ export const AdminDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-4 max-w-7xl pb-24">
+    <div className="space-y-4 max-w-7xl pb-24 font-sans text-slate-900">
       {/* Header Banner - Streamlined & Clean */}
       <div className="flex items-center justify-between pt-1">
         <div>
@@ -65,7 +69,7 @@ export const AdminDashboard: React.FC = () => {
           <p className="text-xs text-slate-500 font-normal mt-0.5">Pantau dan kelola operasional toko secara real-time.</p>
         </div>
 
-        {/* Desktop-only action button (Mobile uses center floating bottom nav button) */}
+        {/* Desktop-only action button */}
         <button
           onClick={() => navigate('/orders/create')}
           className="hidden sm:flex px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold items-center gap-1.5 shadow-xs cursor-pointer"
@@ -95,7 +99,20 @@ export const AdminDashboard: React.FC = () => {
                 <h3 className="text-xs font-bold text-slate-800 leading-tight block">
                   {card.title}
                 </h3>
-                <p className="text-[10px] text-slate-400 font-normal mt-0.5 leading-none">{card.caption}</p>
+
+                <div className="mt-1 flex items-center">
+                  {card.hasNotification ? (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200/90 text-[10px] font-bold shadow-2xs">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
+                      </span>
+                      <span>{card.caption}</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-slate-400 font-normal leading-none">{card.caption}</span>
+                  )}
+                </div>
               </div>
 
               <div className="pt-1.5 border-t border-slate-100 flex justify-end">
@@ -135,7 +152,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Recent Activity List */}
+      {/* Recent Transactions Section */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 shadow-2xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
           <h2 className="text-xs sm:text-sm font-bold text-slate-900">Transaksi Pesanan Terbaru</h2>

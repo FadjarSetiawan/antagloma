@@ -26,6 +26,7 @@ export const SalesDashboard: React.FC = () => {
       title: 'Pesanan Hari Ini',
       value: isLoading ? '...' : todayOrders,
       caption: todayOrders > 0 ? `${todayOrders} pesanan baru` : 'Belum ada order',
+      hasNotification: todayOrders > 0,
       buttonText: 'Lihat Order',
       icon: ShoppingBag,
       link: '/orders',
@@ -34,6 +35,7 @@ export const SalesDashboard: React.FC = () => {
       title: 'Menunggu Diproses',
       value: isLoading ? '...' : waitingProcess,
       caption: waitingProcess > 0 ? `${waitingProcess} perlu verifikasi` : 'Menunggu admin',
+      hasNotification: waitingProcess > 0,
       buttonText: 'Cek Status',
       icon: Clock,
       link: '/orders?status=WAITING_PROCESS',
@@ -42,6 +44,7 @@ export const SalesDashboard: React.FC = () => {
       title: 'Menunggu Packing',
       value: isLoading ? '...' : waitingPacking,
       caption: waitingPacking > 0 ? `${waitingPacking} siap dikemas` : 'Dalam pengemasan',
+      hasNotification: waitingPacking > 0,
       buttonText: 'Cek Antrean',
       icon: Package,
       link: '/packing',
@@ -50,6 +53,7 @@ export const SalesDashboard: React.FC = () => {
       title: 'Pesanan Selesai',
       value: isLoading ? '...' : completedOrders,
       caption: completedOrders > 0 ? `${completedOrders} order selesai` : 'Resi terkirim',
+      hasNotification: false,
       buttonText: 'Lihat Selesai',
       icon: CheckCircle2,
       link: '/orders?status=COMPLETED',
@@ -65,7 +69,7 @@ export const SalesDashboard: React.FC = () => {
           <p className="text-xs text-slate-500 font-normal mt-0.5">Kelola dan pantau transaksi penjualan tokomu.</p>
         </div>
 
-        {/* Desktop-only action button (Mobile uses center floating bottom nav button) */}
+        {/* Desktop-only action button */}
         <button
           onClick={() => navigate('/orders/create')}
           className="hidden sm:flex px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold items-center gap-1.5 shadow-xs cursor-pointer"
@@ -95,7 +99,20 @@ export const SalesDashboard: React.FC = () => {
                 <h3 className="text-xs font-bold text-slate-800 leading-tight block">
                   {card.title}
                 </h3>
-                <p className="text-[10px] text-slate-400 font-normal mt-0.5 leading-none">{card.caption}</p>
+                
+                <div className="mt-1 flex items-center">
+                  {card.hasNotification ? (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200/90 text-[10px] font-bold shadow-2xs">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
+                      </span>
+                      <span>{card.caption}</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-slate-400 font-normal leading-none">{card.caption}</span>
+                  )}
+                </div>
               </div>
 
               <div className="pt-1.5 border-t border-slate-100 flex justify-end">
