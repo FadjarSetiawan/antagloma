@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  LayoutDashboard,
+  LayoutGrid,
   ShoppingBag,
   Package,
   Wallet,
@@ -27,7 +27,7 @@ export const MobileBottomNav: React.FC = () => {
     {
       label: 'Dashboard',
       to: '/dashboard',
-      icon: LayoutDashboard,
+      icon: LayoutGrid,
       show: true,
     },
     {
@@ -65,15 +65,15 @@ export const MobileBottomNav: React.FC = () => {
 
   return (
     <>
-      {/* Sticky Bottom Navigation Bar for Mobile with Smooth Sliding Active Circle Indicator */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-2 border-slate-200 md:hidden shadow-2xl pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-        <div className="relative flex items-center justify-around w-full py-2 px-1">
-          {/* Smooth Animated Sliding Green Circle/Pill Indicator */}
+      {/* Sticky Bottom Navigation Bar for Mobile matching reference screenshot pixel-perfect */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 md:hidden shadow-2xl pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <div className="relative flex items-center justify-around w-full py-2 px-2">
+          {/* Smooth Animated Spring Sliding Green Pill Background */}
           <div
-            className="absolute top-1.5 bottom-1.5 rounded-[22px] bg-emerald-800 border-2 border-emerald-900 shadow-md transition-all duration-300 ease-out pointer-events-none"
+            className="absolute top-1.5 bottom-1.5 rounded-[26px] bg-[#04593f] shadow-md transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] pointer-events-none"
             style={{
-              width: `calc(${100 / totalTabs}% - 8px)`,
-              left: `calc(${(activeIndex * 100) / totalTabs}% + 4px)`,
+              width: `calc(${100 / totalTabs}% - 12px)`,
+              left: `calc(${(activeIndex * 100) / totalTabs}% + 6px)`,
             }}
           />
 
@@ -90,12 +90,13 @@ export const MobileBottomNav: React.FC = () => {
               >
                 <Icon
                   className={`w-5 h-5 mb-0.5 transition-colors duration-200 ${
-                    isActive ? 'text-white' : 'text-slate-600'
+                    isActive ? 'text-white' : 'text-[#334155]'
                   }`}
+                  strokeWidth={isActive ? 2.2 : 1.8}
                 />
                 <span
-                  className={`text-[10px] tracking-tight transition-colors duration-200 ${
-                    isActive ? 'text-white font-black' : 'text-slate-600 font-bold'
+                  className={`text-[11px] leading-none transition-colors duration-200 ${
+                    isActive ? 'text-white font-extrabold' : 'text-[#334155] font-semibold'
                   }`}
                 >
                   {item.label}
@@ -112,12 +113,13 @@ export const MobileBottomNav: React.FC = () => {
           >
             <UserIcon
               className={`w-5 h-5 mb-0.5 transition-colors duration-200 ${
-                isProfileOpen ? 'text-white' : 'text-slate-600'
+                isProfileOpen ? 'text-white' : 'text-[#334155]'
               }`}
+              strokeWidth={isProfileOpen ? 2.2 : 1.8}
             />
             <span
-              className={`text-[10px] tracking-tight transition-colors duration-200 ${
-                isProfileOpen ? 'text-white font-black' : 'text-slate-600 font-bold'
+              className={`text-[11px] leading-none transition-colors duration-200 ${
+                isProfileOpen ? 'text-white font-extrabold' : 'text-[#334155] font-semibold'
               }`}
             >
               Profil
@@ -132,7 +134,7 @@ export const MobileBottomNav: React.FC = () => {
           <div className="bg-white rounded-t-3xl border-t-2 border-slate-200 w-full p-6 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-200 pb-24">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-white flex items-center justify-center font-black">
+                <div className="w-10 h-10 rounded-2xl bg-[#04593f] text-white flex items-center justify-center font-black">
                   {user?.name?.charAt(0) || 'U'}
                 </div>
                 <div>
@@ -157,7 +159,7 @@ export const MobileBottomNav: React.FC = () => {
                     setIsProfileOpen(false);
                     navigate('/orders/create');
                   }}
-                  className="w-full p-3 rounded-2xl bg-emerald-800 text-white border-2 border-emerald-900 flex items-center gap-3 font-extrabold shadow-sm cursor-pointer"
+                  className="w-full p-3 rounded-2xl bg-[#04593f] text-white border-2 border-emerald-950 flex items-center gap-3 font-extrabold shadow-sm cursor-pointer"
                 >
                   <PlusCircle className="w-5 h-5 text-white" />
                   <span>+ Buat Pesanan Baru</span>
