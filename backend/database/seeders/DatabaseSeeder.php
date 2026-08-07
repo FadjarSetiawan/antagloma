@@ -120,39 +120,5 @@ class DatabaseSeeder extends Seeder
         foreach ($trees as $t) {
             MasterTree::updateOrCreate(['code' => $t['code']], $t);
         }
-
-        // 4. Seed Orders
-        $order1 = Order::create([
-            'order_number'    => 'ORD-' . date('dmY') . '-0001',
-            'order_date'      => now()->toDateString(),
-            'customer_name'   => 'Doni Setiawan',
-            'phone'           => '081234567890',
-            'delivery_method' => DeliveryMethod::PACKING_KAYU->value,
-            'province_id'     => '32',
-            'province_name'   => 'Jawa Barat',
-            'regency_id'      => '3273',
-            'regency_name'    => 'Kota Bandung',
-            'district_id'     => '3273010',
-            'district_name'   => 'Coblong',
-            'full_address'    => 'Jl. Ir. H. Juanda No. 123, Dago',
-            'notes'           => 'Pilihkan karakter bonggol meliuk, packing kayu ekstra tebal.',
-            'status'          => OrderStatus::WAITING_PROCESS,
-            'payment_method'  => 'Transfer Bank',
-            'created_by'      => $sales->id,
-        ]);
-
-        OrderItem::create([
-            'order_id'       => $order1->id,
-            'tree_code'      => 'GA',
-            'tree_name'      => 'GOLDEN AGE',
-            'grade'          => 'D+',
-            'product_name'   => 'GOLDEN AGE',
-            'variant'        => 'Grade D+',
-            'quantity'       => 1,
-            'price'          => 320000,
-            'standard_price' => 350000,
-            'discount'       => 30000,
-            'notes'          => 'Bonggol meliuk indah',
-        ]);
     }
 }
