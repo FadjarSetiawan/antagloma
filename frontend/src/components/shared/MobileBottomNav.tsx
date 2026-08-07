@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   LayoutDashboard,
@@ -18,10 +18,12 @@ import {
 export const MobileBottomNav: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const role = user?.role;
 
-  const items = [
+  // Define tab items per role
+  const allNavItems = [
     {
       label: 'Dashboard',
       to: '/dashboard',
@@ -48,46 +50,86 @@ export const MobileBottomNav: React.FC = () => {
     },
   ];
 
+  const visibleNavItems = allNavItems.filter((item) => item.show);
+
+  // Total visible tabs including Profile
+  const totalTabs = visibleNavItems.length + 1;
+
+  // Determine current active index
+  let activeIndex = visibleNavItems.findIndex((item) => location.pathname.startsWith(item.to));
+  if (isProfileOpen) {
+    activeIndex = visibleNavItems.length; // Profile tab index
+  } else if (activeIndex === -1) {
+    activeIndex = 0; // Default to first tab
+  }
+
   return (
     <>
-      {/* Sticky Bottom Navigation Bar for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-2 border-slate-200 px-2 py-2 flex items-center justify-around md:hidden shadow-lg pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-        {items
-          .filter((item) => item.show)
-          .map((item) => {
+      {/* Sticky Bottom Navigation Bar for Mobile with Smooth Sliding Active Circle Indicator */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-2 border-slate-200 md:hidden shadow-2xl pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <div className="relative flex items-center justify-around w-full py-2 px-1">
+          {/* Smooth Animated Sliding Green Circle/Pill Indicator */}
+          <div
+            className="absolute top-1.5 bottom-1.5 rounded-[22px] bg-emerald-800 border-2 border-emerald-900 shadow-md transition-all duration-300 ease-out pointer-events-none"
+            style={{
+              width: `calc(${100 / totalTabs}% - 8px)`,
+              left: `calc(${(activeIndex * 100) / totalTabs}% + 4px)`,
+            }}
+          />
+
+          {/* Navigation Items */}
+          {visibleNavItems.map((item, idx) => {
             const Icon = item.icon;
+            const isActive = activeIndex === idx && !isProfileOpen;
             return (
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center px-4 py-1.5 rounded-2xl text-[10px] transition-all ${
-                    isActive
-                      ? 'bg-emerald-800 text-white font-black shadow-md border-2 border-emerald-900 scale-105'
-                      : 'text-slate-600 font-bold hover:text-slate-900'
-                  }`
-                }
+                onClick={() => setIsProfileOpen(false)}
+                className="relative z-10 flex flex-col items-center justify-center flex-1 py-1.5 text-center transition-colors duration-200 cursor-pointer"
               >
-                <Icon className="w-5 h-5 mb-0.5" />
-                <span>{item.label}</span>
+                <Icon
+                  className={`w-5 h-5 mb-0.5 transition-colors duration-200 ${
+                    isActive ? 'text-white' : 'text-slate-600'
+                  }`}
+                />
+                <span
+                  className={`text-[10px] tracking-tight transition-colors duration-200 ${
+                    isActive ? 'text-white font-black' : 'text-slate-600 font-bold'
+                  }`}
+                >
+                  {item.label}
+                </span>
               </NavLink>
             );
           })}
 
-        {/* Profile / Menu Trigger */}
-        <button
-          onClick={() => setIsProfileOpen(true)}
-          className="flex flex-col items-center justify-center px-4 py-1.5 rounded-2xl text-[10px] font-bold text-slate-600 hover:text-slate-900 cursor-pointer"
-        >
-          <UserIcon className="w-5 h-5 mb-0.5" />
-          <span>Profil</span>
-        </button>
+          {/* Profile / Menu Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsProfileOpen(true)}
+            className="relative z-10 flex flex-col items-center justify-center flex-1 py-1.5 text-center transition-colors duration-200 cursor-pointer"
+          >
+            <UserIcon
+              className={`w-5 h-5 mb-0.5 transition-colors duration-200 ${
+                isProfileOpen ? 'text-white' : 'text-slate-600'
+              }`}
+            />
+            <span
+              className={`text-[10px] tracking-tight transition-colors duration-200 ${
+                isProfileOpen ? 'text-white font-black' : 'text-slate-600 font-bold'
+              }`}
+            >
+              Profil
+            </span>
+          </button>
+        </div>
       </nav>
 
       {/* Mobile Profile Modal Sheet */}
       {isProfileOpen && (
         <div className="fixed inset-0 z-[9999] bg-slate-900/40 backdrop-blur-sm flex items-end justify-center md:hidden">
-          <div className="bg-white rounded-t-3xl border-t-2 border-slate-200 w-full p-6 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-200">
+          <div className="bg-white rounded-t-3xl border-t-2 border-slate-200 w-full p-6 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-200 pb-24">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-white flex items-center justify-center font-black">
@@ -102,7 +144,7 @@ export const MobileBottomNav: React.FC = () => {
               </div>
               <button
                 onClick={() => setIsProfileOpen(false)}
-                className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl"
+                className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -115,7 +157,7 @@ export const MobileBottomNav: React.FC = () => {
                     setIsProfileOpen(false);
                     navigate('/orders/create');
                   }}
-                  className="w-full p-3 rounded-2xl bg-emerald-800 text-white border-2 border-emerald-900 flex items-center gap-3 font-extrabold shadow-sm"
+                  className="w-full p-3 rounded-2xl bg-emerald-800 text-white border-2 border-emerald-900 flex items-center gap-3 font-extrabold shadow-sm cursor-pointer"
                 >
                   <PlusCircle className="w-5 h-5 text-white" />
                   <span>+ Buat Pesanan Baru</span>
@@ -128,7 +170,7 @@ export const MobileBottomNav: React.FC = () => {
                     setIsProfileOpen(false);
                     navigate('/users');
                   }}
-                  className="w-full p-3 rounded-2xl bg-purple-100 hover:bg-purple-200 border-2 border-purple-300 flex items-center gap-3 text-purple-950 font-black"
+                  className="w-full p-3 rounded-2xl bg-purple-100 hover:bg-purple-200 border-2 border-purple-300 flex items-center gap-3 text-purple-950 font-black cursor-pointer"
                 >
                   <Users className="w-5 h-5 text-purple-900" />
                   <span>Manajemen Akun User Staff</span>
@@ -141,7 +183,7 @@ export const MobileBottomNav: React.FC = () => {
                     setIsProfileOpen(false);
                     navigate('/master/products');
                   }}
-                  className="w-full p-3 rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 flex items-center gap-3 text-slate-900"
+                  className="w-full p-3 rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 flex items-center gap-3 text-slate-900 cursor-pointer"
                 >
                   <Sprout className="w-5 h-5 text-emerald-800" />
                   <span>Master Produk Adenium</span>
@@ -154,7 +196,7 @@ export const MobileBottomNav: React.FC = () => {
                     setIsProfileOpen(false);
                     navigate('/reports');
                   }}
-                  className="w-full p-3 rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 flex items-center gap-3 text-slate-900"
+                  className="w-full p-3 rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 flex items-center gap-3 text-slate-900 cursor-pointer"
                 >
                   <FileText className="w-5 h-5 text-emerald-800" />
                   <span>Laporan Penjualan</span>
@@ -166,7 +208,7 @@ export const MobileBottomNav: React.FC = () => {
                   setIsProfileOpen(false);
                   logout();
                 }}
-                className="w-full p-3 rounded-2xl bg-rose-800 text-white border-2 border-rose-900 flex items-center gap-3 font-extrabold shadow-sm"
+                className="w-full p-3 rounded-2xl bg-rose-800 text-white border-2 border-rose-900 flex items-center gap-3 font-extrabold shadow-sm cursor-pointer"
               >
                 <LogOut className="w-5 h-5 text-white" />
                 <span>Keluar (Logout)</span>
