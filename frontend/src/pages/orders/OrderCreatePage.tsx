@@ -18,7 +18,11 @@ import {
   Sprout,
   Package,
   Tag,
-  DollarSign,
+  Receipt,
+  Building2,
+  QrCode,
+  Banknote,
+  Coins,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -70,15 +74,18 @@ export const OrderCreatePage: React.FC = () => {
 
   // Auto-generate preview order number
   useEffect(() => {
-    orderService.getOrders({ per_page: 1 }).then((res) => {
-      const total = res.meta?.total || 0;
-      const dateStr = orderDate.replace(/-/g, '');
-      const seq = String(total + 1).padStart(4, '0');
-      setPreviewOrderNum(`ORD-${dateStr}-${seq}`);
-    }).catch(() => {
-      const dateStr = orderDate.replace(/-/g, '');
-      setPreviewOrderNum(`ORD-${dateStr}-0001`);
-    });
+    orderService
+      .getOrders({ per_page: 1 })
+      .then((res) => {
+        const total = res.meta?.total || 0;
+        const dateStr = orderDate.replace(/-/g, '');
+        const seq = String(total + 1).padStart(4, '0');
+        setPreviewOrderNum(`ORD-${dateStr}-${seq}`);
+      })
+      .catch(() => {
+        const dateStr = orderDate.replace(/-/g, '');
+        setPreviewOrderNum(`ORD-${dateStr}-0001`);
+      });
   }, [orderDate]);
 
   // Load Provinces
@@ -215,12 +222,18 @@ export const OrderCreatePage: React.FC = () => {
     { value: 'BRI', label: 'Bank BRI (0021-01-000123-50-1 a.n. Antagloma)' },
   ];
 
+  const paymentCardMethods = [
+    { id: 'Transfer Bank', label: 'Transfer Bank', icon: Building2, desc: 'BCA / BRI' },
+    { id: 'QRIS', label: 'QRIS', icon: QrCode, desc: 'Scan Instant' },
+    { id: 'Tunai', label: 'Tunai', icon: Banknote, desc: 'Bayar Cash' },
+  ];
+
   return (
     <div className="max-w-4xl mx-auto space-y-5 pb-28">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-emerald-900 text-white border-2 border-emerald-400 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-extrabold animate-bounce">
-          <Check className="w-4 h-4 text-emerald-300" />
+        <div className="fixed top-20 right-6 z-50 bg-[#04593f] text-white border-2 border-emerald-400 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-extrabold animate-bounce">
+          <Check className="w-4 h-4 text-white" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -245,28 +258,26 @@ export const OrderCreatePage: React.FC = () => {
         </p>
       </div>
 
-      {/* STEPPER PROGRESS BAR */}
+      {/* PERFECT BOUNDED STEPPER PROGRESS BAR (NO LINE OVERFLOW) */}
       <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 shadow-xs">
-        <div className="flex items-center justify-between max-w-lg mx-auto relative">
-          {/* Connecting Lines */}
-          <div className="absolute top-4 left-10 right-10 h-0.5 bg-slate-200 z-0" />
-          <div
-            className="absolute top-4 left-10 h-0.5 bg-emerald-800 z-0 transition-all duration-300"
-            style={{ width: step === 1 ? '0%' : step === 2 ? '50%' : '100%' }}
-          />
-
+        <div className="flex items-center justify-between max-w-md mx-auto">
           {/* Step 1 Circle */}
           <div
             onClick={() => setStep(1)}
             className="flex flex-col items-center z-10 cursor-pointer text-center"
           >
             <div className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shadow-xs ${
-              step === 1 || isStep1Valid ? 'bg-emerald-800 text-white' : 'bg-slate-200 text-slate-600'
+              step === 1 || isStep1Valid ? 'bg-[#04593f] text-white' : 'bg-slate-200 text-slate-600'
             }`}>
               {isStep1Valid ? <Check className="w-5 h-5" /> : '1'}
             </div>
-            <span className={`text-xs mt-2 ${step === 1 ? 'font-extrabold text-emerald-800' : 'font-bold text-slate-700'}`}>Data Pesanan</span>
+            <span className={`text-xs mt-2 ${step === 1 ? 'font-extrabold text-[#04593f]' : 'font-bold text-slate-700'}`}>Data Pesanan</span>
             <span className="text-[10px] text-slate-400 font-medium">{isStep1Valid ? 'Lengkap' : 'Kosong'}</span>
+          </div>
+
+          {/* Bounded Connecting Line 1-2 */}
+          <div className="flex-1 h-1 mx-3 bg-slate-200 rounded-full overflow-hidden">
+            <div className={`h-full bg-[#04593f] transition-all duration-300 ${step >= 2 ? 'w-full' : 'w-0'}`} />
           </div>
 
           {/* Step 2 Circle */}
@@ -275,12 +286,17 @@ export const OrderCreatePage: React.FC = () => {
             className={`flex flex-col items-center z-10 text-center ${isStep1Valid ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
           >
             <div className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shadow-xs ${
-              step === 2 || isStep2Valid ? 'bg-emerald-800 text-white' : 'bg-slate-200 text-slate-600'
+              step === 2 || isStep2Valid ? 'bg-[#04593f] text-white' : 'bg-slate-200 text-slate-600'
             }`}>
               {isStep2Valid ? <Check className="w-5 h-5" /> : '2'}
             </div>
-            <span className={`text-xs mt-2 ${step === 2 ? 'font-extrabold text-emerald-800' : 'font-bold text-slate-700'}`}>Detail Tanaman</span>
+            <span className={`text-xs mt-2 ${step === 2 ? 'font-extrabold text-[#04593f]' : 'font-bold text-slate-700'}`}>Detail Tanaman</span>
             <span className="text-[10px] text-slate-400 font-medium">{isStep2Valid ? `${totalItemCount} tanaman` : 'Kosong'}</span>
+          </div>
+
+          {/* Bounded Connecting Line 2-3 */}
+          <div className="flex-1 h-1 mx-3 bg-slate-200 rounded-full overflow-hidden">
+            <div className={`h-full bg-[#04593f] transition-all duration-300 ${step === 3 ? 'w-full' : 'w-0'}`} />
           </div>
 
           {/* Step 3 Circle */}
@@ -289,11 +305,11 @@ export const OrderCreatePage: React.FC = () => {
             className={`flex flex-col items-center z-10 text-center ${isStep1Valid && isStep2Valid ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
           >
             <div className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shadow-xs ${
-              step === 3 || isStep3Valid ? 'bg-emerald-800 text-white' : 'bg-slate-200 text-slate-600'
+              step === 3 || isStep3Valid ? 'bg-[#04593f] text-white' : 'bg-slate-200 text-slate-600'
             }`}>
               {isStep3Valid ? <Check className="w-5 h-5" /> : '3'}
             </div>
-            <span className={`text-xs mt-2 ${step === 3 ? 'font-extrabold text-emerald-800' : 'font-bold text-slate-700'}`}>Pembayaran</span>
+            <span className={`text-xs mt-2 ${step === 3 ? 'font-extrabold text-[#04593f]' : 'font-bold text-slate-700'}`}>Pembayaran</span>
             <span className="text-[10px] text-slate-400 font-medium">{isStep3Valid ? 'Konfirmasi' : 'Kosong'}</span>
           </div>
         </div>
@@ -315,7 +331,7 @@ export const OrderCreatePage: React.FC = () => {
               className="p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                <div className="w-10 h-10 rounded-2xl bg-[#04593f] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
                   <FileText className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -377,7 +393,7 @@ export const OrderCreatePage: React.FC = () => {
               className="p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                <div className="w-10 h-10 rounded-2xl bg-[#04593f] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
                   <UserIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -478,7 +494,7 @@ export const OrderCreatePage: React.FC = () => {
               type="button"
               disabled={!isStep1Valid}
               onClick={() => setStep(2)}
-              className="w-full py-4 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-md transition-all active:scale-95 cursor-pointer"
+              className="w-full py-4 bg-[#04593f] hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-md transition-all active:scale-95 cursor-pointer"
             >
               Lanjut ke Langkah 2 (Detail Tanaman) →
             </button>
@@ -492,7 +508,7 @@ export const OrderCreatePage: React.FC = () => {
           <div className="bg-white border-2 border-slate-200 rounded-3xl p-4 sm:p-6 space-y-5 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-800 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                <div className="w-10 h-10 rounded-2xl bg-[#04593f] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
                   <Sprout className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -504,7 +520,7 @@ export const OrderCreatePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsAddPlantModalOpen(true)}
-                className="w-full sm:w-auto px-5 py-3 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
+                className="w-full sm:w-auto px-5 py-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4 text-white" />
                 <span>+ Tambah Tanaman</span>
@@ -519,18 +535,17 @@ export const OrderCreatePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddPlantModalOpen(true)}
-                  className="text-xs font-black text-emerald-800 hover:underline cursor-pointer"
+                  className="text-xs font-black text-[#04593f] hover:underline cursor-pointer"
                 >
                   Klik di sini untuk memilih varian pohon
                 </button>
               </div>
             ) : (
               <div className="space-y-3">
-                {/* Responsive Card Item View for Ultra-Clean Mobile Layout */}
                 {items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-4 bg-slate-50/80 border-2 border-slate-200 rounded-3xl space-y-3 shadow-xs hover:border-emerald-800 transition-colors"
+                    className="p-4 bg-slate-50/80 border-2 border-slate-200 rounded-3xl space-y-3 shadow-xs hover:border-[#04593f] transition-colors"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
@@ -540,9 +555,6 @@ export const OrderCreatePage: React.FC = () => {
                             Grade {item.grade || 'A'}
                           </span>
                         </div>
-                        {item.notes && (
-                          <p className="text-[11px] text-slate-500 font-semibold italic">Catatan: "{item.notes}"</p>
-                        )}
                       </div>
 
                       <button
@@ -581,7 +593,7 @@ export const OrderCreatePage: React.FC = () => {
             {/* Kolom Catatan Pengiriman (Directly under plant list) */}
             <div className="pt-2">
               <label className="block text-xs font-black text-slate-900 mb-1.5 flex items-center gap-1.5">
-                <Truck className="w-4 h-4 text-emerald-800" />
+                <Truck className="w-4 h-4 text-[#04593f]" />
                 <span>Catatan Pengiriman (Opsional)</span>
               </label>
               <textarea
@@ -593,32 +605,32 @@ export const OrderCreatePage: React.FC = () => {
               />
             </div>
 
-            {/* Financial Summary Box (Total Item, Total Diskon, Total Harga) */}
-            <div className="p-4 bg-emerald-50/80 border-2 border-emerald-200 rounded-3xl space-y-2 text-xs font-extrabold text-slate-900 shadow-xs">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-600 font-semibold flex items-center gap-1.5">
-                  <Package className="w-4 h-4 text-emerald-800" />
+            {/* SOLID FOREST GREEN FINANCIAL SUMMARY BOX (NO AI SLOP OPACITY/BORDER, NO DOLLAR SIGN) */}
+            <div className="p-5 bg-[#04593f] text-white rounded-3xl space-y-2.5 text-xs font-bold shadow-md">
+              <div className="flex justify-between items-center text-emerald-100">
+                <span className="flex items-center gap-1.5">
+                  <Package className="w-4 h-4 text-emerald-300" />
                   <span>Total Item:</span>
                 </span>
-                <span className="font-black text-slate-900">{totalItemCount} Tanaman</span>
+                <span className="font-extrabold text-white">{totalItemCount} Tanaman</span>
               </div>
 
-              <div className="flex justify-between items-center">
-                <span className="text-slate-600 font-semibold flex items-center gap-1.5">
-                  <Tag className="w-4 h-4 text-emerald-800" />
+              <div className="flex justify-between items-center text-emerald-100">
+                <span className="flex items-center gap-1.5">
+                  <Tag className="w-4 h-4 text-emerald-300" />
                   <span>Total Diskon:</span>
                 </span>
-                <span className="font-black text-emerald-900">
+                <span className="font-extrabold text-emerald-300">
                   {totalDiscount > 0 ? `- Rp ${totalDiscount.toLocaleString('id-ID')}` : 'Rp 0'}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center pt-2.5 border-t border-emerald-300 text-sm font-black text-slate-900">
+              <div className="flex justify-between items-center pt-3 border-t border-emerald-700/60 text-sm font-black text-white">
                 <span className="flex items-center gap-1.5">
-                  <DollarSign className="w-4.5 h-4.5 text-emerald-900" />
+                  <Receipt className="w-4.5 h-4.5 text-emerald-300" />
                   <span>Total Harga Tanaman:</span>
                 </span>
-                <span className="text-emerald-950 text-base font-black">
+                <span className="text-white text-lg font-black">
                   Rp {totalPlantPrice.toLocaleString('id-ID')}
                 </span>
               </div>
@@ -638,7 +650,7 @@ export const OrderCreatePage: React.FC = () => {
               type="button"
               disabled={!isStep2Valid}
               onClick={() => setStep(3)}
-              className="py-3.5 px-4 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-md transition-all cursor-pointer"
+              className="py-3.5 px-4 bg-[#04593f] hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-md transition-all cursor-pointer"
             >
               Lanjut ke Langkah 3 (Pembayaran) →
             </button>
@@ -649,8 +661,8 @@ export const OrderCreatePage: React.FC = () => {
       {/* STEP 3: Pembayaran & Konfirmasi */}
       {step === 3 && (
         <form onSubmit={handleSubmitFinal} className="space-y-4">
-          <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 space-y-4 shadow-xs">
-            <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wide">INFORMASI PEMBAYARAN & ONGKIR</h3>
+          <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 sm:p-6 space-y-5 shadow-xs">
+            <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">INFORMASI PEMBAYARAN & ONGKIR</h3>
 
             {/* Delivery Method Shipping Cost */}
             {deliveryMethod === 'Kirim Paket' && (
@@ -664,22 +676,40 @@ export const OrderCreatePage: React.FC = () => {
                   onFocus={(e) => e.target.select()}
                   onChange={(e) => setBuyerShippingCost(e.target.value === '' ? '' : Number(e.target.value))}
                   placeholder="Contoh: 25000"
-                  className="w-full px-3.5 py-3 border border-slate-200 rounded-2xl text-xs font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  className="w-full px-3.5 py-3 border-2 border-slate-200 rounded-2xl text-xs font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700"
                 />
               </div>
             )}
 
-            <div>
-              <label className="block text-xs font-extrabold text-slate-900 mb-1">Metode Pembayaran *</label>
-              <CustomSelect
-                options={[
-                  { value: 'Transfer Bank', label: 'Transfer Bank' },
-                  { value: 'QRIS', label: 'QRIS' },
-                  { value: 'Tunai', label: 'Tunai' },
-                ]}
-                value={paymentMethod}
-                onChange={setPaymentMethod}
-              />
+            {/* 3 SELECTABLE CARDS FOR PAYMENT METHODS (REPLACES DROPDOWN) */}
+            <div className="space-y-2">
+              <label className="block text-xs font-black text-slate-900">Metode Pembayaran *</label>
+              <div className="grid grid-cols-3 gap-2.5">
+                {paymentCardMethods.map((pm) => {
+                  const Icon = pm.icon;
+                  const isSelected = paymentMethod === pm.id;
+                  return (
+                    <button
+                      key={pm.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(pm.id)}
+                      className={`p-3.5 rounded-2xl border-2 flex flex-col items-center text-center space-y-1.5 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#04593f] border-[#04593f] text-white shadow-md scale-[1.02]'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-slate-600'}`} />
+                      <div>
+                        <span className="text-xs font-black block leading-tight">{pm.label}</span>
+                        <span className={`text-[9px] font-bold block mt-0.5 ${isSelected ? 'text-emerald-100' : 'text-slate-400'}`}>
+                          {pm.desc}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {paymentMethod === 'Transfer Bank' && (
@@ -706,11 +736,11 @@ export const OrderCreatePage: React.FC = () => {
                 {paymentProofPreview ? (
                   <div className="space-y-2">
                     <img src={paymentProofPreview} alt="Preview Bukti" className="max-h-40 mx-auto rounded-xl border border-slate-300 object-contain" />
-                    <span className="text-xs font-bold text-emerald-800 block">✓ Foto Bukti Terpilih (Klik untuk mengganti)</span>
+                    <span className="text-xs font-bold text-[#04593f] block">✓ Foto Bukti Terpilih (Klik untuk mengganti)</span>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Upload className="w-8 h-8 text-emerald-800 mx-auto" />
+                    <Upload className="w-8 h-8 text-[#04593f] mx-auto" />
                     <div className="text-xs font-extrabold text-slate-800">Klik atau seret foto bukti transfer di sini</div>
                     <div className="text-[10px] text-slate-400 font-semibold">Format JPG, PNG, WEBP (Maks 5MB)</div>
                   </div>
@@ -718,19 +748,19 @@ export const OrderCreatePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Summary Total Financial Box */}
-            <div className="p-4 bg-emerald-50/70 border-2 border-emerald-200 rounded-3xl space-y-2 text-xs font-extrabold text-slate-900">
-              <div className="flex justify-between">
-                <span className="text-slate-600 font-medium">Subtotal Harga Tanaman ({totalItemCount} item):</span>
-                <span>Rp {totalPlantPrice.toLocaleString('id-ID')}</span>
+            {/* SOLID PREMIUM DARK GREEN GRAND TOTAL BOX (NO AI SLOP OPACITY/BORDER) */}
+            <div className="p-5 bg-[#04593f] text-white rounded-3xl space-y-2.5 text-xs font-bold shadow-md">
+              <div className="flex justify-between text-emerald-100">
+                <span>Subtotal Harga Tanaman ({totalItemCount} item):</span>
+                <span className="font-extrabold text-white">Rp {totalPlantPrice.toLocaleString('id-ID')}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600 font-medium">Ongkos Kirim:</span>
-                <span>Rp {actualShippingCost.toLocaleString('id-ID')}</span>
+              <div className="flex justify-between text-emerald-100">
+                <span>Ongkos Kirim:</span>
+                <span className="font-extrabold text-white">Rp {actualShippingCost.toLocaleString('id-ID')}</span>
               </div>
-              <div className="flex justify-between text-base font-black text-emerald-950 pt-2 border-t border-emerald-300">
+              <div className="flex justify-between text-base font-black text-white pt-3 border-t border-emerald-700/60">
                 <span>TOTAL DITERIMA:</span>
-                <span className="text-emerald-900">Rp {grandTotal.toLocaleString('id-ID')}</span>
+                <span className="text-white text-lg font-black">Rp {grandTotal.toLocaleString('id-ID')}</span>
               </div>
             </div>
           </div>
@@ -739,7 +769,7 @@ export const OrderCreatePage: React.FC = () => {
             <button
               type="button"
               onClick={() => setStep(2)}
-              className="py-3.5 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black cursor-pointer"
+              className="py-3.5 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-black cursor-pointer shadow-xs"
             >
               ← Kembali ke Langkah 2
             </button>
@@ -747,7 +777,7 @@ export const OrderCreatePage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading || !isStep3Valid}
-              className="py-3.5 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-lg transition-all active:scale-95 cursor-pointer"
+              className="py-3.5 bg-[#04593f] hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-xs font-black shadow-lg transition-all active:scale-95 cursor-pointer"
             >
               {isLoading ? 'Memproses Pesanan...' : '✓ Simpan & Proses Pesanan'}
             </button>
