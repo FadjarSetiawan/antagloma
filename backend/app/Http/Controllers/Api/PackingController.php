@@ -18,10 +18,12 @@ class PackingController extends Controller
 
     public function queue(Request $request): JsonResponse
     {
+        // Antrean Packing Tanaman (Belum Diatur Pengiriman) ONLY shows orders with WAITING_PACKING status
+        // Once packages are configured, order status becomes PACKING_COMPLETED and moves to "Menunggu Cetak Dokumen"
         $orders = Order::with(['creator', 'items', 'packingImages'])
-            ->whereIn('status', ['WAITING_PROCESS', 'WAITING_PACKING', 'PACKING_COMPLETED'])
+            ->where('status', 'WAITING_PACKING')
             ->latest()
-            ->paginate(15);
+            ->paginate(50);
 
         return response()->json([
             'success' => true,
