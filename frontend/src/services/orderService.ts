@@ -136,17 +136,38 @@ export const orderService = {
   },
 
   async getProvinces() {
-    const res = await api.get<{ success: boolean; data: Region[] }>('/regions/provinces');
-    return res.data.data;
+    try {
+      const res = await api.get<{ success: boolean; data: Region[] }>('/regions/provinces');
+      if (res.data?.data && res.data.data.length > 0) return res.data.data;
+    } catch (e) {
+      // Fallback to direct CDN
+    }
+    const directRes = await fetch('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
+    const raw: any[] = await directRes.json();
+    return raw.map((item) => ({ id: String(item.id), name: String(item.name).toUpperCase() }));
   },
 
   async getRegencies(provinceId: string) {
-    const res = await api.get<{ success: boolean; data: Region[] }>(`/regions/regencies/${provinceId}`);
-    return res.data.data;
+    try {
+      const res = await api.get<{ success: boolean; data: Region[] }>(`/regions/regencies/${provinceId}`);
+      if (res.data?.data && res.data.data.length > 0) return res.data.data;
+    } catch (e) {
+      // Fallback to direct CDN
+    }
+    const directRes = await fetch(`https://emsifa.github.io/api-wilayah-indonesia/api/regencies/${provinceId}.json`);
+    const raw: any[] = await directRes.json();
+    return raw.map((item) => ({ id: String(item.id), name: String(item.name).toUpperCase() }));
   },
 
   async getDistricts(regencyId: string) {
-    const res = await api.get<{ success: boolean; data: Region[] }>(`/regions/districts/${regencyId}`);
-    return res.data.data;
+    try {
+      const res = await api.get<{ success: boolean; data: Region[] }>(`/regions/districts/${regencyId}`);
+      if (res.data?.data && res.data.data.length > 0) return res.data.data;
+    } catch (e) {
+      // Fallback to direct CDN
+    }
+    const directRes = await fetch(`https://emsifa.github.io/api-wilayah-indonesia/api/districts/${regencyId}.json`);
+    const raw: any[] = await directRes.json();
+    return raw.map((item) => ({ id: String(item.id), name: String(item.name).toUpperCase() }));
   },
 };
