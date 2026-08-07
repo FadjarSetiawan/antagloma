@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
+import { Order } from '../../types/order';
 import { ShoppingBag, Clock, Package, CheckCircle2, ChevronRight, TrendingUp, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,19 +13,20 @@ export const SalesDashboard: React.FC = () => {
     queryFn: () => orderService.getOrders(),
   });
 
-  const orders = dashboardData?.data || [];
+  const orders: Order[] = dashboardData?.data || [];
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const todayOrders = orders.filter((o) => o.order_date === todayStr).length;
-  const waitingProcess = orders.filter((o) => o.status === 'WAITING_PROCESS').length;
-  const waitingPacking = orders.filter((o) => o.status === 'WAITING_PACKING').length;
-  const completedOrders = orders.filter((o) => o.status === 'COMPLETED' || o.status === 'PACKING_COMPLETED').length;
+  const todayOrders = orders.filter((o: Order) => o.order_date === todayStr).length;
+  const waitingProcess = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
+  const waitingPacking = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
+  const completedOrders = orders.filter((o: Order) => o.status === 'COMPLETED' || o.status === 'PACKING_COMPLETED').length;
 
   const statCards = [
     {
       title: 'Pesanan Hari Ini',
       value: isLoading ? '...' : todayOrders,
       caption: todayOrders > 0 ? `${todayOrders} pesanan baru` : 'Belum ada order',
+      buttonText: 'Lihat Order',
       icon: ShoppingBag,
       link: '/orders',
     },
@@ -32,6 +34,7 @@ export const SalesDashboard: React.FC = () => {
       title: 'Menunggu Diproses',
       value: isLoading ? '...' : waitingProcess,
       caption: waitingProcess > 0 ? `${waitingProcess} perlu verifikasi` : 'Menunggu admin',
+      buttonText: 'Cek Status',
       icon: Clock,
       link: '/orders?status=WAITING_PROCESS',
     },
@@ -39,6 +42,7 @@ export const SalesDashboard: React.FC = () => {
       title: 'Menunggu Packing',
       value: isLoading ? '...' : waitingPacking,
       caption: waitingPacking > 0 ? `${waitingPacking} siap dikemas` : 'Dalam pengemasan',
+      buttonText: 'Cek Antrean',
       icon: Package,
       link: '/packing',
     },
@@ -46,13 +50,14 @@ export const SalesDashboard: React.FC = () => {
       title: 'Pesanan Selesai',
       value: isLoading ? '...' : completedOrders,
       caption: completedOrders > 0 ? `${completedOrders} order selesai` : 'Resi terkirim',
+      buttonText: 'Lihat Selesai',
       icon: CheckCircle2,
       link: '/orders?status=COMPLETED',
     },
   ];
 
   return (
-    <div className="space-y-4 max-w-7xl pb-24">
+    <div className="space-y-4 max-w-7xl pb-24 font-sans text-slate-900">
       {/* Header Banner - Streamlined & Clean */}
       <div className="flex items-center justify-between pt-1">
         <div>
@@ -77,21 +82,30 @@ export const SalesDashboard: React.FC = () => {
             <div
               key={idx}
               onClick={() => navigate(card.link)}
-              className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col justify-between space-y-2 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all cursor-pointer group"
+              className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between">
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center flex-shrink-0">
                   <Icon className="w-4 h-4 text-[#04593f]" />
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#04593f] transition-colors" />
+                <span className="text-xl sm:text-2xl font-black text-slate-900">{card.value}</span>
               </div>
 
               <div>
-                <span className="text-[11px] font-bold text-slate-700 leading-tight block">
+                <h3 className="text-xs font-bold text-slate-800 leading-tight block">
                   {card.title}
-                </span>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{card.value}</h3>
+                </h3>
                 <p className="text-[10px] text-slate-400 font-normal mt-0.5 leading-none">{card.caption}</p>
+              </div>
+
+              <div className="pt-1.5 border-t border-slate-100 flex justify-end">
+                <button
+                  type="button"
+                  className="w-full py-1.5 px-2 bg-emerald-50 group-hover:bg-[#04593f] text-[#04593f] group-hover:text-white rounded-xl text-[10px] sm:text-xs font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"
+                >
+                  <span>{card.buttonText}</span>
+                  <ChevronRight className="w-3 h-3" />
+                </button>
               </div>
             </div>
           );
