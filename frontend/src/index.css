@@ -24,6 +24,38 @@
     font-family: 'Plus Jakarta Sans', sans-serif;
     letter-spacing: -0.025em;
   }
+
+  select {
+    accent-color: #065f46;
+  }
+
+  option {
+    background-color: #ffffff;
+    color: #0f172a;
+    padding: 12px;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+/* Custom Scrollbar for Dropdowns & Sheets */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #065f46;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #044e38;
 }
 
 /* Print styling helper */

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { masterService } from '../../services/masterService';
 import { MasterTree, MasterGrade, OrderItem } from '../../types/order';
 import { X, Plus, AlertCircle, Sprout } from 'lucide-react';
+import { CustomSelect } from '../shared/CustomSelect';
 
 interface AddPlantModalProps {
   isOpen: boolean;
@@ -101,6 +102,16 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
     setNotes('');
   };
 
+  const treeOptions = trees.map((t) => ({
+    value: String(t.id),
+    label: `${t.code} - ${t.name}`,
+  }));
+
+  const gradeOptions = grades.map((g) => ({
+    value: g.grade,
+    label: `Grade ${g.grade} (${g.grade === 'J+' ? 'Custom Price' : `Rp ${g.standard_price.toLocaleString('id-ID')}`})`,
+  }));
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 sm:p-6 w-full h-full overflow-y-auto">
       <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl w-[95%] max-w-md md:max-w-xl overflow-hidden my-auto flex flex-col">
@@ -134,38 +145,25 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
 
           <div>
             <label className="block text-xs font-extrabold text-slate-900 mb-1">ID Pohon / Varian Adenium *</label>
-            <select
-              required
+            <CustomSelect
+              options={treeOptions}
+              value={String(selectedTreeId)}
+              onChange={(val) => setSelectedTreeId(Number(val))}
+              placeholder="-- Pilih ID Pohon --"
               disabled={isLoadingMaster}
-              value={selectedTreeId}
-              onChange={(e) => setSelectedTreeId(Number(e.target.value))}
-              className="w-full px-3.5 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
-            >
-              <option value="">-- Pilih ID Pohon --</option>
-              {trees.map((tree) => (
-                <option key={tree.id} value={tree.id}>
-                  {tree.code} - {tree.name}
-                </option>
-              ))}
-            </select>
+              searchable
+            />
           </div>
 
           <div>
             <label className="block text-xs font-extrabold text-slate-900 mb-1">Grade Tanaman *</label>
-            <select
-              required
-              disabled={isLoadingMaster}
+            <CustomSelect
+              options={gradeOptions}
               value={selectedGrade}
-              onChange={(e) => setSelectedGrade(e.target.value)}
-              className="w-full px-3.5 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 uppercase"
-            >
-              <option value="">-- Pilih Grade --</option>
-              {grades.map((grade) => (
-                <option key={grade.id} value={grade.grade}>
-                  Grade {grade.grade} ({grade.grade === 'J+' ? 'Custom Price' : `Rp ${grade.standard_price.toLocaleString('id-ID')}`})
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setSelectedGrade(val)}
+              placeholder="-- Pilih Grade --"
+              disabled={isLoadingMaster}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -173,89 +171,80 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
               <label className="block text-xs font-extrabold text-slate-900 mb-1">Jumlah (Qty) *</label>
               <input
                 type="number"
-                min={1}
+                min="1"
                 required
                 value={quantity}
                 onFocus={(e) => e.target.select()}
                 onChange={(e) => {
                   const val = e.target.value;
-                  setQuantity(val === '' ? '' : Math.max(1, Number(val)));
+                  setQuantity(val === '' ? '' : parseInt(val, 10));
                 }}
-                className="w-full px-3.5 py-3 border border-slate-300 rounded-xl text-xs sm:text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                className="w-full px-3.5 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-extrabold text-slate-900 mb-1">Harga Standar (Readonly)</label>
-              <input
-                type="text"
-                readOnly
-                value={selectedGrade === 'J+' ? 'Custom' : `Rp ${standardPrice.toLocaleString('id-ID')}`}
-                className="w-full px-3.5 py-3 bg-slate-100 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-slate-700 cursor-not-allowed"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-extrabold text-slate-900 mb-1">Harga Jual (Rp) *</label>
+              <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                Harga Jual Satuan (Rp) *
+              </label>
               <input
                 type="number"
-                min={0}
+                min="0"
                 required
                 value={price}
                 onFocus={(e) => e.target.select()}
                 onChange={(e) => {
                   const val = e.target.value;
-                  setPrice(val === '' ? '' : Math.max(0, Number(val)));
+                  setPrice(val === '' ? '' : parseFloat(val));
                 }}
-                className="w-full px-3.5 py-3 border border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-700"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-extrabold text-slate-900 mb-1">Diskon (Readonly)</label>
-              <input
-                type="text"
-                readOnly
-                value={`Rp ${discount.toLocaleString('id-ID')}`}
-                className="w-full px-3.5 py-3 bg-slate-100 border border-slate-300 rounded-xl text-xs sm:text-sm font-extrabold text-amber-900 cursor-not-allowed"
+                className="w-full px-3.5 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
               />
             </div>
           </div>
 
+          {/* Automatic Calculation Summary Box */}
+          {selectedGrade && (
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1 text-xs font-extrabold text-slate-800">
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-semibold">Harga Standar Grade:</span>
+                <span>Rp {standardPrice.toLocaleString('id-ID')}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-semibold">Total Harga Standar:</span>
+                <span>Rp {totalStandardForQty.toLocaleString('id-ID')}</span>
+              </div>
+              <div className="flex justify-between text-emerald-800 pt-1 border-t border-slate-200 font-black">
+                <span>Diskon Terhitung:</span>
+                <span>Rp {discount.toLocaleString('id-ID')}</span>
+              </div>
+            </div>
+          )}
+
           <div>
-            <label className="block text-xs font-extrabold text-slate-900 mb-1">Catatan Tanaman (Opsional)</label>
+            <label className="block text-xs font-extrabold text-slate-900 mb-1">Catatan Khusus (Opsional)</label>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Misal: Karakter meliuk, cabutan..."
-              className="w-full px-3.5 py-3 border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-700"
+              placeholder="Contoh: Pilihkan bunga warna merah pekat"
+              className="w-full px-3.5 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
             />
           </div>
 
-          {/* Subtotal Calculation Box */}
-          <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between text-xs sm:text-sm font-extrabold">
-            <span className="text-slate-700">Subtotal Item</span>
-            <span className="text-emerald-800 text-sm sm:text-base font-black">
-              Rp {(numQty * numPrice).toLocaleString('id-ID')}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
+          <div className="pt-2 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold transition-colors"
+              className="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold rounded-2xl text-xs transition-colors cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+              className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold rounded-2xl text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
             >
-              <Plus className="w-4 h-4" /> Tambahkan
+              <Plus className="w-4 h-4" />
+              <span>Tambah ke Order</span>
             </button>
           </div>
         </form>

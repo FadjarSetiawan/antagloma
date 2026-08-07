@@ -7,7 +7,8 @@ import { OrderEditModal } from '../../components/orders/OrderEditModal';
 import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
 import { CompleteShipmentModal } from '../../components/orders/CompleteShipmentModal';
 import { Order } from '../../types/order';
-import { Search, Eye, Edit3, Printer, CheckCircle, PackageCheck, Plus, Phone, Calendar, Truck, FileText, Filter, Lightbulb, Sprout } from 'lucide-react';
+import { CustomSelect } from '../../components/shared/CustomSelect';
+import { Search, Eye, Edit3, Printer, CheckCircle, PackageCheck, Plus, Phone, Calendar, Truck, FileText, Lightbulb } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -65,6 +66,15 @@ export const OrderListPage: React.FC = () => {
 
   const role = user?.role;
 
+  const statusOptions = [
+    { value: '', label: 'Semua Status' },
+    { value: 'WAITING_PROCESS', label: 'Menunggu Diproses' },
+    { value: 'WAITING_PACKING', label: 'Menunggu Packing' },
+    { value: 'PACKING_COMPLETED', label: 'Packing Selesai' },
+    { value: 'COMPLETED', label: 'Selesai' },
+    { value: 'CANCELLED', label: 'Dibatalkan' },
+  ];
+
   return (
     <div className="space-y-5 max-w-7xl pb-12">
       {/* Title & Subtitle */}
@@ -73,7 +83,7 @@ export const OrderListPage: React.FC = () => {
         <p className="text-xs text-slate-500 font-medium mt-0.5">Kelola dan pantau transaksi order Tanaman Adenium secara real-time.</p>
       </div>
 
-      {/* Action Card: + Buat Order Baru (Matches Screenshot 2 Exactly) */}
+      {/* Action Card: + Buat Order Baru */}
       {(role === 'sales' || role === 'admin') && (
         <div
           onClick={() => navigate('/orders/create')}
@@ -87,7 +97,7 @@ export const OrderListPage: React.FC = () => {
         </div>
       )}
 
-      {/* Search Input & Filter Dropdown (Matches Screenshot 2 Exactly) */}
+      {/* Search Input & Custom Filter Dropdown */}
       <div className="space-y-3">
         <div className="relative">
           <Search className="w-4 h-4 text-emerald-800 absolute left-4 top-3.5" />
@@ -100,21 +110,12 @@ export const OrderListPage: React.FC = () => {
           />
         </div>
 
-        <div className="relative">
-          <Filter className="w-4 h-4 text-emerald-800 absolute left-4 top-3.5 pointer-events-none" />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full pl-11 pr-8 py-3 bg-white border-2 border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-700 font-extrabold text-slate-900 shadow-xs appearance-none"
-          >
-            <option value="">Semua Status</option>
-            <option value="WAITING_PROCESS">Menunggu Diproses</option>
-            <option value="WAITING_PACKING">Menunggu Packing</option>
-            <option value="PACKING_COMPLETED">Packing Selesai</option>
-            <option value="COMPLETED">Selesai</option>
-            <option value="CANCELLED">Dibatalkan</option>
-          </select>
-        </div>
+        <CustomSelect
+          options={statusOptions}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          placeholder="-- Pilih Filter Status --"
+        />
       </div>
 
       {/* Orders List Container */}
@@ -124,205 +125,162 @@ export const OrderListPage: React.FC = () => {
             Memuat daftar order...
           </div>
         ) : data?.data?.length === 0 ? (
-          /* Empty State Graphic (Matches Screenshot 2 Exactly) */
+          /* Empty State Graphic */
           <div className="py-12 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-3xl border-2 border-slate-200 shadow-xs">
             <div className="w-20 h-20 bg-emerald-50 rounded-3xl border-2 border-emerald-200 flex items-center justify-center text-emerald-800 relative">
               <FileText className="w-10 h-10 text-emerald-700" />
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-800 border-2 border-white text-white flex items-center justify-center">
-                <Search className="w-4 h-4" />
-              </div>
             </div>
-            <div>
-              <h3 className="text-base font-extrabold text-slate-900">Belum ada order</h3>
-              <p className="text-xs text-slate-500 mt-1 font-medium max-w-xs mx-auto">
-                Buat order baru atau ubah filter pencarian untuk melihat data.
+
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-slate-900">Belum Ada Transaksi Pesanan</h3>
+              <p className="text-xs text-slate-500 font-medium max-w-sm mx-auto">
+                Belum ada transaksi order penjualan yang tercatat dalam sistem. Klik tombol di bawah untuk membuat order baru.
               </p>
             </div>
+
+            {(role === 'sales' || role === 'admin') && (
+              <button
+                onClick={() => navigate('/orders/create')}
+                className="mt-2 px-5 py-3 bg-emerald-800 hover:bg-emerald-900 text-white rounded-2xl text-xs font-extrabold flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Buat Order Baru Sekarang</span>
+              </button>
+            )}
           </div>
         ) : (
-          <>
-            {/* Mobile View: Stacked Cards (Solid Colors) */}
-            <div className="md:hidden space-y-3">
-              {data?.data?.map((order) => (
-                <div key={order.id} className="bg-white border-2 border-slate-200 rounded-3xl p-4 space-y-3 shadow-xs">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
-                    <span className="font-extrabold text-sm text-slate-900">{order.order_number}</span>
-                    <OrderStatusBadge status={order.status} />
+          /* List of Orders */
+          data?.data?.map((order) => {
+            const itemCount = order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+            const plantTotalPrice = order.items ? order.items.reduce((sum, item) => sum + (item.quantity * item.price), 0) : 0;
+            const totalOrderAmount = plantTotalPrice + (order.buyer_shipping_cost || 0);
+
+            return (
+              <div
+                key={order.id}
+                onClick={() => setSelectedOrder(order)}
+                className="bg-white border-2 border-slate-200 rounded-3xl p-5 space-y-3 hover:border-emerald-800 transition-all shadow-xs cursor-pointer relative group"
+              >
+                {/* Header Row: Order Number & Status Badge */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-slate-900 text-sm">{order.order_number}</span>
+                    <span className="text-[11px] font-bold text-slate-400">•</span>
+                    <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      {order.order_date}
+                    </span>
+                  </div>
+                  <OrderStatusBadge status={order.status} />
+                </div>
+
+                {/* Body Details: Customer Info & Items Count */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-slate-600 bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400 block">Pemesan</span>
+                    <span className="font-extrabold text-slate-900 text-sm block">{order.customer_name}</span>
+                    <span className="text-slate-500 font-bold flex items-center gap-1 mt-0.5">
+                      <Phone className="w-3 h-3 text-slate-400" />
+                      {order.phone}
+                    </span>
                   </div>
 
-                  <div className="space-y-1.5 text-xs">
-                    <div className="flex items-center justify-between text-slate-900 font-bold">
-                      <span>{order.customer_name}</span>
-                      <span className="text-slate-500 font-medium flex items-center gap-1">
-                        <Phone className="w-3 h-3 text-emerald-800" /> {order.phone}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-slate-600 font-medium">
-                      <span className="flex items-center gap-1 text-emerald-800 font-bold">
-                        <Truck className="w-3.5 h-3.5" /> {order.delivery_method}
-                      </span>
-                      <span className="flex items-center gap-1 text-slate-500">
-                        <Calendar className="w-3.5 h-3.5" /> {order.order_date ? new Date(order.order_date).toLocaleDateString('id-ID') : '-'}
-                      </span>
-                    </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400 block">Pengiriman & Item</span>
+                    <span className="font-extrabold text-slate-900 block flex items-center gap-1">
+                      <Truck className="w-3.5 h-3.5 text-emerald-800" />
+                      {order.delivery_method}
+                    </span>
+                    <span className="text-slate-500 font-bold block mt-0.5">
+                      {itemCount} tanaman • Rp {totalOrderAmount.toLocaleString('id-ID')}
+                    </span>
                   </div>
+                </div>
 
-                  <div className="pt-2 border-t border-slate-200 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => setSelectedOrder(order)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs flex items-center gap-1"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-emerald-800" /> Detail
-                      </button>
-                      <button
-                        onClick={() => setNotaOrder(order)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs flex items-center gap-1"
-                      >
-                        <Printer className="w-3.5 h-3.5 text-amber-700" /> Nota
-                      </button>
-                    </div>
+                {/* Bottom Action Bar inside Order Card */}
+                <div className="flex items-center justify-between pt-1 text-xs">
+                  <span className="text-[11px] text-slate-500 font-bold flex items-center gap-1">
+                    <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Klik kartu untuk lihat rincian lengkap
+                  </span>
+
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => setSelectedOrder(order)}
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-slate-600" /> Detail
+                    </button>
 
                     {(role === 'admin' || role === 'owner') && order.status === 'WAITING_PROCESS' && (
                       <button
                         onClick={() => approveMutation.mutate(order.id)}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-800 text-white font-bold text-xs flex items-center gap-1 shadow-sm"
+                        disabled={approveMutation.isPending}
+                        className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-extrabold flex items-center gap-1 shadow-xs cursor-pointer"
                       >
-                        <CheckCircle className="w-3.5 h-3.5" /> Approve
+                        <CheckCircle className="w-3.5 h-3.5 text-white" /> Verifikasi
+                      </button>
+                    )}
+
+                    {(role === 'admin' || role === 'owner') && (order.status === 'WAITING_PACKING' || order.status === 'PACKING_COMPLETED' || order.status === 'COMPLETED') && (
+                      <button
+                        onClick={() => setNotaOrder(order)}
+                        className="px-3 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl font-extrabold flex items-center gap-1 shadow-xs cursor-pointer"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-white" /> Cetak Nota
                       </button>
                     )}
 
                     {(role === 'admin' || role === 'owner') && order.status === 'PACKING_COMPLETED' && (
                       <button
                         onClick={() => setShipmentOrder(order)}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-800 text-white font-bold text-xs flex items-center gap-1 shadow-sm"
+                        className="px-3 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-xl font-extrabold flex items-center gap-1 shadow-xs cursor-pointer"
                       >
-                        <PackageCheck className="w-3.5 h-3.5" /> Dikirim
+                        <PackageCheck className="w-3.5 h-3.5 text-white" /> Input Resi
+                      </button>
+                    )}
+
+                    {(role === 'admin' || role === 'owner' || (role === 'sales' && order.status === 'WAITING_PROCESS')) && (
+                      <button
+                        onClick={() => setEditingOrder(order)}
+                        className="px-2.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-bold cursor-pointer"
+                        title="Edit order"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {/* Desktop View: Full Table */}
-            <div className="hidden md:block bg-white rounded-3xl border-2 border-slate-200 overflow-hidden shadow-xs">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-100 border-b-2 border-slate-200 text-xs uppercase text-slate-600 font-bold">
-                  <tr>
-                    <th className="px-4 py-3.5">No Order</th>
-                    <th className="px-4 py-3.5">Tgl Order</th>
-                    <th className="px-4 py-3.5">Customer</th>
-                    <th className="px-4 py-3.5">Metode</th>
-                    <th className="px-4 py-3.5">Status</th>
-                    <th className="px-4 py-3.5 text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {data?.data?.map((order) => (
-                    <tr key={order.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-3 font-extrabold text-slate-900">{order.order_number}</td>
-                      <td className="px-4 py-3 text-slate-600 text-xs font-semibold whitespace-nowrap">
-                        {order.order_date ? new Date(order.order_date).toLocaleDateString('id-ID') : '-'}
-                      </td>
-                      <td className="px-4 py-3 font-bold text-slate-900">
-                        <div>{order.customer_name}</div>
-                        <div className="text-xs text-slate-500 font-normal">{order.phone}</div>
-                      </td>
-                      <td className="px-4 py-3 text-slate-800 text-xs font-extrabold">{order.delivery_method}</td>
-                      <td className="px-4 py-3">
-                        <OrderStatusBadge status={order.status} />
-                      </td>
-                      <td className="px-4 py-3 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => setSelectedOrder(order)}
-                            title="Lihat Detail"
-                            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors border border-slate-300 font-bold text-xs flex items-center gap-1"
-                          >
-                            <Eye className="w-4 h-4 text-emerald-800" /> Detail
-                          </button>
-                          <button
-                            onClick={() => setNotaOrder(order)}
-                            title="Nota Packing"
-                            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors border border-slate-300 font-bold text-xs flex items-center gap-1"
-                          >
-                            <Printer className="w-4 h-4 text-amber-700" /> Nota
-                          </button>
-
-                          {(role === 'admin' || role === 'owner') && order.status === 'WAITING_PROCESS' && (
-                            <button
-                              onClick={() => approveMutation.mutate(order.id)}
-                              className="px-3 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs flex items-center gap-1 shadow-sm"
-                            >
-                              <CheckCircle className="w-4 h-4" /> Approve
-                            </button>
-                          )}
-
-                          {(role === 'admin' || role === 'owner') && order.status === 'PACKING_COMPLETED' && (
-                            <button
-                              onClick={() => setShipmentOrder(order)}
-                              className="px-3 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs flex items-center gap-1 shadow-sm"
-                            >
-                              <PackageCheck className="w-4 h-4" /> Dikirim
-                            </button>
-                          )}
-
-                          {((role === 'admin' || role === 'owner') || (role === 'sales' && order.creator?.id === user?.id && order.status === 'WAITING_PROCESS')) && (
-                            <button
-                              onClick={() => setEditingOrder(order)}
-                              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors border border-slate-300 font-bold"
-                            >
-                              <Edit3 className="w-4 h-4 text-slate-600" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+              </div>
+            );
+          })
         )}
       </div>
 
-      {/* Tips Lightbulb Banner (Matches Screenshot 2 Exactly) */}
-      <div className="p-4 bg-emerald-50/60 border-2 border-emerald-200 rounded-3xl flex items-start gap-3 shadow-xs">
-        <div className="w-9 h-9 rounded-2xl bg-emerald-200 text-emerald-900 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <Lightbulb className="w-5 h-5" />
-        </div>
-        <div className="text-xs">
-          <h4 className="font-extrabold text-slate-900">Tips</h4>
-          <p className="text-slate-600 font-medium mt-0.5">
-            Gunakan filter status untuk menemukan order dengan lebih cepat.
-          </p>
-        </div>
-      </div>
-
-      {/* Modals */}
+      {/* Order Detail Modal */}
       <OrderDetailModal
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
-        onApprove={(id) => approveMutation.mutate(id)}
-        onOpenShipmentModal={(ord) => setShipmentOrder(ord)}
-        onOpenNota={(ord) => setNotaOrder(ord)}
-        onEdit={(ord) => setEditingOrder(ord)}
-        onDelete={(id) => deleteMutation.mutate(id)}
-        isActionLoading={approveMutation.isPending || shipmentMutation.isPending}
+        onApprove={(id: number) => approveMutation.mutate(id)}
+        onDelete={(id: number) => deleteMutation.mutate(id)}
+        onOpenNota={(ord: Order) => setNotaOrder(ord)}
+        onOpenShipmentModal={(ord: Order) => setShipmentOrder(ord)}
+        onEdit={(ord: Order) => setEditingOrder(ord)}
       />
 
+      {/* Order Edit Modal */}
       <OrderEditModal
         order={editingOrder}
         onClose={() => setEditingOrder(null)}
         onSubmit={handleUpdateOrder}
       />
 
+      {/* Packing Nota Thermal Modal */}
       <PackingNotaModal
         order={notaOrder}
         onClose={() => setNotaOrder(null)}
       />
 
+      {/* Complete Shipment Modal */}
       <CompleteShipmentModal
         order={shipmentOrder}
         onClose={() => setShipmentOrder(null)}
