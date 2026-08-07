@@ -50,7 +50,7 @@ export const MobileBottomNav: React.FC = () => {
   return (
     <>
       {/* Sticky Bottom Navigation Bar for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-2 border-slate-200 px-2 py-1.5 flex items-center justify-around md:hidden shadow-lg">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-2 border-slate-200 px-2 py-2 flex items-center justify-around md:hidden shadow-lg pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {items
           .filter((item) => item.show)
           .map((item) => {
@@ -60,9 +60,9 @@ export const MobileBottomNav: React.FC = () => {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `flex flex-col items-center justify-center px-3 py-1.5 rounded-2xl text-[10px] transition-all ${
+                  `flex flex-col items-center justify-center px-4 py-1.5 rounded-2xl text-[10px] transition-all ${
                     isActive
-                      ? 'bg-emerald-50 text-emerald-900 border border-emerald-300 font-black shadow-xs'
+                      ? 'bg-emerald-800 text-white font-black shadow-md border-2 border-emerald-900 scale-105'
                       : 'text-slate-600 font-bold hover:text-slate-900'
                   }`
                 }
@@ -76,7 +76,7 @@ export const MobileBottomNav: React.FC = () => {
         {/* Profile / Menu Trigger */}
         <button
           onClick={() => setIsProfileOpen(true)}
-          className="flex flex-col items-center justify-center px-3 py-1.5 rounded-2xl text-[10px] font-bold text-slate-600 hover:text-slate-900 cursor-pointer"
+          className="flex flex-col items-center justify-center px-4 py-1.5 rounded-2xl text-[10px] font-bold text-slate-600 hover:text-slate-900 cursor-pointer"
         >
           <UserIcon className="w-5 h-5 mb-0.5" />
           <span>Profil</span>
@@ -114,9 +114,9 @@ export const MobileBottomNav: React.FC = () => {
                     setIsProfileOpen(false);
                     navigate('/orders/create');
                   }}
-                  className="w-full p-3 rounded-2xl bg-emerald-50 text-emerald-900 border border-emerald-200 flex items-center gap-3 font-extrabold"
+                  className="w-full p-3 rounded-2xl bg-emerald-800 text-white border-2 border-emerald-900 flex items-center gap-3 font-extrabold shadow-sm"
                 >
-                  <PlusCircle className="w-5 h-5 text-emerald-800" />
+                  <PlusCircle className="w-5 h-5 text-white" />
                   <span>+ Buat Pesanan Baru</span>
                 </button>
               )}
@@ -127,7 +127,7 @@ export const MobileBottomNav: React.FC = () => {
                     setIsProfileOpen(false);
                     navigate('/master/products');
                   }}
-                  className="w-full p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3"
+                  className="w-full p-3 rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 flex items-center gap-3 text-slate-900"
                 >
                   <Sprout className="w-5 h-5 text-emerald-800" />
                   <span>Master Produk Adenium</span>
@@ -140,7 +140,7 @@ export const MobileBottomNav: React.FC = () => {
                     setIsProfileOpen(false);
                     navigate('/reports');
                   }}
-                  className="w-full p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3"
+                  className="w-full p-3 rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 flex items-center gap-3 text-slate-900"
                 >
                   <FileText className="w-5 h-5 text-emerald-800" />
                   <span>Laporan Penjualan</span>
@@ -152,9 +152,9 @@ export const MobileBottomNav: React.FC = () => {
                   setIsProfileOpen(false);
                   logout();
                 }}
-                className="w-full p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 flex items-center gap-3 font-extrabold"
+                className="w-full p-3 rounded-2xl bg-rose-800 text-white border-2 border-rose-900 flex items-center gap-3 font-extrabold shadow-sm"
               >
-                <LogOut className="w-5 h-5 text-rose-700" />
+                <LogOut className="w-5 h-5 text-white" />
                 <span>Keluar (Logout)</span>
               </button>
             </div>
