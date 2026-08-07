@@ -22,7 +22,6 @@ import {
   Building2,
   QrCode,
   Banknote,
-  Coins,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -164,7 +163,7 @@ export const OrderCreatePage: React.FC = () => {
   const totalItemCount = items.reduce((acc, curr) => acc + (Number(curr.quantity) || 0), 0);
   const totalDiscount = items.reduce((acc, curr) => acc + (Number(curr.discount) || 0) * (Number(curr.quantity) || 1), 0);
   const totalPlantPrice = items.reduce((acc, curr) => acc + (Number(curr.quantity) || 0) * (Number(curr.price) || 0), 0);
-  const actualShippingCost = deliveryMethod === 'Kirim Paket' ? Number(buyerShippingCost) || 0 : 0;
+  const actualShippingCost = deliveryMethod === 'Ambil Di Lokasi' ? 0 : Number(buyerShippingCost) || 0;
   const grandTotal = totalPlantPrice + actualShippingCost;
 
   const handleSubmitFinal = async (e: React.FormEvent) => {
@@ -210,7 +209,8 @@ export const OrderCreatePage: React.FC = () => {
   const deliveryOptions = [
     { value: 'Kirim Paket', label: 'Kirim Paket' },
     { value: 'Packing Kayu', label: 'Packing Kayu' },
-    { value: 'Ambil Sendiri', label: 'Ambil Sendiri' },
+    { value: 'Ambil Di Lokasi', label: 'Ambil Di Lokasi' },
+    { value: 'Antar Ke Rumah', label: 'Antar Ke Rumah' },
   ];
 
   const provinceOptions = provinces.map((p) => ({ value: p.id, label: p.name }));
@@ -605,7 +605,7 @@ export const OrderCreatePage: React.FC = () => {
               />
             </div>
 
-            {/* SOLID FOREST GREEN FINANCIAL SUMMARY BOX (NO AI SLOP OPACITY/BORDER, NO DOLLAR SIGN) */}
+            {/* SOLID FOREST GREEN FINANCIAL SUMMARY BOX */}
             <div className="p-5 bg-[#04593f] text-white rounded-3xl space-y-2.5 text-xs font-bold shadow-md">
               <div className="flex justify-between items-center text-emerald-100">
                 <span className="flex items-center gap-1.5">
@@ -664,10 +664,13 @@ export const OrderCreatePage: React.FC = () => {
           <div className="bg-white border-2 border-slate-200 rounded-3xl p-5 sm:p-6 space-y-5 shadow-xs">
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">INFORMASI PEMBAYARAN & ONGKIR</h3>
 
-            {/* Delivery Method Shipping Cost */}
-            {deliveryMethod === 'Kirim Paket' && (
+            {/* CONDITIONAL ONGKIR INPUT FIELD: SHOWN FOR Kirim Paket, Packing Kayu, & Antar Ke Rumah. HIDDEN FOR Ambil Di Lokasi */}
+            {deliveryMethod !== 'Ambil Di Lokasi' && (
               <div>
-                <label className="block text-xs font-extrabold text-slate-900 mb-1">Biaya Ongkos Kirim Paket (Rp) *</label>
+                <label className="block text-xs font-extrabold text-slate-900 mb-1 flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-[#04593f]" />
+                  <span>Biaya Ongkos Kirim Pembeli ({deliveryMethod}) (Rp) *</span>
+                </label>
                 <input
                   type="number"
                   min="0"
@@ -676,12 +679,12 @@ export const OrderCreatePage: React.FC = () => {
                   onFocus={(e) => e.target.select()}
                   onChange={(e) => setBuyerShippingCost(e.target.value === '' ? '' : Number(e.target.value))}
                   placeholder="Contoh: 25000"
-                  className="w-full px-3.5 py-3 border-2 border-slate-200 rounded-2xl text-xs font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  className="w-full px-3.5 py-3 border-2 border-slate-200 rounded-2xl text-xs font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
                 />
               </div>
             )}
 
-            {/* 3 SELECTABLE CARDS FOR PAYMENT METHODS (REPLACES DROPDOWN) */}
+            {/* 3 SELECTABLE CARDS FOR PAYMENT METHODS */}
             <div className="space-y-2">
               <label className="block text-xs font-black text-slate-900">Metode Pembayaran *</label>
               <div className="grid grid-cols-3 gap-2.5">
@@ -748,16 +751,18 @@ export const OrderCreatePage: React.FC = () => {
               </div>
             </div>
 
-            {/* SOLID PREMIUM DARK GREEN GRAND TOTAL BOX (NO AI SLOP OPACITY/BORDER) */}
+            {/* SOLID PREMIUM DARK GREEN GRAND TOTAL BOX */}
             <div className="p-5 bg-[#04593f] text-white rounded-3xl space-y-2.5 text-xs font-bold shadow-md">
               <div className="flex justify-between text-emerald-100">
                 <span>Subtotal Harga Tanaman ({totalItemCount} item):</span>
                 <span className="font-extrabold text-white">Rp {totalPlantPrice.toLocaleString('id-ID')}</span>
               </div>
-              <div className="flex justify-between text-emerald-100">
-                <span>Ongkos Kirim:</span>
-                <span className="font-extrabold text-white">Rp {actualShippingCost.toLocaleString('id-ID')}</span>
-              </div>
+              {deliveryMethod !== 'Ambil Di Lokasi' && (
+                <div className="flex justify-between text-emerald-100">
+                  <span>Ongkos Kirim ({deliveryMethod}):</span>
+                  <span className="font-extrabold text-white">Rp {actualShippingCost.toLocaleString('id-ID')}</span>
+                </div>
+              )}
               <div className="flex justify-between text-base font-black text-white pt-3 border-t border-emerald-700/60">
                 <span>TOTAL DITERIMA:</span>
                 <span className="text-white text-lg font-black">Rp {grandTotal.toLocaleString('id-ID')}</span>

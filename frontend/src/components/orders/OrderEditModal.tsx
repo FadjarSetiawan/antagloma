@@ -68,7 +68,7 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({ order, onClose, 
 
           <button
             onClick={onClose}
-            className="p-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition-colors"
+            className="p-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -109,8 +109,8 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({ order, onClose, 
             >
               <option value="Kirim Paket">Kirim Paket</option>
               <option value="Packing Kayu">Packing Kayu</option>
-              <option value="Ambil di Tempat">Ambil di Tempat</option>
-              <option value="Antar ke Rumah">Antar ke Rumah</option>
+              <option value="Ambil Di Lokasi">Ambil Di Lokasi</option>
+              <option value="Antar Ke Rumah">Antar Ke Rumah</option>
             </select>
           </div>
 
@@ -139,14 +139,14 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({ order, onClose, 
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold transition-colors"
+              className="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold rounded-2xl text-xs transition-colors cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+              className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold rounded-2xl text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
             >
               <Save className="w-4 h-4" />
               <span>{isLoading ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
