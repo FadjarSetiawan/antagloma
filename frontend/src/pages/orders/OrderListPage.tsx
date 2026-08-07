@@ -6,7 +6,7 @@ import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
 import { OrderEditModal } from '../../components/orders/OrderEditModal';
 import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
 import { CompleteShipmentModal } from '../../components/orders/CompleteShipmentModal';
-import { Order } from '../../types/order';
+import { Order, OrderItem } from '../../types/order';
 import { CustomSelect } from '../../components/shared/CustomSelect';
 import { Search, Eye, Edit3, Printer, CheckCircle, PackageCheck, Plus, Phone, Calendar, Truck, FileText, Lightbulb } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -150,9 +150,9 @@ export const OrderListPage: React.FC = () => {
           </div>
         ) : (
           /* List of Orders */
-          data?.data?.map((order) => {
-            const itemCount = order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
-            const plantTotalPrice = order.items ? order.items.reduce((sum, item) => sum + (item.quantity * item.price), 0) : 0;
+          data?.data?.map((order: Order) => {
+            const itemCount = order.items ? order.items.reduce((sum: number, item: OrderItem) => sum + item.quantity, 0) : 0;
+            const plantTotalPrice = order.items ? order.items.reduce((sum: number, item: OrderItem) => sum + (item.quantity * item.price), 0) : 0;
             const totalOrderAmount = plantTotalPrice + (order.buyer_shipping_cost || 0);
 
             return (
