@@ -49,14 +49,14 @@ class UserController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6'],
-            'role'     => ['required', 'string', Rule::in(['owner', 'admin', 'sales'])],
+            'role'     => ['required', 'string', Rule::in(['owner', 'admin', 'sales', 'packing'])],
         ]);
 
         $user = User::create([
             'name'     => strip_tags($validated['name']),
             'email'    => strtolower(trim($validated['email'])),
             'password' => Hash::make($validated['password']),
-            'role'     => $validated['role'],
+            'role'     => strtolower($validated['role']),
         ]);
 
         return response()->json([
@@ -82,13 +82,13 @@ class UserController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($targetUser->id)],
             'password' => ['nullable', 'string', 'min:6'],
-            'role'     => ['required', 'string', Rule::in(['owner', 'admin', 'sales'])],
+            'role'     => ['required', 'string', Rule::in(['owner', 'admin', 'sales', 'packing'])],
         ]);
 
         $payload = [
             'name'  => strip_tags($validated['name']),
             'email' => strtolower(trim($validated['email'])),
-            'role'  => $validated['role'],
+            'role'  => strtolower($validated['role']),
         ];
 
         if (!empty($validated['password'])) {
