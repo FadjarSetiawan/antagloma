@@ -24,7 +24,13 @@ export const AdminDashboard: React.FC = () => {
 
   const waitingVerification = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
   const pendingShipping = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
-  const pendingInvoice = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && (!o.tracking_number || o.tracking_number.trim() === '')).length;
+  // Card 3: Dokumen Pengiriman (Calculated by total sub-packages A/B/C)
+  const totalDocumentPackagesCount = orders
+    .filter((o: Order) => (o.status === 'PACKING_COMPLETED' || o.status === 'WAITING_PACKING') && (!o.packing_images || o.packing_images.length === 0))
+    .reduce((sum, order) => {
+      const itemCount = order.items?.length || 1;
+      return sum + (itemCount > 1 ? 2 : 1);
+    }, 0);
 
   // Card 4: Menunggu Foto Paket (orders in PACKING_COMPLETED waiting for packing proof upload)
   const pendingPhotoUpload = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && (!o.packing_images || o.packing_images.length === 0)).length;
@@ -83,9 +89,9 @@ export const AdminDashboard: React.FC = () => {
     },
     {
       title: 'Dokumen Pengiriman',
-      value: isLoading ? '...' : pendingInvoice,
-      caption: pendingInvoice > 0 ? `${pendingInvoice} Dokumen baru menunggu dicetak` : 'Semua dokumen dicetak',
-      hasNotification: pendingInvoice > 0,
+      value: isLoading ? '...' : totalDocumentPackagesCount,
+      caption: totalDocumentPackagesCount > 0 ? `${totalDocumentPackagesCount} Paket Dokumen baru` : 'Semua dokumen dicetak',
+      hasNotification: totalDocumentPackagesCount > 0,
       buttonText: 'Cetak Dokumen',
       icon: FileText,
       link: '/documents/print',

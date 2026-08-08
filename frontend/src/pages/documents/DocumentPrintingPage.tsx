@@ -26,7 +26,9 @@ export const DocumentPrintingPage: React.FC = () => {
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
 
   // Track printed status and printed timestamp per package subOrderNumber
-  const [printedPackages, setPrintedPackages] = useState<Record<string, { printedAt: string }>>({});
+  const [printedPackages, setPrintedPackages] = useState<
+    Record<string, { printedAt?: string; printedNota?: boolean; printedLabel?: boolean }>
+  >({});
 
   const { data, isLoading } = useQuery({
     queryKey: ['document-printing-orders'],
@@ -36,57 +38,81 @@ export const DocumentPrintingPage: React.FC = () => {
   const orders = data?.data || [];
 
   // Filter orders: orders that have NOT uploaded packing proof photo yet stay in document printing queue
-  // Once packing proof photo is uploaded, order automatically leaves document printing and moves to Resi Input queue
-  const eligibleOrders = orders.filter(
-    (order: Order) => !order.tracking_number && (!order.packing_images || order.packing_images.length === 0)
-  );
+  const expandedPackageCards = orders
+    .filter((order) => order.status === 'PACKING_COMPLETED' || order.status === 'WAITING_PACKING')
+    .sort((a, b) => a.id - b.id)
+    .flatMap((order) => {
+      const itemCount = order.items?.length || 1;
+      const packagesList = [];
 
-  // Dynamically expand orders into individual package cards (Paket A, Paket B, etc.)
-  const expandedPackageCards = eligibleOrders.flatMap((order: Order) => {
-    const itemCount = order.items?.length || 1;
-    const packagesList = [];
+      if (itemCount > 1) {
+        // Paket A (Fullset)
+        const firstGrade = order.items?.[0]?.grade || 'A';
+        const isGradeDOrAbove = ['D', 'D+', 'J', 'J+'].includes(firstGrade.toUpperCase());
+        const weightText = isGradeDOrAbove ? '3.5 Kg' : `Grade ${firstGrade} (tanpa berat)`;
 
-    if (itemCount > 1) {
-      // Paket A (Fullset)
-      packagesList.push({
-        id: `${order.id}-A`,
-        order,
-        subOrderNumber: `${order.order_number}-A`,
-        packageType: 'Fullset' as const,
-        plantCount: 1,
-        weightInfo: '4.5 Kg',
-      });
+        packagesList.push({
+          id: `${order.id}-A`,
+          order,
+          subOrderNumber: `${order.order_number}-A`,
+          packageType: 'Fullset' as const,
+          plantCount: 1,
+          weightInfo: weightText,
+        });
 
-      // Paket B (Non-fullset)
-      packagesList.push({
-        id: `${order.id}-B`,
-        order,
-        subOrderNumber: `${order.order_number}-B`,
-        packageType: 'Non-fullset' as const,
-        plantCount: itemCount - 1,
-        weightInfo: `${(itemCount - 1) * 2.0} Kg`,
-      });
-    } else {
-      // Single package (Paket A)
-      const firstGrade = order.items?.[0]?.grade || 'A';
-      const isGradeDOrAbove = ['D', 'D+', 'J', 'J+'].includes(firstGrade.toUpperCase());
-      const weightText = isGradeDOrAbove ? '3.5 Kg' : `Grade ${firstGrade} (tanpa berat)`;
+        // Paket B (Non-fullset)
+        packagesList.push({
+          id: `${order.id}-B`,
+          order,
+          subOrderNumber: `${order.order_number}-B`,
+          packageType: 'Non-fullset' as const,
+          plantCount: itemCount - 1,
+          weightInfo: `${(itemCount - 1) * 2.0} Kg`,
+        });
+      } else {
+        // Single package (Paket A)
+        const firstGrade = order.items?.[0]?.grade || 'A';
+        const isGradeDOrAbove = ['D', 'D+', 'J', 'J+'].includes(firstGrade.toUpperCase());
+        const weightText = isGradeDOrAbove ? '3.5 Kg' : `Grade ${firstGrade} (tanpa berat)`;
 
-      packagesList.push({
-        id: `${order.id}-A`,
-        order,
-        subOrderNumber: `${order.order_number}-A`,
-        packageType: 'Fullset' as const,
-        plantCount: 1,
-        weightInfo: weightText,
-      });
-    }
+        packagesList.push({
+          id: `${order.id}-A`,
+          order,
+          subOrderNumber: `${order.order_number}-A`,
+          packageType: 'Fullset' as const,
+          plantCount: 1,
+          weightInfo: weightText,
+        });
+      }
 
-    return packagesList;
+      return packagesList;
+    });
+
+  const getCardPrintStatus = (subOrderNumber: string) => {
+    const info = printedPackages[subOrderNumber] || {};
+    return {
+      printedNota: Boolean(info.printedNota),
+      printedLabel: Boolean(info.printedLabel),
+      isBothPrinted: Boolean(info.printedNota && info.printedLabel),
+      printedAt: info.printedAt || 'Baru Saja',
+    };
+  };
+
+  // 1. Belum Dicetak: Cards where BOTH nota & label are NOT yet printed AND photo proof not uploaded
+  const unprintedCards = expandedPackageCards.filter((card) => {
+    const hasPhoto = Boolean(card.order.packing_images && card.order.packing_images.length > 0);
+    if (hasPhoto) return false;
+    const status = getCardPrintStatus(card.subOrderNumber);
+    return !status.isBothPrinted;
   });
 
-  const unprintedCards = expandedPackageCards.filter((card) => !printedPackages[card.subOrderNumber]);
-  const printedCards = expandedPackageCards.filter((card) => Boolean(printedPackages[card.subOrderNumber]));
+  // 2. Sudah Dicetak: Cards where BOTH nota & label ARE printed AND photo proof NOT uploaded yet
+  const printedCards = expandedPackageCards.filter((card) => {
+    const hasPhoto = Boolean(card.order.packing_images && card.order.packing_images.length > 0);
+    if (hasPhoto) return false;
+    const status = getCardPrintStatus(card.subOrderNumber);
+    return status.isBothPrinted;
+  });
 
   const handlePrintNota = (order: Order, subOrderNumber?: string) => {
     const nowStr = new Date().toLocaleDateString('id-ID', {
@@ -98,12 +124,14 @@ export const DocumentPrintingPage: React.FC = () => {
     setPrintedPackages((prev) => {
       const next = { ...prev };
       if (subOrderNumber) {
-        next[subOrderNumber] = { printedAt: nowStr };
+        const existing = next[subOrderNumber] || {};
+        next[subOrderNumber] = { ...existing, printedNota: true, printedAt: nowStr };
       } else {
         expandedPackageCards
           .filter((c) => c.order.id === order.id)
           .forEach((c) => {
-            next[c.subOrderNumber] = { printedAt: nowStr };
+            const existing = next[c.subOrderNumber] || {};
+            next[c.subOrderNumber] = { ...existing, printedNota: true, printedAt: nowStr };
           });
       }
       return next;
@@ -113,19 +141,20 @@ export const DocumentPrintingPage: React.FC = () => {
   };
 
   const handlePrintLabel = (pkgCard: typeof expandedPackageCards[0]) => {
-    // Record printed timestamp & automatically transition card to "Sudah Dicetak"
     const nowStr = new Date().toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
     }) + ` • ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
 
-    setPrintedPackages((prev) => ({
-      ...prev,
-      [pkgCard.subOrderNumber]: { printedAt: nowStr },
-    }));
+    setPrintedPackages((prev) => {
+      const existing = prev[pkgCard.subOrderNumber] || {};
+      return {
+        ...prev,
+        [pkgCard.subOrderNumber]: { ...existing, printedLabel: true, printedAt: nowStr },
+      };
+    });
 
-    // Open shipping label modal
     setSelectedLabelOrder({
       order: pkgCard.order,
       packageInfo: {
@@ -157,11 +186,11 @@ export const DocumentPrintingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Top Batch Action Buttons (Uniform Antagloma Green Palette) */}
+      {/* Top Batch Action Buttons */}
       <div className="grid grid-cols-2 gap-3 pt-1">
         <button
           onClick={() => {
-            if (expandedPackageCards.length > 0) handlePrintNota(expandedPackageCards[0].order);
+            if (unprintedCards.length > 0) handlePrintNota(unprintedCards[0].order);
           }}
           className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
         >
@@ -171,7 +200,7 @@ export const DocumentPrintingPage: React.FC = () => {
 
         <button
           onClick={() => {
-            if (expandedPackageCards.length > 0) handlePrintLabel(expandedPackageCards[0]);
+            if (unprintedCards.length > 0) handlePrintLabel(unprintedCards[0]);
           }}
           className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
         >
@@ -227,7 +256,7 @@ export const DocumentPrintingPage: React.FC = () => {
               BELUM DICETAK ({unprintedCards.length})
             </h2>
             <p className="text-[11px] text-slate-400 font-normal">
-              Pesanan yang belum dicetak resinya
+              Pesanan yang belum lengkap cetak nota & label resinya
             </p>
           </div>
         ) : (
@@ -236,7 +265,7 @@ export const DocumentPrintingPage: React.FC = () => {
               SUDAH DICETAK ({printedCards.length})
             </h2>
             <p className="text-[11px] text-slate-400 font-normal">
-              Pesanan dengan resi yang sudah dicetak
+              Pesanan yang telah lengkap dicetak nota & resinya
             </p>
           </div>
         )}
@@ -262,73 +291,86 @@ export const DocumentPrintingPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-3.5">
-            {unprintedCards.map((pkgCard) => (
-              <div
-                key={pkgCard.id}
-                className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 shadow-2xs hover:border-[#04593f] transition-all"
-              >
-                {/* Header Package Card */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold flex-shrink-0">
-                      <PackageIcon className="w-4 h-4 text-amber-700" />
+            {unprintedCards.map((pkgCard) => {
+              const printedStatus = getCardPrintStatus(pkgCard.subOrderNumber);
+
+              return (
+                <div
+                  key={pkgCard.id}
+                  className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 shadow-2xs hover:border-[#04593f] transition-all"
+                >
+                  {/* Header Package Card */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold flex-shrink-0">
+                        <PackageIcon className="w-4 h-4 text-amber-700" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                          {pkgCard.subOrderNumber}
+                        </h3>
+                        <p className="text-[11px] text-slate-400 font-medium">
+                          dari {pkgCard.order.order_number}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
-                        {pkgCard.subOrderNumber}
-                      </h3>
-                      <p className="text-[11px] text-slate-400 font-medium">
-                        dari {pkgCard.order.order_number}
-                      </p>
-                    </div>
+
+                    <span className="px-2.5 py-0.5 font-bold text-[11px] rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                      {pkgCard.packageType}
+                    </span>
                   </div>
 
-                  <span className="px-2.5 py-0.5 font-bold text-[11px] rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
-                    {pkgCard.packageType}
-                  </span>
-                </div>
-
-                {/* Customer Info & Plant Count */}
-                <div className="space-y-0.5 pt-0.5 text-xs">
-                  <h4 className="text-sm font-bold text-slate-900">{pkgCard.order.customer_name}</h4>
-                  <p className="text-[11px] text-slate-500 font-medium">
-                    {pkgCard.plantCount} tanaman • {pkgCard.weightInfo}
-                  </p>
-                </div>
-
-                {/* Info Callout Box (Belum Dicetak) */}
-                <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl space-y-1 text-xs">
-                  <div className="flex items-center gap-2 font-bold text-[#04593f]">
-                    <FileText className="w-4 h-4 text-[#04593f]" />
-                    <span>Resi belum dicetak</span>
+                  {/* Customer Info & Plant Count */}
+                  <div className="space-y-0.5 pt-0.5 text-xs">
+                    <h4 className="text-sm font-bold text-slate-900">{pkgCard.order.customer_name}</h4>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      {pkgCard.plantCount} tanaman • {pkgCard.weightInfo}
+                    </p>
                   </div>
-                  <p className="text-[11px] text-slate-600 font-medium pl-6">
-                    Silakan cetak resi untuk proses pengiriman.
-                  </p>
-                </div>
 
-                {/* Action Buttons Row - Dual Green Buttons: Cetak Nota (Kiri) & Cetak Label (Kanan) */}
-                <div className="grid grid-cols-2 gap-2.5 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => handlePrintNota(pkgCard.order, pkgCard.subOrderNumber)}
-                    className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
-                  >
-                    <Printer className="w-4 h-4 text-white" />
-                    <span>Cetak Nota</span>
-                  </button>
+                  {/* Info Callout Box (Belum Dicetak) */}
+                  <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl space-y-1 text-xs">
+                    <div className="flex items-center justify-between font-bold text-[#04593f]">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-[#04593f]" />
+                        <span>Status Cetak:</span>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 font-bold">
+                        {printedStatus.printedNota
+                          ? '✓ Nota (Belum Label)'
+                          : printedStatus.printedLabel
+                          ? '✓ Label (Belum Nota)'
+                          : 'Belum Nota & Label'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 font-medium pl-6">
+                      Cetak kedua dokumen (Nota & Label) agar berpindah ke tab Sudah Dicetak.
+                    </p>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handlePrintLabel(pkgCard)}
-                    className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
-                  >
-                    <Tag className="w-4 h-4 text-white" />
-                    <span>Cetak Label</span>
-                  </button>
+                  {/* Action Buttons Row */}
+                  <div className="grid grid-cols-2 gap-2.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handlePrintNota(pkgCard.order, pkgCard.subOrderNumber)}
+                      className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                    >
+                      <Printer className="w-4 h-4 text-white" />
+                      <span>{printedStatus.printedNota ? 'Cetak Ulang Nota' : 'Cetak Nota'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handlePrintLabel(pkgCard)}
+                      className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                    >
+                      <Tag className="w-4 h-4 text-white" />
+                      <span>{printedStatus.printedLabel ? 'Cetak Ulang Label' : 'Cetak Label'}</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )
       ) : (
@@ -387,7 +429,7 @@ export const DocumentPrintingPage: React.FC = () => {
                   <div className="p-3 bg-emerald-50/80 border border-emerald-200/90 rounded-xl space-y-2 text-xs">
                     <div className="flex items-center gap-2 font-bold text-[#04593f]">
                       <CheckCircle2 className="w-4 h-4 text-[#04593f]" />
-                      <span>Resi sudah dicetak</span>
+                      <span>Nota & Label sudah lengkap dicetak</span>
                     </div>
                     <p className="text-[11px] text-slate-600 font-medium pl-6">
                       Dicetak pada {printInfo?.printedAt || 'Baru Saja'}
@@ -400,31 +442,31 @@ export const DocumentPrintingPage: React.FC = () => {
                         <span>{pkgCard.order.delivery_method || 'Kirim Paket'}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-400 font-medium block">No. Resi</span>
-                        <span className="text-slate-900 font-extrabold text-xs">
-                          {pkgCard.order.tracking_number || 'Belum Input Resi'}
+                        <span className="text-[10px] text-slate-400 font-medium block">Status Foto</span>
+                        <span className="text-[#04593f] font-extrabold text-xs">
+                          Menunggu Foto Kebun
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Action Buttons Row - Dual Green Buttons: Cetak Ulang Nota (Kiri) & Cetak Ulang Label (Kanan) */}
+                  {/* Action Buttons Row - Soft Light Green Mint Buttons Matching Screenshot */}
                   <div className="grid grid-cols-2 gap-2.5 pt-1">
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.subOrderNumber)}
-                      className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
-                      <Printer className="w-4 h-4 text-white" />
+                      <Printer className="w-4 h-4 text-[#04593f]" />
                       <span>Cetak Ulang Nota</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
-                      <Tag className="w-4 h-4 text-white" />
+                      <Tag className="w-4 h-4 text-[#04593f]" />
                       <span>Cetak Ulang Label</span>
                     </button>
                   </div>

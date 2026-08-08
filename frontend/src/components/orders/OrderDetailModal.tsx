@@ -14,6 +14,7 @@ import {
   CheckCircle,
   PackageCheck,
   ZoomIn,
+  Download,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -211,21 +212,32 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   FOTO BUKTI PACKING KEBUAN
                 </span>
 
-                <div className="flex gap-2 flex-wrap pt-0.5">
+                <div className="flex gap-3 flex-wrap pt-0.5">
                   {order.packing_images.map((img: PackingImage) => (
-                    <div
-                      key={img.id}
-                      onClick={() => setZoomImage(img.image_url)}
-                      className="relative w-24 h-24 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-2xs"
-                    >
-                      <img
-                        src={img.image_url}
-                        alt="Foto Packing"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
-                        <ZoomIn className="w-5 h-5" />
+                    <div key={img.id} className="space-y-1">
+                      <div
+                        onClick={() => setZoomImage(img.image_url)}
+                        className="relative w-28 h-28 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-2xs"
+                      >
+                        <img
+                          src={img.image_url}
+                          alt="Foto Packing"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                        <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                          <ZoomIn className="w-5 h-5" />
+                        </div>
                       </div>
+                      <a
+                        href={img.image_url}
+                        download={`foto-packing-${order.order_number}-${img.id}.jpg`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-28 py-1 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"
+                      >
+                        <Download className="w-3 h-3 text-white" />
+                        <span>Unduh Foto</span>
+                      </a>
                     </div>
                   ))}
                 </div>
