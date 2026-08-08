@@ -38,6 +38,7 @@ Route::get('/run-migrate', function () {
 
 // Public Authentication (Rate limited to 5 attempts per minute to prevent Brute Force & DoS)
 Route::middleware('throttle:5,1')->post('/login', [AuthController::class, 'login']);
+Route::middleware('throttle:5,1')->post('/register', [AuthController::class, 'register']);
 
 // Indonesian Administrative Region Cascading Data (Cached / Throttled)
 Route::middleware('throttle:60,1')->prefix('regions')->group(function () {
@@ -58,41 +59,42 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
 
     // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
 
-    // User Management CRUD (Owner Only)
-    Route::get('/users', [UserController::class, 'index']);
-    Route::post('/users', [UserController::class, 'store']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    // Orders Management Resource API
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [OrderController::class, 'index']);
+        Route::post('/', [OrderController::class, 'store']);
+        Route::get('/{id}', [OrderController::class, 'show']);
+        Route::put('/{id}', [OrderController::class, 'update']);
+        Route::delete('/{id}', [OrderController::class, 'destroy']);
+        Route::post('/{id}/approve', [OrderController::class, 'approve']);
+        Route::post('/{id}/complete-shipment', [OrderController::class, 'completeShipment']);
+    });
 
-    // Notifications
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    // Packing Operations API
+    Route::prefix('packing')->group(function () {
+        Route::get('/queue', [PackingController::class, 'queue']);
+        Route::post('/configure-packages', [PackingController::class, 'configurePackages']);
+        Route::post('/{id}/upload-proof', [PackingController::class, 'uploadProof']);
+    });
 
-    // Sales Commission Route
-    Route::get('/sales/commission', [CommissionController::class, 'index']);
+    // Reports API
+    Route::prefix('reports')->group(function () {
+        Route::get('/sales', [ReportController::class, 'sales']);
+        Route::get('/export-csv', [ReportController::class, 'exportCsv']);
+    });
 
-    // Master Products CRUD (Owner & Admin)
-    Route::post('/master/trees', [MasterDataController::class, 'storeTree']);
-    Route::put('/master/trees/{id}', [MasterDataController::class, 'updateTree']);
-    Route::delete('/master/trees/{id}', [MasterDataController::class, 'destroyTree']);
-    Route::put('/master/grades/{id}', [MasterDataController::class, 'updateGrade']);
+    // Commission Calculator API (Sales Staff Only)
+    Route::get('/commission/my-commission', [CommissionController::class, 'myCommission']);
 
-    // Orders CRUD & Policy Authorization Actions
-    Route::get('/orders', [OrderController::class, 'index']);
-    Route::post('/orders', [OrderController::class, 'store']);
-    Route::get('/orders/{id}', [OrderController::class, 'show']);
-    Route::put('/orders/{id}', [OrderController::class, 'update']);
-    Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
-    Route::post('/orders/{id}/approve', [OrderController::class, 'approve']);
-    Route::post('/orders/{id}/complete-shipment', [OrderController::class, 'completeShipment']);
+    // User Account Management API (Owner / Admin Only)
+    Route::apiResource('users', UserController::class);
 
-    // Packing Workflow
-    Route::get('/packing/queue', [PackingController::class, 'queue']);
-    Route::post('/orders/{id}/packing-proof', [PackingController::class, 'uploadProof']);
-
-    // Reports
-    Route::get('/reports/summary', [ReportController::class, 'summary']);
+    // Notifications API
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('/read-all', [NotificationController::class, 'markAllAsRead']);
+    });
 });

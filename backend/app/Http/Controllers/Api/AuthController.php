@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
@@ -37,6 +38,34 @@ class AuthController extends Controller
                 'token' => $token,
             ]
         ]);
+    }
+
+    public function register(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:6'],
+            'role'     => ['required', 'string', Rule::in(['admin', 'sales'])],
+        ]);
+
+        $user = User::create([
+            'name'     => strip_tags($validated['name']),
+            'email'    => strtolower(trim($validated['email'])),
+            'password' => Hash::make($validated['password']),
+            'role'     => $validated['role'],
+        ]);
+
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pendaftaran akun berhasil.',
+            'data'    => [
+                'user'  => new UserResource($user),
+                'token' => $token,
+            ]
+        ], 201);
     }
 
     public function me(Request $request): JsonResponse

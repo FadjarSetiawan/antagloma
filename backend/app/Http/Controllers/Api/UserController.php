@@ -49,7 +49,7 @@ class UserController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6'],
-            'role'     => ['required', 'string', Rule::in(['owner', 'admin', 'sales', 'packing'])],
+            'role'     => ['required', 'string', Rule::in(['owner', 'admin', 'sales'])],
         ]);
 
         $user = User::create([
@@ -82,7 +82,7 @@ class UserController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($targetUser->id)],
             'password' => ['nullable', 'string', 'min:6'],
-            'role'     => ['required', 'string', Rule::in(['owner', 'admin', 'sales', 'packing'])],
+            'role'     => ['required', 'string', Rule::in(['owner', 'admin', 'sales'])],
         ]);
 
         $payload = [
@@ -99,7 +99,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Data akun user berhasil diperbarui.',
+            'message' => 'Data user berhasil diperbarui.',
             'data'    => [
                 'id'         => $targetUser->id,
                 'name'       => $targetUser->name,
@@ -116,11 +116,12 @@ class UserController extends Controller
 
         $targetUser = User::findOrFail($id);
 
+        // Prevent self-deletion
         if ($targetUser->id === $request->user()->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif digunakan.'
-            ], 400);
+                'message' => 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.',
+            ], 422);
         }
 
         $targetUser->delete();

@@ -16,6 +16,11 @@ export const authService = {
     return response.data;
   },
 
+  async register(payload: { name: string; email: string; password: string; role: 'admin' | 'sales' }): Promise<LoginResponse> {
+    const response = await api.post('/register', payload);
+    return response.data;
+  },
+
   async getMe(): Promise<User> {
     const response = await api.get('/me');
     return response.data.data;
