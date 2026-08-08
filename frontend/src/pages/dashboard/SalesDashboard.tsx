@@ -4,7 +4,7 @@ import { orderService } from '../../services/orderService';
 import { Order } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
-import { ShoppingBag, Clock, Package, CheckCircle2, ChevronRight, TrendingUp, Plus, Truck, Tag, Eye } from 'lucide-react';
+import { ShoppingBag, Clock, Package, CheckCircle2, ChevronRight, Plus, Truck, Tag, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const SalesDashboard: React.FC = () => {
@@ -133,29 +133,6 @@ export const SalesDashboard: React.FC = () => {
             </div>
           );
         })}
-      </div>
-
-      {/* Sleek Sales Report Banner */}
-      <div
-        onClick={() => navigate('/reports')}
-        className="bg-[#04593f] text-white rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-xs cursor-pointer hover:bg-emerald-900 transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/10 text-white flex items-center justify-center flex-shrink-0">
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-300" />
-          </div>
-          <div>
-            <h3 className="text-xs sm:text-sm font-bold text-white leading-tight">Ringkasan Penjualan</h3>
-            <p className="text-[10px] sm:text-[11px] text-emerald-100/80 font-normal mt-0.5">
-              Pantau laporan omset harian hingga bulanan toko.
-            </p>
-          </div>
-        </div>
-
-        <div className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 bg-white/15 hover:bg-white/25 rounded-xl text-xs font-bold text-white flex items-center gap-1 flex-shrink-0">
-          <span>Laporan</span>
-          <ChevronRight className="w-3.5 h-3.5" />
-        </div>
       </div>
 
       {/* Dedicated Section: Tabel Daftar Pesanan yang Sudah Dikirimkan Nomor Resinya oleh Admin */}
