@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
 import { Order } from '../../types/order';
-import { ShoppingBag, Clock, Package, CheckCircle2, ChevronRight, TrendingUp, Plus } from 'lucide-react';
+import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
+import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
+import { ShoppingBag, Clock, Package, CheckCircle2, ChevronRight, TrendingUp, Plus, Truck, Tag, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const SalesDashboard: React.FC = () => {
   const navigate = useNavigate();
+
+  const [selectedDetailOrder, setSelectedDetailOrder] = useState<Order | null>(null);
 
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['dashboard-metrics'],
@@ -17,9 +21,19 @@ export const SalesDashboard: React.FC = () => {
 
   const todayStr = new Date().toISOString().split('T')[0];
   const todayOrders = orders.filter((o: Order) => o.order_date === todayStr).length;
-  const waitingProcess = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
-  const waitingPacking = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
-  const completedOrders = orders.filter((o: Order) => o.status === 'COMPLETED' || o.status === 'PACKING_COMPLETED').length;
+
+  // Status Grouping specifically tailored for Sales:
+  // Card 2: Menunggu Diproses Admin (WAITING_PROCESS or freshly verified waiting package configuration)
+  const waitingProcessCount = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
+
+  // Card 3: Menunggu Packing (WAITING_PACKING)
+  const waitingPackingCount = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
+
+  // Card 4: Packing Selesai (PACKING_COMPLETED - photo uploaded)
+  const packingCompletedCount = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED').length;
+
+  // Orders with Tracking Number shipped by Admin
+  const shippedOrdersWithResi = orders.filter((o: Order) => Boolean(o.tracking_number) || o.status === 'COMPLETED');
 
   const statCards = [
     {
@@ -33,35 +47,35 @@ export const SalesDashboard: React.FC = () => {
     },
     {
       title: 'Menunggu Diproses',
-      value: isLoading ? '...' : waitingProcess,
-      caption: waitingProcess > 0 ? `${waitingProcess} perlu verifikasi` : 'Menunggu admin',
-      hasNotification: waitingProcess > 0,
+      value: isLoading ? '...' : waitingProcessCount,
+      caption: waitingProcessCount > 0 ? `${waitingProcessCount} menunggu admin` : 'Menunggu admin',
+      hasNotification: waitingProcessCount > 0,
       buttonText: 'Cek Status',
       icon: Clock,
       link: '/orders?status=WAITING_PROCESS',
     },
     {
       title: 'Menunggu Packing',
-      value: isLoading ? '...' : waitingPacking,
-      caption: waitingPacking > 0 ? `${waitingPacking} siap dikemas` : 'Dalam pengemasan',
-      hasNotification: waitingPacking > 0,
+      value: isLoading ? '...' : waitingPackingCount,
+      caption: waitingPackingCount > 0 ? `${waitingPackingCount} siap dikemas` : 'Dalam pengemasan',
+      hasNotification: waitingPackingCount > 0,
       buttonText: 'Cek Antrean',
       icon: Package,
       link: '/packing',
     },
     {
-      title: 'Pesanan Selesai',
-      value: isLoading ? '...' : completedOrders,
-      caption: completedOrders > 0 ? `${completedOrders} order selesai` : 'Resi terkirim',
-      hasNotification: false,
+      title: 'Packing Selesai',
+      value: isLoading ? '...' : packingCompletedCount,
+      caption: packingCompletedCount > 0 ? `${packingCompletedCount} foto paket dikirim` : 'Belum ada foto',
+      hasNotification: packingCompletedCount > 0,
       buttonText: 'Lihat Selesai',
       icon: CheckCircle2,
-      link: '/orders?status=COMPLETED',
+      link: '/orders?status=PACKING_COMPLETED',
     },
   ];
 
   return (
-    <div className="space-y-4 max-w-7xl pb-24 font-sans text-slate-900">
+    <div className="space-y-5 max-w-7xl pb-24 font-sans text-slate-900">
       {/* Header Banner - Streamlined & Clean */}
       <div className="flex items-center justify-between pt-1">
         <div>
@@ -151,6 +165,95 @@ export const SalesDashboard: React.FC = () => {
           <ChevronRight className="w-3.5 h-3.5" />
         </div>
       </div>
+
+      {/* Dedicated Section: Tabel Daftar Pesanan yang Sudah Dikirimkan Nomor Resinya oleh Admin */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3.5 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h2 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Tag className="w-4 h-4 text-[#04593f]" />
+              <span>Daftar Pesanan yang Sudah Dikirimkan Nomor Resinya oleh Admin</span>
+            </h2>
+            <p className="text-[11px] text-slate-400 font-normal mt-0.5">
+              Daftar pesanan dengan resi terbit yang siap diinfokan ke pemesan/customer
+            </p>
+          </div>
+
+          <span className="px-2.5 py-1 bg-emerald-50 text-[#04593f] border border-emerald-200 rounded-lg text-xs font-bold">
+            {shippedOrdersWithResi.length} Resi Terbit
+          </span>
+        </div>
+
+        {isLoading ? (
+          <div className="py-8 text-center text-xs font-normal text-slate-400">
+            Memuat daftar resi pesanan...
+          </div>
+        ) : shippedOrdersWithResi.length === 0 ? (
+          <div className="py-8 text-center space-y-1">
+            <p className="text-xs font-bold text-slate-700">Belum Ada Nomor Resi yang Diinput Admin</p>
+            <p className="text-[11px] text-slate-400">Nomor resi yang diinput admin akan otomatis muncul di sini.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200/80 text-slate-600 font-bold text-[11px]">
+                <tr>
+                  <th className="py-2.5 px-3">No. Order & Tgl</th>
+                  <th className="py-2.5 px-3">Customer / Pemesan</th>
+                  <th className="py-2.5 px-3">Metode Pengiriman</th>
+                  <th className="py-2.5 px-3">Nomor Resi</th>
+                  <th className="py-2.5 px-3 text-center">Status</th>
+                  <th className="py-2.5 px-3 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
+                {shippedOrdersWithResi.map((order: Order) => (
+                  <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-3">
+                      <span className="font-bold text-slate-900 block">{order.order_number}</span>
+                      <span className="text-[10px] text-slate-400 font-normal">{order.order_date}</span>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className="font-bold text-slate-900 block">{order.customer_name}</span>
+                      <span className="text-[10px] text-slate-500 font-medium">{order.phone}</span>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className="font-medium text-slate-700 flex items-center gap-1">
+                        <Truck className="w-3.5 h-3.5 text-[#04593f]" />
+                        {order.delivery_method}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className="inline-block px-2.5 py-1 bg-emerald-50 border border-emerald-300 text-[#04593f] font-black text-xs rounded-lg tracking-wide shadow-2xs">
+                        {order.tracking_number || 'Belum Input Resi'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <OrderStatusBadge status={order.status} />
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDetailOrder(order)}
+                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold inline-flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Detail</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Order Detail Modal */}
+      <OrderDetailModal
+        order={selectedDetailOrder}
+        onClose={() => setSelectedDetailOrder(null)}
+      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Order } from '../../types/order';
+import { Order, PackingImage } from '../../types/order';
 import { OrderStatusBadge } from '../shared/OrderStatusBadge';
 import { StatusTimeline } from './StatusTimeline';
 import {
@@ -59,8 +59,8 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto w-full h-full">
-        <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-lg md:max-w-2xl lg:max-w-3xl shadow-xl overflow-hidden my-auto max-h-[92vh] flex flex-col font-sans">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto w-full h-full font-sans">
+        <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-lg md:max-w-2xl lg:max-w-3xl shadow-xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
           {/* Header Modal */}
           <div className="p-3.5 sm:p-4 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
             <div>
@@ -88,6 +88,19 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               </span>
               <StatusTimeline status={order.status} />
             </div>
+
+            {/* Verified Payment Notice Banner for WAITING_PACKING */}
+            {order.status === 'WAITING_PACKING' && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200/90 rounded-xl space-y-0.5 text-xs text-emerald-950 shadow-2xs">
+                <span className="font-bold text-[#04593f] flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4 text-[#04593f]" />
+                  <span>Pembayaran terverifikasi, menunggu buat paket</span>
+                </span>
+                <p className="text-[11px] text-slate-600 font-medium pl-5.5">
+                  Pembayaran order telah disetujui admin. Saat ini menunggu pembuatan paket pengiriman oleh admin.
+                </p>
+              </div>
+            )}
 
             {/* Customer & Shipping Info Box */}
             <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 space-y-2">
@@ -138,171 +151,177 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 <div className="p-2 bg-white border border-slate-200/80 rounded-lg space-y-0.5">
                   <span className="text-[9px] text-slate-400 font-bold uppercase block">ONGKOS KIRIM</span>
                   <span className="font-bold text-slate-900 block">
-                    {shippingCost > 0 ? `Rp ${shippingCost.toLocaleString('id-ID')}` : 'Rp 0'}
+                    Rp {(order.buyer_shipping_cost || 0).toLocaleString('id-ID')}
                   </span>
                 </div>
 
-                <div className="p-2 bg-[#04593f] text-white rounded-lg space-y-0.5 flex flex-col justify-center">
-                  <span className="text-[9px] text-emerald-200 font-bold uppercase block">TOTAL PEMBAYARAN</span>
-                  <span className="font-black text-xs sm:text-sm block">Rp {grandTotal.toLocaleString('id-ID')}</span>
+                <div className="p-2 bg-white border border-slate-200/80 rounded-lg space-y-0.5">
+                  <span className="text-[9px] text-slate-400 font-bold uppercase block">TOTAL ORDER</span>
+                  <span className="font-extrabold text-[#04593f] block">
+                    Rp {grandTotal.toLocaleString('id-ID')}
+                  </span>
                 </div>
               </div>
 
-              {/* Bukti Transfer Image Preview */}
-              {order.payment_proof_url ? (
+              {/* Bukti Transfer Image Attachment */}
+              {order.payment_proof_url && (
                 <div className="pt-1">
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">FOTO BUKTI TRANSFER:</span>
+                  <span className="text-[10px] text-slate-500 font-bold block mb-1">Bukti Transfer Pembayaran:</span>
                   <div
                     onClick={() => setZoomImage(order.payment_proof_url || null)}
-                    className="relative w-full h-36 bg-slate-200 rounded-xl overflow-hidden border border-slate-300 cursor-pointer group shadow-2xs"
+                    className="relative w-28 h-28 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-2xs"
                   >
                     <img
                       src={order.payment_proof_url}
                       alt="Bukti Transfer"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
-                    <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white font-bold text-xs transition-opacity gap-1">
-                      <ZoomIn className="w-3.5 h-3.5" /> Klik untuk memperbesar foto
+                    <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                      <ZoomIn className="w-5 h-5" />
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="p-2 bg-amber-50 border border-amber-200/80 rounded-lg text-[11px] font-semibold text-amber-900">
-                  Belum ada foto bukti transfer yang diunggah.
-                </div>
               )}
             </div>
 
-            {/* Plant Items Table */}
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">
-                RINCIAN BARANG / TANAMAN ADENIUM
-              </span>
-              <div className="border border-slate-200/80 rounded-xl overflow-hidden">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-bold text-[11px] uppercase">
-                    <tr>
-                      <th className="py-2 px-3">Nama Varian</th>
-                      <th className="py-2 px-3">Ukuran</th>
-                      <th className="py-2 px-3 text-center">Qty</th>
-                      <th className="py-2 px-3 text-right">Harga</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
-                    {order.items && order.items.length > 0 ? (
-                      order.items.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50">
-                          <td className="py-2 px-3">
-                            <span className="font-bold text-slate-900 block text-xs">{item.tree_name || item.product_name}</span>
-                            {item.tree_code && <span className="text-[10px] text-slate-400 font-normal">Code: {item.tree_code}</span>}
-                          </td>
-                          <td className="py-2 px-3">
-                            <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-bold text-slate-700">
-                              Grade {item.grade || 'A'}
-                            </span>
-                          </td>
-                          <td className="py-2 px-3 text-center font-bold">{item.quantity}</td>
-                          <td className="py-2 px-3 text-right font-bold text-[#04593f]">
-                            Rp {((item.quantity || 1) * (item.price || 0)).toLocaleString('id-ID')}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={4} className="py-3 text-center text-slate-400 font-normal">
-                          Belum ada barang.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Notes Callout Box */}
-            {order.notes && (
-              <div className="p-2.5 bg-amber-50/80 border border-amber-200/80 rounded-xl text-[11px]">
-                <span className="font-bold text-amber-950 uppercase block text-[10px]">
-                  CATATAN PENGIRIMAN / PACKING KAYU:
+            {/* FOTO BUKTI PACKING TANAMAN (Jika ada) */}
+            {order.packing_images && order.packing_images.length > 0 && (
+              <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 space-y-2">
+                <span className="text-[10px] font-bold uppercase text-slate-400 block border-b border-slate-200/80 pb-1.5 tracking-wider">
+                  FOTO BUKTI PACKING KEBUAN
                 </span>
-                <p className="text-amber-900 font-medium italic mt-0.5">"{order.notes}"</p>
+
+                <div className="flex gap-2 flex-wrap pt-0.5">
+                  {order.packing_images.map((img: PackingImage) => (
+                    <div
+                      key={img.id}
+                      onClick={() => setZoomImage(img.image_url)}
+                      className="relative w-24 h-24 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-2xs"
+                    >
+                      <img
+                        src={img.image_url}
+                        alt="Foto Packing"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                        <ZoomIn className="w-5 h-5" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
+
+            {/* DAFTAR ITEM TANAMAN */}
+            <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 space-y-2">
+              <span className="text-[10px] font-bold uppercase text-slate-400 block border-b border-slate-200/80 pb-1.5 tracking-wider">
+                RINCIAN ITEM TANAMAN (& BONSAI POT)
+              </span>
+
+              <div className="divide-y divide-slate-200/60 font-medium text-xs text-slate-800">
+                {order.items && order.items.length > 0 ? (
+                  order.items.map((item, idx) => (
+                    <div key={idx} className="py-2 flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-slate-900 block">{item.tree_name || item.product_name}</span>
+                        <span className="text-[10px] text-slate-400">
+                          Grade {item.grade || 'A'} • Rp {(item.price || 0).toLocaleString('id-ID')} / pohon
+                        </span>
+                      </div>
+                      <span className="font-bold text-slate-900">x{item.quantity}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="py-2 text-center text-slate-400">Tidak ada detail item tanaman.</p>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Modal Action Buttons Footer */}
-          <div className="p-3 bg-slate-50/90 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {onOpenNota && (
-                <button
-                  onClick={() => onOpenNota(order)}
-                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
-                >
-                  <Printer className="w-3.5 h-3.5 text-amber-700" /> Nota
-                </button>
-              )}
+          {/* Modal Footer Action Buttons */}
+          <div className="p-3.5 sm:p-4 bg-slate-50/90 border-t border-slate-200 flex items-center justify-between flex-shrink-0">
+            <button
+              onClick={onClose}
+              className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+            >
+              Tutup
+            </button>
 
-              {(isOwnerOrAdmin || (isCreatorSales && order.status === 'WAITING_PROCESS')) && onEdit && (
-                <button
-                  onClick={() => onEdit(order)}
-                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
-                >
-                  <Edit3 className="w-3.5 h-3.5 text-slate-500" /> Edit
-                </button>
-              )}
-
-              {(isOwnerOrAdmin || (isCreatorSales && order.status === 'WAITING_PROCESS')) && onDelete && (
-                <button
-                  onClick={() => onDelete(order.id)}
-                  className="px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-semibold flex items-center gap-1 hover:bg-rose-100 transition-colors cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5" /> Hapus
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
+              {/* ADMIN / OWNER VERIFICATION ACTION BUTTON */}
               {isOwnerOrAdmin && order.status === 'WAITING_PROCESS' && onApprove && (
                 <button
-                  disabled={isActionLoading}
                   onClick={() => onApprove(order.id)}
-                  className="px-3.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                  disabled={isActionLoading}
+                  className="px-3.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer"
                 >
-                  <CheckCircle className="w-3.5 h-3.5" /> Approve & Kirim Packing
+                  <CheckCircle className="w-4 h-4 text-white" />
+                  <span>Verifikasi Pembayaran</span>
                 </button>
               )}
 
+              {/* ADMIN / OWNER PRINT NOTA ACTION BUTTON */}
+              {isOwnerOrAdmin && (order.status === 'WAITING_PACKING' || order.status === 'PACKING_COMPLETED' || order.status === 'COMPLETED') && onOpenNota && (
+                <button
+                  onClick={() => onOpenNota(order)}
+                  className="px-3 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                >
+                  <Printer className="w-4 h-4 text-white" />
+                  <span>Cetak Nota</span>
+                </button>
+              )}
+
+              {/* ADMIN / OWNER RESI SHIPMENT ACTION BUTTON */}
               {isOwnerOrAdmin && order.status === 'PACKING_COMPLETED' && onOpenShipmentModal && (
                 <button
                   onClick={() => onOpenShipmentModal(order)}
-                  className="px-3.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                  className="px-3 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer"
                 >
-                  <PackageCheck className="w-3.5 h-3.5" /> Selesaikan Pengiriman
+                  <PackageCheck className="w-4 h-4 text-white" />
+                  <span>Input Resi</span>
                 </button>
               )}
 
-              <button
-                onClick={onClose}
-                className="px-3.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-              >
-                Tutup
-              </button>
+              {/* EDIT BUTTON (SALES CAN ONLY EDIT IF UNVERIFIED - WAITING_PROCESS) */}
+              {(isOwnerOrAdmin || (isCreatorSales && order.status === 'WAITING_PROCESS')) && onEdit && (
+                <button
+                  onClick={() => onEdit(order)}
+                  className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl cursor-pointer"
+                  title="Edit Order"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* DELETE BUTTON (SALES CAN ONLY DELETE IF UNVERIFIED - WAITING_PROCESS) */}
+              {(isOwnerOrAdmin || (isCreatorSales && order.status === 'WAITING_PROCESS')) && onDelete && (
+                <button
+                  onClick={() => onDelete(order.id)}
+                  className="p-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl cursor-pointer"
+                  title="Hapus Order"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* POPUP FULLSCREEN ZOOM BUKTI TRANSFER IMAGE */}
+      {/* Zoom Image Lightbox Overlay */}
       {zoomImage && (
-        <div className="fixed inset-0 z-[10000] bg-slate-900/85 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="relative max-w-xl w-full bg-white rounded-2xl p-3 shadow-2xl space-y-2">
-            <div className="flex justify-between items-center px-1 border-b border-slate-100 pb-1.5">
-              <span className="text-xs font-bold text-slate-900">Bukti Transfer - {order.order_number}</span>
-              <button onClick={() => setZoomImage(null)} className="p-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 cursor-pointer">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <img src={zoomImage} alt="Bukti Transfer Zoom" className="w-full max-h-[75vh] object-contain rounded-xl border border-slate-200" />
+        <div
+          onClick={() => setZoomImage(null)}
+          className="fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out"
+        >
+          <div className="relative max-w-2xl w-full max-h-[90vh]">
+            <img src={zoomImage} alt="Enlarged View" className="w-full h-full object-contain rounded-2xl shadow-2xl" />
+            <button
+              onClick={() => setZoomImage(null)}
+              className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-full hover:bg-black"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
       )}
