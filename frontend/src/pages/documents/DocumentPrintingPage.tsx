@@ -35,8 +35,14 @@ export const DocumentPrintingPage: React.FC = () => {
 
   const orders = data?.data || [];
 
+  // Filter orders: orders that have NOT uploaded packing proof photo yet stay in document printing queue
+  // Once packing proof photo is uploaded, order automatically leaves document printing and moves to Resi Input queue
+  const eligibleOrders = orders.filter(
+    (order: Order) => !order.tracking_number && (!order.packing_images || order.packing_images.length === 0)
+  );
+
   // Dynamically expand orders into individual package cards (Paket A, Paket B, etc.)
-  const expandedPackageCards = orders.flatMap((order: Order) => {
+  const expandedPackageCards = eligibleOrders.flatMap((order: Order) => {
     const itemCount = order.items?.length || 1;
     const packagesList = [];
 
@@ -105,22 +111,6 @@ export const DocumentPrintingPage: React.FC = () => {
         weightInfo: pkgCard.weightInfo,
       },
     });
-  };
-
-  const handlePrintNota = (pkgCard: typeof expandedPackageCards[0]) => {
-    // Record printed timestamp
-    const nowStr = new Date().toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    }) + ` • ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
-
-    setPrintedPackages((prev) => ({
-      ...prev,
-      [pkgCard.subOrderNumber]: { printedAt: nowStr },
-    }));
-
-    setSelectedNotaOrder(pkgCard.order);
   };
 
   return (
