@@ -12,6 +12,13 @@ class OrderResource extends JsonResource
         $statusStr = $this->status instanceof \BackedEnum ? $this->status->value : (string) $this->status;
         $deliveryStr = $this->delivery_method instanceof \BackedEnum ? $this->delivery_method->value : (string) $this->delivery_method;
 
+        $plantTotal = $this->items ? $this->items->sum(function ($item) {
+            return (float) $item->quantity * (float) $item->price;
+        }) : 0;
+
+        $isVerified = !in_array($statusStr, ['WAITING_PROCESS', 'CANCELLED']);
+        $salesCommission = $isVerified ? round($plantTotal * 0.05) : 0;
+
         return [
             'id'                  => $this->id,
             'order_number'        => $this->order_number,
@@ -31,6 +38,9 @@ class OrderResource extends JsonResource
             'payment_method'      => $this->payment_method ?? 'Transfer Bank',
             'bank_name'           => $this->bank_name,
             'buyer_shipping_cost' => $this->buyer_shipping_cost ?? 0,
+            'plant_total'         => $plantTotal,
+            'sales_commission'    => $salesCommission,
+            'is_verified'         => $isVerified,
             'payment_proof_url'   => $this->payment_proof_path ? asset('storage/' . $this->payment_proof_path) : null,
             'payment_status'      => $this->payment_status ?? 'PENDING',
             'shipping_cost'       => $this->shipping_cost,

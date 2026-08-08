@@ -22,7 +22,6 @@ class CommissionController extends Controller
             $query->where('created_by', $user->id);
         }
 
-        // Filter by status (completed, waiting packing, waiting process, or all non-cancelled)
         $orders = $query->orderBy('order_date', 'desc')->get();
 
         // Calculate commissions per order and monthly totals
@@ -31,22 +30,20 @@ class CommissionController extends Controller
 
         foreach ($orders as $order) {
             $plantTotal = 0;
-            $totalDiscount = 0;
 
             foreach ($order->items as $item) {
                 $qty = (float) $item->quantity;
                 $price = (float) $item->price;
-                $discount = (float) $item->discount;
-
                 $plantTotal += ($qty * $price);
-                $totalDiscount += ($qty * $discount);
             }
 
-            $subtotal = max(0, $plantTotal - $totalDiscount);
-            $commission = round($subtotal * 0.05);
+            // Commission is 5% of Total Harga Tanaman (plantTotal).
+            // It ONLY accrues when Admin has verified payment (status !== WAITING_PROCESS and status !== CANCELLED).
+            $isVerified = !in_array($order->status, ['WAITING_PROCESS', 'CANCELLED']);
+            $commission = $isVerified ? round($plantTotal * 0.05) : 0;
 
             $orderMonth = Carbon::parse($order->order_date)->format('Y-m');
-            if ($orderMonth === $monthStr) {
+            if ($orderMonth === $monthStr && $isVerified) {
                 $monthlyTotalCommission += $commission;
             }
 
@@ -61,10 +58,9 @@ class CommissionController extends Controller
                 'month_key'          => $orderMonth,
                 'item_count'         => count($order->items),
                 'plant_total'        => $plantTotal,
-                'total_discount'     => $totalDiscount,
-                'subtotal'           => $subtotal,
                 'commission'         => $commission,
-                'status'             => 'Sudah Dibayarkan', // Default disbursement badge
+                'is_verified'        => $isVerified,
+                'status'             => $isVerified ? 'Cair / Terverifikasi' : 'Menunggu Verifikasi Admin',
                 'payment_status'     => $order->payment_status,
             ];
         }
@@ -74,16 +70,15 @@ class CommissionController extends Controller
             return $item['month_key'] === $monthStr;
         });
 
-        // Group history by date for summary view if needed
         return response()->json([
             'success' => true,
             'data'    => [
-                'month'                  => $monthStr,
-                'month_label'            => Carbon::parse($monthStr . '-01')->locale('id')->translatedFormat('F Y'),
-                'monthly_commission'     => $monthlyTotalCommission,
-                'total_orders'           => count($filteredHistory),
-                'history'                => array_values($filteredHistory),
-                'all_history'            => array_values($orderHistory),
+                'month'              => $monthStr,
+                'month_label'        => Carbon::parse($monthStr . '-01')->locale('id')->translatedFormat('F Y'),
+                'monthly_commission' => $monthlyTotalCommission,
+                'total_orders'       => count($filteredHistory),
+                'history'            => array_values($filteredHistory),
+                'all_history'        => array_values($orderHistory),
             ],
         ]);
     }

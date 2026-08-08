@@ -91,7 +91,7 @@ export const SalesCommissionPage: React.FC = () => {
         {/* Calculation Info Banner */}
         <div className="relative z-10 pt-2 border-t border-emerald-700/60 flex items-center gap-2 text-[11px] text-emerald-200 font-bold">
           <Award className="w-4 h-4 text-emerald-300 flex-shrink-0" />
-          <span>Komisi 5% dihitung otomatis dari (Total Harga Tanaman - Total Diskon)</span>
+          <span>Komisi 5% dihitung otomatis dari Total Harga Tanaman setelah diverifikasi Admin.</span>
         </div>
       </div>
 
