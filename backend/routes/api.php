@@ -67,9 +67,11 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::post('/', [OrderController::class, 'store']);
         Route::get('/{id}', [OrderController::class, 'show']);
         Route::put('/{id}', [OrderController::class, 'update']);
+        Route::patch('/{id}', [OrderController::class, 'update']);
         Route::delete('/{id}', [OrderController::class, 'destroy']);
-        Route::post('/{id}/approve', [OrderController::class, 'approve']);
-        Route::post('/{id}/complete-shipment', [OrderController::class, 'completeShipment']);
+        Route::match(['post', 'patch'], '/{id}/approve', [OrderController::class, 'approve']);
+        Route::match(['post', 'patch'], '/{id}/shipment', [OrderController::class, 'completeShipment']);
+        Route::match(['post', 'patch'], '/{id}/complete-shipment', [OrderController::class, 'completeShipment']);
     });
 
     // Packing Operations API
