@@ -88,8 +88,32 @@ export const DocumentPrintingPage: React.FC = () => {
   const unprintedCards = expandedPackageCards.filter((card) => !printedPackages[card.subOrderNumber]);
   const printedCards = expandedPackageCards.filter((card) => Boolean(printedPackages[card.subOrderNumber]));
 
-  const handlePrintResi = (pkgCard: typeof expandedPackageCards[0]) => {
-    // Record printed timestamp
+  const handlePrintNota = (order: Order, subOrderNumber?: string) => {
+    const nowStr = new Date().toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }) + ` • ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
+
+    setPrintedPackages((prev) => {
+      const next = { ...prev };
+      if (subOrderNumber) {
+        next[subOrderNumber] = { printedAt: nowStr };
+      } else {
+        expandedPackageCards
+          .filter((c) => c.order.id === order.id)
+          .forEach((c) => {
+            next[c.subOrderNumber] = { printedAt: nowStr };
+          });
+      }
+      return next;
+    });
+
+    setSelectedNotaOrder(order);
+  };
+
+  const handlePrintLabel = (pkgCard: typeof expandedPackageCards[0]) => {
+    // Record printed timestamp & automatically transition card to "Sudah Dicetak"
     const nowStr = new Date().toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'short',
@@ -137,7 +161,7 @@ export const DocumentPrintingPage: React.FC = () => {
       <div className="grid grid-cols-2 gap-3 pt-1">
         <button
           onClick={() => {
-            if (expandedPackageCards.length > 0) setSelectedNotaOrder(expandedPackageCards[0].order);
+            if (expandedPackageCards.length > 0) handlePrintNota(expandedPackageCards[0].order);
           }}
           className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
         >
@@ -147,7 +171,7 @@ export const DocumentPrintingPage: React.FC = () => {
 
         <button
           onClick={() => {
-            if (expandedPackageCards.length > 0) handlePrintResi(expandedPackageCards[0]);
+            if (expandedPackageCards.length > 0) handlePrintLabel(expandedPackageCards[0]);
           }}
           className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
         >
@@ -259,7 +283,6 @@ export const DocumentPrintingPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Uniform Soft Blue Badge for both Fullset & Non-fullset */}
                   <span className="px-2.5 py-0.5 font-bold text-[11px] rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
                     {pkgCard.packageType}
                   </span>
@@ -284,23 +307,24 @@ export const DocumentPrintingPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Action Buttons Row - Uniform Green Palette */}
+                {/* Action Buttons Row - Dual Green Buttons: Cetak Nota (Kiri) & Cetak Label (Kanan) */}
                 <div className="grid grid-cols-2 gap-2.5 pt-1">
                   <button
                     type="button"
-                    onClick={() => handlePrintResi(pkgCard)}
+                    onClick={() => handlePrintNota(pkgCard.order, pkgCard.subOrderNumber)}
                     className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                   >
-                    <Printer className="w-4 h-4" />
-                    <span>Cetak Resi</span>
+                    <Printer className="w-4 h-4 text-white" />
+                    <span>Cetak Nota</span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => setDetailOrder(pkgCard.order)}
-                    className="py-2.5 px-3 bg-white border border-[#04593f] text-[#04593f] hover:bg-emerald-50 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    onClick={() => handlePrintLabel(pkgCard)}
+                    className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                   >
-                    <span>Detail Pesanan</span>
+                    <Tag className="w-4 h-4 text-white" />
+                    <span>Cetak Label</span>
                   </button>
                 </div>
               </div>
@@ -346,7 +370,6 @@ export const DocumentPrintingPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Uniform Soft Blue Badge for both Fullset & Non-fullset */}
                     <span className="px-2.5 py-0.5 font-bold text-[11px] rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
                       {pkgCard.packageType}
                     </span>
@@ -385,23 +408,24 @@ export const DocumentPrintingPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Action Buttons Row - Uniform Green Palette */}
+                  {/* Action Buttons Row - Dual Green Buttons: Cetak Ulang Nota (Kiri) & Cetak Ulang Label (Kanan) */}
                   <div className="grid grid-cols-2 gap-2.5 pt-1">
                     <button
                       type="button"
-                      onClick={() => handlePrintResi(pkgCard)}
-                      className="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      onClick={() => handlePrintNota(pkgCard.order, pkgCard.subOrderNumber)}
+                      className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
-                      <Eye className="w-4 h-4 text-[#04593f]" />
-                      <span>Lihat Resi</span>
+                      <Printer className="w-4 h-4 text-white" />
+                      <span>Cetak Ulang Nota</span>
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => setDetailOrder(pkgCard.order)}
-                      className="py-2.5 px-3 bg-white border border-[#04593f] text-[#04593f] hover:bg-emerald-50 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      onClick={() => handlePrintLabel(pkgCard)}
+                      className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
-                      <span>Detail Pesanan</span>
+                      <Tag className="w-4 h-4 text-white" />
+                      <span>Cetak Ulang Label</span>
                     </button>
                   </div>
                 </div>
