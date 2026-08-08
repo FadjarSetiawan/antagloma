@@ -156,20 +156,22 @@ export const DocumentPrintingPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Top Navigation Tabs: Belum Dicetak vs Sudah Dicetak */}
-      <div className="grid grid-cols-2 bg-white border border-slate-200/80 rounded-2xl p-1 shadow-2xs font-bold text-xs">
+      {/* Top Navigation Tabs: Belum Dicetak vs Sudah Dicetak (Dual Button Box Layout) */}
+      <div className="grid grid-cols-2 gap-2.5 font-bold text-xs">
         <button
           type="button"
           onClick={() => setActiveTab('unprinted')}
-          className={`py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
             activeTab === 'unprinted'
-              ? 'bg-emerald-50 text-[#04593f] shadow-2xs border border-emerald-200'
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-emerald-50 text-[#04593f] border-2 border-emerald-300 shadow-xs font-black scale-[1.01]'
+              : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
           }`}
         >
-          <FileText className="w-4 h-4" />
+          <FileText className={`w-4 h-4 ${activeTab === 'unprinted' ? 'text-[#04593f]' : 'text-slate-500'}`} />
           <span>Belum Dicetak</span>
-          <span className="px-2 py-0.5 rounded-full bg-[#04593f] text-white text-[10px] font-black">
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+            activeTab === 'unprinted' ? 'bg-[#04593f] text-white' : 'bg-slate-200 text-slate-700'
+          }`}>
             {unprintedCards.length}
           </span>
         </button>
@@ -177,19 +179,19 @@ export const DocumentPrintingPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('printed')}
-          className={`py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
             activeTab === 'printed'
-              ? 'bg-emerald-50 text-[#04593f] shadow-2xs border border-emerald-200'
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-emerald-50 text-[#04593f] border-2 border-emerald-300 shadow-xs font-black scale-[1.01]'
+              : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
           }`}
         >
-          <Printer className="w-4 h-4" />
+          <Printer className={`w-4 h-4 ${activeTab === 'printed' ? 'text-[#04593f]' : 'text-slate-500'}`} />
           <span>Sudah Dicetak</span>
-          {printedCards.length > 0 && (
-            <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black">
-              {printedCards.length}
-            </span>
-          )}
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+            activeTab === 'printed' ? 'bg-[#04593f] text-white' : 'bg-slate-200 text-slate-700'
+          }`}>
+            {printedCards.length}
+          </span>
         </button>
       </div>
 
