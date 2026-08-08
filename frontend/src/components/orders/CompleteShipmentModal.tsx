@@ -70,7 +70,7 @@ export const CompleteShipmentModal: React.FC<CompleteShipmentModalProps> = ({ or
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-900 mb-1">Biaya Ongkos Kirim (Rp)</label>
+            <label className="block text-xs font-bold text-slate-900 mb-1">Ongkir Ekspedisi (Rp)</label>
             <input
               type="number"
               min={0}
