@@ -81,14 +81,6 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
           {/* Modal Scrollable Content Body */}
           <div className="p-3.5 sm:p-5 overflow-y-auto space-y-4 text-xs font-sans text-slate-900">
-            {/* Status Timeline */}
-            <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3">
-              <span className="text-[10px] font-bold uppercase text-slate-400 block mb-2 tracking-wider">
-                STATUS TIMELINE ORDER
-              </span>
-              <StatusTimeline status={order.status} />
-            </div>
-
             {/* Verified Payment Notice Banner for WAITING_PACKING */}
             {order.status === 'WAITING_PACKING' && (
               <div className="p-3 bg-emerald-50 border border-emerald-200/90 rounded-xl space-y-0.5 text-xs text-emerald-950 shadow-2xs">
@@ -163,31 +155,33 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 </div>
               </div>
 
-              {/* SALES COMMISSION ACCRUAL BOX */}
-              <div className="p-3 bg-[#04593f] text-white rounded-xl flex items-center justify-between text-xs mt-2 shadow-2xs">
-                <div>
-                  <span className="text-[10px] text-emerald-200 font-bold block uppercase tracking-wider">KOMISI SALES (5%)</span>
-                  <span className="text-[11px] text-emerald-100 font-medium mt-0.5 block">
-                    {order.status === 'WAITING_PROCESS'
-                      ? 'Otomatis dihitung 5% dari Total Harga Tanaman setelah diverifikasi Admin.'
-                      : `Hitungan: Rp ${plantTotalPrice.toLocaleString('id-ID')} × 5%`}
-                  </span>
+              {/* SALES COMMISSION ACCRUAL BOX (Only visible to Sales staff) */}
+              {role === 'sales' && (
+                <div className="p-3 bg-[#04593f] text-white rounded-xl flex items-center justify-between text-xs mt-2 shadow-2xs">
+                  <div>
+                    <span className="text-[10px] text-emerald-200 font-bold block uppercase tracking-wider">KOMISI SALES (5%)</span>
+                    <span className="text-[11px] text-emerald-100 font-medium mt-0.5 block">
+                      {order.status === 'WAITING_PROCESS'
+                        ? 'Otomatis dihitung 5% dari Total Harga Tanaman setelah diverifikasi Admin.'
+                        : `Hitungan: Rp ${plantTotalPrice.toLocaleString('id-ID')} × 5%`}
+                    </span>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <span className="font-black text-white text-base block">
+                      {order.status === 'WAITING_PROCESS'
+                        ? 'Rp 0'
+                        : `Rp ${Math.round(plantTotalPrice * 0.05).toLocaleString('id-ID')}`}
+                    </span>
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded inline-block mt-0.5 ${
+                      order.status === 'WAITING_PROCESS'
+                        ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                        : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                    }`}>
+                      {order.status === 'WAITING_PROCESS' ? 'Menunggu Verifikasi Admin' : '✓ Cair / Terverifikasi'}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  <span className="font-black text-white text-base block">
-                    {order.status === 'WAITING_PROCESS'
-                      ? 'Rp 0'
-                      : `Rp ${Math.round(plantTotalPrice * 0.05).toLocaleString('id-ID')}`}
-                  </span>
-                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded inline-block mt-0.5 ${
-                    order.status === 'WAITING_PROCESS'
-                      ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                      : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
-                  }`}>
-                    {order.status === 'WAITING_PROCESS' ? 'Menunggu Verifikasi Admin' : '✓ Cair / Terverifikasi'}
-                  </span>
-                </div>
-              </div>
+              )}
 
               {/* Bukti Transfer Image Attachment */}
               {order.payment_proof_url && (

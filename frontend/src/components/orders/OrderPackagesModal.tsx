@@ -221,17 +221,11 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
     e.preventDefault();
     setError('');
 
-    // Calculate total required plants in order
-    const totalRequiredQty = totalOrderItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
-
     // Calculate total allocated plants across all packages
     const totalAllocatedQty = totalOrderItems.reduce((sum, _, idx) => sum + getUsedQuantity(idx), 0);
 
-    if (totalAllocatedQty < totalRequiredQty) {
-      const unassignedQty = totalRequiredQty - totalAllocatedQty;
-      setError(
-        `Semua tanaman (${totalRequiredQty} pohon) dalam pesanan ini harus dimasukkan ke dalam paket terlebih dahulu. Masih ada ${unassignedQty} tanaman yang belum diatur paketnya.`
-      );
+    if (totalAllocatedQty === 0) {
+      setError('Harap pilih minimal 1 tanaman untuk dimasukkan ke dalam paket.');
       return;
     }
 
@@ -287,7 +281,8 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
           {(() => {
             const totalRequiredQty = totalOrderItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
             const totalAllocatedQty = totalOrderItems.reduce((sum, _, idx) => sum + getUsedQuantity(idx), 0);
-            const isComplete = totalAllocatedQty === totalRequiredQty;
+            const isComplete = totalAllocatedQty >= totalRequiredQty;
+            const remainingQty = Math.max(0, totalRequiredQty - totalAllocatedQty);
 
             return (
               <div className={`p-3 rounded-xl border flex items-center justify-between text-xs font-bold transition-colors ${
@@ -302,7 +297,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                 <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-black ${
                   isComplete ? 'bg-emerald-200 text-emerald-950' : 'bg-amber-200 text-amber-950'
                 }`}>
-                  {totalAllocatedQty} / {totalRequiredQty} Pohon {isComplete ? '✓ Lengkap' : '(Belum Lengkap)'}
+                  {totalAllocatedQty} / {totalRequiredQty} Pohon {isComplete ? '✓ Lengkap' : `(Sisa ${remainingQty} Belum Diatur)`}
                 </span>
               </div>
             );
@@ -478,17 +473,26 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
             })}
           </div>
 
-          {/* "+ Buat Paket Lagi" Button */}
-          <div className="pt-1">
-            <button
-              type="button"
-              onClick={handleAddPackage}
-              className="w-full py-2.5 bg-white hover:bg-emerald-50 text-[#04593f] border border-[#04593f] rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-            >
-              <Plus className="w-4 h-4 text-[#04593f]" />
-              <span>Tambah Paket Lagi</span>
-            </button>
-          </div>
+          {/* "+ Buat Paket Lagi" Button (Auto-disabled when 100% plants allocated) */}
+          {(() => {
+            const totalRequiredQty = totalOrderItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            const totalAllocatedQty = totalOrderItems.reduce((sum, _, idx) => sum + getUsedQuantity(idx), 0);
+            const isAllAllocated = totalAllocatedQty >= totalRequiredQty;
+
+            return (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  disabled={isAllAllocated}
+                  onClick={handleAddPackage}
+                  className="w-full py-2.5 bg-white hover:bg-emerald-50 text-[#04593f] border border-[#04593f] rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-300 disabled:cursor-not-allowed disabled:shadow-none"
+                >
+                  <Plus className={`w-4 h-4 ${isAllAllocated ? 'text-slate-400' : 'text-[#04593f]'}`} />
+                  <span>{isAllAllocated ? 'Semua Tanaman Sudah Diatur Paketnya' : 'Tambah Paket Lagi'}</span>
+                </button>
+              </div>
+            );
+          })()}
 
           {/* Modal Action Buttons Footer */}
           <div className="pt-2 border-t border-slate-200 flex items-center justify-end gap-2">
