@@ -244,18 +244,19 @@ export const OrderCreatePage: React.FC = () => {
         </div>
       )}
 
-      {/* Back Link & Header Title */}
-      <div className="space-y-1">
+      {/* Back Arrow & Header Title */}
+      <div className="flex items-center gap-3 pt-1">
         <button
-          onClick={() => navigate('/orders')}
-          className="text-xs font-extrabold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 cursor-pointer mb-1"
+          type="button"
+          onClick={() => navigate(-1)}
+          className="p-1.5 -ml-1 text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+          aria-label="Kembali"
         >
-          <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Daftar Order
+          <ArrowLeft className="w-6 h-6 text-slate-900" strokeWidth={2.2} />
         </button>
-        <h1 className="text-xl sm:text-2xl font-black text-slate-900">Buat Pesanan Baru</h1>
-        <p className="text-xs text-slate-500 font-medium">
-          Langkah {step} dari 3: {step === 1 ? 'Lengkapi data pemesan dan pengiriman.' : step === 2 ? 'Pilih varian tanaman dan jumlah.' : 'Konfirmasi pembayaran & unggah bukti.'}
-        </p>
+        <div>
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Pesanan Baru</h1>
+        </div>
       </div>
 
       {/* PERFECT BOUNDED STEPPER PROGRESS BAR (NO LINE OVERFLOW) */}
