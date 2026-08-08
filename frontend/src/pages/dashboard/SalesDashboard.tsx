@@ -19,37 +19,44 @@ export const SalesDashboard: React.FC = () => {
 
   const orders: Order[] = dashboardData?.data || [];
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const todayOrders = orders.filter((o: Order) => o.order_date === todayStr).length;
+  // Card 1: Menunggu Verifikasi (WAITING_PROCESS)
+  const waitingVerificationCount = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
 
-  const waitingProcessCount = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
+  // Card 2: Menunggu Atur Paket (WAITING_PACKING)
+  const waitingConfigureCount = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
+
+  // Card 3: Menunggu Packing (WAITING_PACKING queue)
   const waitingPackingCount = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
+
+  // Card 4: Packing Selesai (PACKING_COMPLETED)
   const packingCompletedCount = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED').length;
+
+  // Bottom Table: Orders with Shipped / Tracking Number
   const shippedOrdersWithResi = orders.filter((o: Order) => Boolean(o.tracking_number) || o.status === 'COMPLETED');
 
   const statCards = [
     {
-      title: 'Pesanan Hari Ini',
-      value: isLoading ? '...' : todayOrders,
-      caption: todayOrders > 0 ? `${todayOrders} pesanan baru` : 'Belum ada order',
-      hasNotification: todayOrders > 0,
+      title: 'Menunggu Verifikasi',
+      value: isLoading ? '...' : waitingVerificationCount,
+      caption: waitingVerificationCount > 0 ? `${waitingVerificationCount} menunggu dicek admin` : 'Semua diverifikasi',
+      hasNotification: waitingVerificationCount > 0,
       buttonText: 'Lihat Order',
       icon: ShoppingBag,
-      link: '/orders',
+      link: '/orders?status=WAITING_PROCESS',
     },
     {
-      title: 'Menunggu Diproses',
-      value: isLoading ? '...' : waitingProcessCount,
-      caption: waitingProcessCount > 0 ? `${waitingProcessCount} menunggu admin` : 'Menunggu admin',
-      hasNotification: waitingProcessCount > 0,
+      title: 'Menunggu Atur Paket',
+      value: isLoading ? '...' : waitingConfigureCount,
+      caption: waitingConfigureCount > 0 ? `${waitingConfigureCount} paket siap diatur` : 'Semua teratur',
+      hasNotification: waitingConfigureCount > 0,
       buttonText: 'Cek Status',
       icon: Clock,
-      link: '/orders?status=WAITING_PROCESS',
+      link: '/orders?status=WAITING_PACKING',
     },
     {
       title: 'Menunggu Packing',
       value: isLoading ? '...' : waitingPackingCount,
-      caption: waitingPackingCount > 0 ? `${waitingPackingCount} siap dikemas` : 'Dalam pengemasan',
+      caption: waitingPackingCount > 0 ? `${waitingPackingCount} sedang dikemas` : 'Belum ada antrean',
       hasNotification: waitingPackingCount > 0,
       buttonText: 'Cek Antrean',
       icon: Package,
@@ -80,7 +87,7 @@ export const SalesDashboard: React.FC = () => {
           onClick={() => navigate('/orders/create')}
           className="hidden sm:flex px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold items-center gap-1.5 shadow-xs cursor-pointer"
         >
-          <Plus className="w-4 h-4" /> + Buat Order
+          <Plus className="w-4 h-4" /> Buat Order
         </button>
       </div>
 
