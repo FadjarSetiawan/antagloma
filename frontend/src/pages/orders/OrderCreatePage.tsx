@@ -683,7 +683,7 @@ export const OrderCreatePage: React.FC = () => {
               <div>
                 <label className="block text-xs font-extrabold text-slate-900 mb-1 flex items-center gap-1.5">
                   <Truck className="w-4 h-4 text-[#04593f]" />
-                  <span>Biaya Ongkos Kirim Pembeli ({deliveryMethod}) (Rp) *</span>
+                  <span>Ongkir dibayar pembeli (Rp) *</span>
                 </label>
                 <input
                   type="number"
