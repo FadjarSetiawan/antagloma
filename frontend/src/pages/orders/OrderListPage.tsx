@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService, UpdateOrderPayload } from '../../services/orderService';
 import { Order, OrderItem } from '../../types/order';
@@ -25,15 +25,24 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export const OrderListPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const paramSearch = searchParams.get('search') || searchParams.get('date') || '';
+  const paramStatus = searchParams.get('status') || '';
+
+  const [search, setSearch] = useState(paramSearch);
+  const [statusFilter, setStatusFilter] = useState(paramStatus);
+
+  useEffect(() => {
+    if (paramSearch) setSearch(paramSearch);
+    if (paramStatus) setStatusFilter(paramStatus);
+  }, [paramSearch, paramStatus]);
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
@@ -93,7 +102,7 @@ export const OrderListPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-4 max-w-7xl pb-24 font-sans">
+    <div className="space-y-4 max-w-7xl pb-24 font-sans text-slate-900">
       {/* Title & Subtitle */}
       <div>
         <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Daftar Order Penjualan</h1>
@@ -298,67 +307,62 @@ export const OrderListPage: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-sm font-black text-slate-900">Hapus Pesanan?</h3>
-                <p className="text-xs text-slate-500 font-bold">{deletingOrder.order_number}</p>
+                <p className="text-xs text-slate-500 font-medium">{deletingOrder.order_number}</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-600 font-medium leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-200">
-              Apakah Anda yakin ingin menghapus pesanan atas nama <strong className="text-slate-900">{deletingOrder.customer_name}</strong>? Data yang dihapus tidak dapat dikembalikan.
+            <p className="text-xs text-slate-600 font-medium">
+              Apakah Anda yakin ingin menghapus pesanan ini secara permanen? Tindakan ini tidak dapat dibatalkan.
             </p>
 
-            <div className="flex items-center justify-end gap-2 pt-1">
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
               <button
                 type="button"
                 onClick={() => setDeletingOrder(null)}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-extrabold transition-colors cursor-pointer"
+                className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 Batal
               </button>
+
               <button
                 type="button"
-                disabled={deleteMutation.isPending}
                 onClick={() => deleteMutation.mutate(deletingOrder.id)}
-                className="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                disabled={deleteMutation.isPending}
+                className="py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>{deleteMutation.isPending ? 'Menghapus...' : 'Ya, Hapus Pesanan'}</span>
+                {deleteMutation.isPending ? 'Menghapus...' : 'Ya, Hapus'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Order Detail Modal */}
+      {/* Modal View Detail Order */}
       <OrderDetailModal
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
-        onApprove={(id: number) => approveMutation.mutate(id)}
-        onDelete={(id: number) => {
-          const ord = data?.data?.find((o: Order) => o.id === id);
-          if (ord) {
-            setSelectedOrder(null);
-            setDeletingOrder(ord);
-          }
-        }}
-        onOpenNota={(ord: Order) => setNotaOrder(ord)}
-        onOpenShipmentModal={(ord: Order) => setShipmentOrder(ord)}
-        onEdit={(ord: Order) => setEditingOrder(ord)}
+        onApprove={(id) => approveMutation.mutate(id)}
+        onOpenShipmentModal={(ord) => setShipmentOrder(ord)}
+        onOpenNota={(ord) => setNotaOrder(ord)}
+        onEdit={(ord) => setEditingOrder(ord)}
+        onDelete={(id) => setDeletingOrder(selectedOrder)}
+        isActionLoading={approveMutation.isPending}
       />
 
-      {/* Order Edit Modal */}
+      {/* Modal Edit Order */}
       <OrderEditModal
         order={editingOrder}
         onClose={() => setEditingOrder(null)}
         onSubmit={handleUpdateOrder}
       />
 
-      {/* Packing Nota Thermal Modal */}
+      {/* Modal Thermal Packing Nota */}
       <PackingNotaModal
         order={notaOrder}
         onClose={() => setNotaOrder(null)}
       />
 
-      {/* Complete Shipment Modal */}
+      {/* Modal Complete Shipment (Input Resi) */}
       <CompleteShipmentModal
         order={shipmentOrder}
         onClose={() => setShipmentOrder(null)}

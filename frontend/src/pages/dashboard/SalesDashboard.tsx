@@ -19,6 +19,9 @@ export const SalesDashboard: React.FC = () => {
 
   const orders: Order[] = dashboardData?.data || [];
 
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayOrders = orders.filter((o: Order) => o.order_date === todayStr).length;
+
   // Card 1: Menunggu Verifikasi (WAITING_PROCESS)
   const waitingVerificationCount = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
 
@@ -89,6 +92,34 @@ export const SalesDashboard: React.FC = () => {
         >
           <Plus className="w-4 h-4" /> Buat Order
         </button>
+      </div>
+
+      {/* Banner Info: Pesanan Dibuat Hari Ini */}
+      <div
+        onClick={() => navigate(`/orders?search=${todayStr}`)}
+        className="bg-[#04593f] hover:bg-emerald-900 text-white rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-2xs cursor-pointer transition-all active:scale-98 group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 text-white flex items-center justify-center flex-shrink-0">
+            <ShoppingBag className="w-5 h-5 text-emerald-300" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs sm:text-sm font-bold text-white leading-tight">Pesanan Dibuat Hari Ini</h3>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-700/80 text-emerald-100 text-[10px] font-black">
+                {isLoading ? '...' : `${todayOrders} Order`}
+              </span>
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-emerald-100/90 font-medium mt-0.5">
+              Klik untuk melihat seluruh transaksi pesanan yang dibuat hari ini ({todayStr}).
+            </p>
+          </div>
+        </div>
+
+        <div className="px-3 py-1.5 bg-white/15 group-hover:bg-white/25 rounded-xl text-xs font-bold text-white flex items-center gap-1 flex-shrink-0">
+          <span>Lihat Hari Ini</span>
+          <ChevronRight className="w-3.5 h-3.5" />
+        </div>
       </div>
 
       {/* Sleek Compact 2x2 Grid Stat Cards */}
