@@ -30,7 +30,13 @@ export const AdminDashboard: React.FC = () => {
   const pendingPhotoUpload = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && (!o.packing_images || o.packing_images.length === 0)).length;
 
   // Table at bottom: Orders that have photo uploaded (PACKING_COMPLETED) waiting for resi input
-  const waitingResiOrders = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && (!o.tracking_number || o.tracking_number.trim() === ''));
+  const waitingResiOrders = orders.filter(
+    (o: Order) =>
+      o.status === 'PACKING_COMPLETED' &&
+      o.packing_images &&
+      o.packing_images.length > 0 &&
+      (!o.tracking_number || o.tracking_number.trim() === '')
+  );
 
   const approveMutation = useMutation({
     mutationFn: (id: number) => orderService.approveOrder(id),
