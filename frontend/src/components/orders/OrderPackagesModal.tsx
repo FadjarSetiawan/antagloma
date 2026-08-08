@@ -221,16 +221,17 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
     e.preventDefault();
     setError('');
 
-    // Verify at least 1 plant selected
-    let hasAllocatedItem = false;
-    packages.forEach((pkg) => {
-      if (Object.keys(pkg.allocations).length > 0) {
-        hasAllocatedItem = true;
-      }
-    });
+    // Calculate total required plants in order
+    const totalRequiredQty = totalOrderItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
-    if (!hasAllocatedItem) {
-      setError('Harap pilih minimal 1 tanaman untuk dimasukkan ke dalam paket.');
+    // Calculate total allocated plants across all packages
+    const totalAllocatedQty = totalOrderItems.reduce((sum, _, idx) => sum + getUsedQuantity(idx), 0);
+
+    if (totalAllocatedQty < totalRequiredQty) {
+      const unassignedQty = totalRequiredQty - totalAllocatedQty;
+      setError(
+        `Semua tanaman (${totalRequiredQty} pohon) dalam pesanan ini harus dimasukkan ke dalam paket terlebih dahulu. Masih ada ${unassignedQty} tanaman yang belum diatur paketnya.`
+      );
       return;
     }
 
@@ -281,6 +282,31 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
               <span>{error}</span>
             </div>
           )}
+
+          {/* PLANT ALLOCATION PROGRESS INDICATOR BANNER */}
+          {(() => {
+            const totalRequiredQty = totalOrderItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            const totalAllocatedQty = totalOrderItems.reduce((sum, _, idx) => sum + getUsedQuantity(idx), 0);
+            const isComplete = totalAllocatedQty === totalRequiredQty;
+
+            return (
+              <div className={`p-3 rounded-xl border flex items-center justify-between text-xs font-bold transition-colors ${
+                isComplete
+                  ? 'bg-emerald-50 text-[#04593f] border-emerald-300'
+                  : 'bg-amber-50 text-amber-900 border-amber-300'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <Package className="w-4 h-4 flex-shrink-0 text-[#04593f]" />
+                  <span>Status Pemilihan Tanaman:</span>
+                </div>
+                <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-black ${
+                  isComplete ? 'bg-emerald-200 text-emerald-950' : 'bg-amber-200 text-amber-950'
+                }`}>
+                  {totalAllocatedQty} / {totalRequiredQty} Pohon {isComplete ? '✓ Lengkap' : '(Belum Lengkap)'}
+                </span>
+              </div>
+            );
+          })()}
 
           {/* Sales Shipping Notes Banner */}
           {order.notes && (
