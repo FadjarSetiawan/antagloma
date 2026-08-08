@@ -126,11 +126,12 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({ order, onClose, 
           </div>
 
           <div>
-            <label className="block text-xs font-extrabold text-slate-900 mb-1">Catatan Tambahan</label>
-            <input
-              type="text"
+            <label className="block text-xs font-extrabold text-slate-900 mb-1">Catatan Pengiriman (Opsional)</label>
+            <textarea
+              rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              placeholder={`Contoh: Id jws dikirim fullset\nId swl dikirim non fullset`}
               className="w-full px-3.5 py-3 border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
             />
           </div>

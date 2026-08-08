@@ -614,7 +614,7 @@ export const OrderCreatePage: React.FC = () => {
                 rows={2}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Contoh: Packing kayu rapat, titip di satpam jika rumah kosong..."
+                placeholder={`Contoh: Id jws dikirim fullset\nId swl dikirim non fullset`}
                 className="w-full p-3.5 bg-white border-2 border-slate-200 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 shadow-xs"
               />
             </div>
