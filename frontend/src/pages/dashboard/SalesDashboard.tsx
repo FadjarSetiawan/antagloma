@@ -15,6 +15,7 @@ export const SalesDashboard: React.FC = () => {
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['dashboard-metrics'],
     queryFn: () => orderService.getOrders(),
+    refetchInterval: 5000,
   });
 
   const orders: Order[] = dashboardData?.data || [];
@@ -22,16 +23,16 @@ export const SalesDashboard: React.FC = () => {
   const todayStr = new Date().toISOString().split('T')[0];
   const todayOrders = orders.filter((o: Order) => o.order_date === todayStr).length;
 
-  // Card 1: Menunggu Verifikasi (WAITING_PROCESS)
+  // Card 1: Menunggu Verifikasi (WAITING_PROCESS - Order baru belum diverifikasi admin)
   const waitingVerificationCount = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
 
-  // Card 2: Menunggu Atur Paket (WAITING_PACKING)
+  // Card 2: Menunggu Atur Paket (WAITING_PACKING - Pembayaran sudah diverifikasi admin, otomatis masuk ke sini)
   const waitingConfigureCount = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
 
   // Card 3: Menunggu Packing (WAITING_PACKING queue)
   const waitingPackingCount = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
 
-  // Card 4: Packing Selesai (PACKING_COMPLETED)
+  // Card 4: Packing Selesai (PACKING_COMPLETED - Foto paket telah diunggah kebun)
   const packingCompletedCount = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED').length;
 
   // Bottom Table: Orders with Shipped / Tracking Number
