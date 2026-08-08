@@ -80,11 +80,16 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
       return;
     }
 
+    const treeCodeUpper = chosenTree?.code ? chosenTree.code.toUpperCase() : '';
+    const productNameDisplay = chosenTree
+      ? (treeCodeUpper ? `${chosenTree.name} (${treeCodeUpper})` : chosenTree.name)
+      : `Adenium`;
+
     const newItem: OrderItem = {
       tree_code: chosenTree?.code,
       tree_name: chosenTree?.name,
       grade: selectedGrade,
-      product_name: chosenTree ? `${chosenTree.name} (Grade ${selectedGrade})` : `Adenium Grade ${selectedGrade}`,
+      product_name: productNameDisplay,
       variant: `Grade ${selectedGrade}`,
       quantity: numQty,
       price: numPrice,

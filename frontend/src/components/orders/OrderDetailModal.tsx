@@ -220,17 +220,35 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
               <div className="divide-y divide-slate-200/60 font-medium text-xs text-slate-800">
                 {order.items && order.items.length > 0 ? (
-                  order.items.map((item, idx) => (
-                    <div key={idx} className="py-2 flex items-center justify-between">
-                      <div>
-                        <span className="font-bold text-slate-900 block">{item.tree_name || item.product_name}</span>
-                        <span className="text-[10px] text-slate-400">
-                          Grade {item.grade || 'A'} • Rp {(item.price || 0).toLocaleString('id-ID')} / pohon
-                        </span>
+                  order.items.map((item, idx) => {
+                    let cleanTitle = item.product_name.replace(/\s*\(Grade\s+[^)]+\)/i, '').trim();
+                    if (item.tree_code && !cleanTitle.includes(`(${item.tree_code.toUpperCase()})`)) {
+                      if (item.tree_name) {
+                        cleanTitle = `${item.tree_name.toUpperCase()} (${item.tree_code.toUpperCase()})`;
+                      } else {
+                        cleanTitle = `${cleanTitle.toUpperCase()} (${item.tree_code.toUpperCase()})`;
+                      }
+                    } else if (item.tree_name && item.tree_code) {
+                      cleanTitle = `${item.tree_name.toUpperCase()} (${item.tree_code.toUpperCase()})`;
+                    }
+
+                    return (
+                      <div key={idx} className="py-2.5 flex items-center justify-between">
+                        <div>
+                          <span className="font-bold text-slate-900 block text-xs">{cleanTitle}</span>
+                          <span className="inline-block mt-0.5 px-2 py-0.5 bg-emerald-50 text-emerald-900 border border-emerald-200 text-[10px] font-black rounded uppercase">
+                            GRADE {item.grade || 'A'}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-slate-900 block text-xs">x{item.quantity}</span>
+                          <span className="text-[10px] text-slate-500 font-medium">
+                            Rp {(item.price || 0).toLocaleString('id-ID')}
+                          </span>
+                        </div>
                       </div>
-                      <span className="font-bold text-slate-900">x{item.quantity}</span>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="py-2 text-center text-slate-400">Tidak ada detail item tanaman.</p>
                 )}

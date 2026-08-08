@@ -543,30 +543,42 @@ export const OrderCreatePage: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {items.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 bg-slate-50/80 border-2 border-slate-200 rounded-3xl space-y-3 shadow-xs hover:border-[#04593f] transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-black text-slate-900 text-sm">{item.product_name}</span>
-                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg text-[10px] font-black uppercase">
-                            Grade {item.grade || 'A'}
-                          </span>
-                        </div>
-                      </div>
+                {items.map((item, idx) => {
+                  let displayTitle = item.product_name.replace(/\s*\(Grade\s+[^)]+\)/i, '').trim();
+                  if (item.tree_code && !displayTitle.includes(`(${item.tree_code.toUpperCase()})`)) {
+                    if (item.tree_name) {
+                      displayTitle = `${item.tree_name.toUpperCase()} (${item.tree_code.toUpperCase()})`;
+                    } else {
+                      displayTitle = `${displayTitle.toUpperCase()} (${item.tree_code.toUpperCase()})`;
+                    }
+                  } else if (item.tree_name && item.tree_code) {
+                    displayTitle = `${item.tree_name.toUpperCase()} (${item.tree_code.toUpperCase()})`;
+                  }
 
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveItem(idx)}
-                        className="p-2 text-rose-600 hover:bg-rose-100/60 rounded-xl transition-colors cursor-pointer flex-shrink-0"
-                        title="Hapus tanaman"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                  return (
+                    <div
+                      key={idx}
+                      className="p-4 bg-slate-50/80 border-2 border-slate-200 rounded-3xl space-y-3 shadow-xs hover:border-[#04593f] transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <h4 className="font-black text-slate-900 text-sm tracking-tight">{displayTitle}</h4>
+                          <div>
+                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg text-[10px] font-black uppercase inline-block">
+                              GRADE {item.grade || 'A'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(idx)}
+                          className="p-2 text-rose-600 hover:bg-rose-100/60 rounded-xl transition-colors cursor-pointer flex-shrink-0"
+                          title="Hapus tanaman"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
 
                     <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200 text-xs font-bold text-slate-700">
                       <div>
@@ -587,7 +599,8 @@ export const OrderCreatePage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                );
+              })}
               </div>
             )}
 
