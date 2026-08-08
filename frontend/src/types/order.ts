@@ -48,6 +48,19 @@ export interface PackingImage {
   created_at: string;
 }
 
+export interface OrderPackage {
+  id: number;
+  letter: string;
+  package_type?: string;
+  status: string;
+  nota_printed: boolean;
+  label_printed: boolean;
+  photo_uploaded: boolean;
+  tracking_number?: string;
+  packing_images?: PackingImage[];
+  items?: { order_item_id: number; quantity: number; product_name?: string }[];
+}
+
 export interface Order {
   id: number;
   order_number: string;
@@ -79,6 +92,7 @@ export interface Order {
   verified_at?: string;
   shipped_at?: string;
   completed_at?: string;
+  packages?: OrderPackage[];
 }
 
 export interface Region {

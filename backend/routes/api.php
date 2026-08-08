@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // One-click Web Browser Migration Helper Route (No Terminal Needed!)
-Route::get('/run-migrate', function () {
+Route::middleware('auth:sanctum')->get('/run-migrate', function () {
     try {
         Artisan::call('migrate', ['--force' => true]);
         return response()->json([
@@ -79,6 +79,9 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::get('/queue', [PackingController::class, 'queue']);
         Route::post('/configure-packages', [PackingController::class, 'configurePackages']);
         Route::post('/{id}/upload-proof', [PackingController::class, 'uploadProof']);
+        Route::post('/packages/{package}/upload-proof', [PackingController::class, 'uploadPackageProof']);
+        Route::post('/packages/{package}/print/{document}', [PackingController::class, 'printDocument']);
+        Route::post('/packages/{package}/shipment', [PackingController::class, 'completePackageShipment']);
     });
 
     // Reports API
@@ -88,7 +91,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     });
 
     // Commission Calculator API (Sales Staff Only)
-    Route::get('/commission/my-commission', [CommissionController::class, 'myCommission']);
+    Route::get('/commission/my-commission', [CommissionController::class, 'index']);
 
     // User Account Management API (Owner / Admin Only)
     Route::apiResource('users', UserController::class);

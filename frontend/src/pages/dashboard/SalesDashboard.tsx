@@ -14,13 +14,13 @@ export const SalesDashboard: React.FC = () => {
 
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['dashboard-metrics'],
-    queryFn: () => orderService.getOrders(),
+    queryFn: () => orderService.getOrders({ per_page: 100 }),
     refetchInterval: 5000,
   });
 
   const orders: Order[] = dashboardData?.data || [];
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
   const todayOrders = orders.filter((o: Order) => o.order_date === todayStr).length;
 
   // Card 1: Menunggu Verifikasi (WAITING_PROCESS - Order baru belum diverifikasi admin)
@@ -31,6 +31,7 @@ export const SalesDashboard: React.FC = () => {
 
   // Card 3: Menunggu Packing (WAITING_PACKING queue)
   const waitingPackingCount = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
+  const configuredPackages = orders.flatMap((order) => (order.packages || []).map((pkg) => ({ order, pkg })));
 
   // Card 4: Packing Selesai (PACKING_COMPLETED - Foto paket telah diunggah kebun)
   const packingCompletedCount = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED').length;
@@ -97,7 +98,7 @@ export const SalesDashboard: React.FC = () => {
 
       {/* Banner Info: Pesanan Dibuat Hari Ini */}
       <div
-        onClick={() => navigate(`/orders?search=${todayStr}`)}
+        onClick={() => navigate(`/orders?order_date=${todayStr}`)}
         className="bg-[#04593f] hover:bg-emerald-900 text-white rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-2xs cursor-pointer transition-all active:scale-98 group"
       >
         <div className="flex items-center gap-3">
@@ -173,6 +174,28 @@ export const SalesDashboard: React.FC = () => {
           );
         })}
       </div>
+
+      <section className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">
+        <div>
+          <h2 className="text-xs sm:text-sm font-bold text-slate-900">Package Menunggu Packing</h2>
+          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">Package hasil konfigurasi Admin (read-only).</p>
+        </div>
+        {configuredPackages.length === 0 ? <p className="text-xs text-slate-400 py-3">Belum ada package yang dikonfigurasi.</p> : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {configuredPackages.filter(({ pkg }) => pkg.status === 'DOCUMENT_PRINTING' || pkg.status === 'WAITING_PHOTO').map(({ order, pkg }) => (
+              <div key={pkg.id} className="border border-slate-200 rounded-xl p-3 bg-slate-50/70">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-slate-900">{order.order_number} · Paket {pkg.letter}</span>
+                  <span className="text-[10px] text-slate-500">{pkg.status === 'WAITING_PHOTO' ? 'Menunggu Foto' : 'Menunggu Packing'}</span>
+                </div>
+                <ul className="mt-2 text-[11px] text-slate-600 list-disc pl-4">
+                  {(pkg.items || []).map((item) => <li key={item.order_item_id}>{item.product_name || 'Tanaman'} · {item.quantity}</li>)}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* Dedicated Section: Tabel Daftar Pesanan yang Sudah Dikirimkan Nomor Resinya oleh Admin */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">

@@ -209,8 +209,8 @@ export const OrderCreatePage: React.FC = () => {
   const deliveryOptions = [
     { value: 'Kirim Paket', label: 'Kirim Paket' },
     { value: 'Packing Kayu', label: 'Packing Kayu' },
-    { value: 'Ambil Di Lokasi', label: 'Ambil Di Lokasi' },
-    { value: 'Antar Ke Rumah', label: 'Antar Ke Rumah' },
+    { value: 'Ambil di Tempat', label: 'Ambil di Lokasi' },
+    { value: 'Antar ke Rumah', label: 'Antar ke Rumah' },
   ];
 
   const provinceOptions = provinces.map((p) => ({ value: p.id, label: p.name }));

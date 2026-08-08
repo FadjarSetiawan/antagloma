@@ -73,6 +73,7 @@ export const MobileBottomNav: React.FC = () => {
               }`}
               strokeWidth={activeIndex === 0 && !isProfileOpen ? 2.4 : 1.8}
             />
+            <span className="text-[10px] font-semibold text-slate-500">Dashboard</span>
           </NavLink>
 
           {/* Slot 1: Orders */}
@@ -87,6 +88,7 @@ export const MobileBottomNav: React.FC = () => {
               }`}
               strokeWidth={activeIndex === 1 && !isProfileOpen ? 2.4 : 1.8}
             />
+            <span className="text-[10px] font-semibold text-slate-500">Pesanan</span>
           </NavLink>
 
           {/* Slot 2: Center Action Floating Circle Button */}
@@ -103,6 +105,7 @@ export const MobileBottomNav: React.FC = () => {
               title={centerTab.label}
             >
               <CenterIcon className="w-7 h-7 text-white" />
+              <span className="sr-only">{centerTab.label}</span>
             </button>
           </div>
 
@@ -118,6 +121,7 @@ export const MobileBottomNav: React.FC = () => {
               }`}
               strokeWidth={activeIndex === 3 && !isProfileOpen ? 2.4 : 1.8}
             />
+            <span className="text-[10px] font-semibold text-slate-500">{role === 'sales' ? 'Komisi Saya' : rightTab3.label}</span>
           </NavLink>
 
           {/* Slot 4: Profil Trigger */}
@@ -132,6 +136,7 @@ export const MobileBottomNav: React.FC = () => {
               }`}
               strokeWidth={isProfileOpen ? 2.4 : 1.8}
             />
+            <span className="text-[10px] font-semibold text-slate-500">Profil</span>
           </button>
         </div>
       </nav>

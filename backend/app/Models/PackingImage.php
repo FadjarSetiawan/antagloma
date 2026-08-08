@@ -12,6 +12,7 @@ class PackingImage extends Model
 
     protected $fillable = [
         'order_id',
+        'order_package_id',
         'image_path',
         'original_name',
         'notes',
@@ -27,4 +28,6 @@ class PackingImage extends Model
     {
         return $this->belongsTo(User::class, 'uploaded_by');
     }
+
+    public function package(): BelongsTo { return $this->belongsTo(OrderPackage::class, 'order_package_id'); }
 }

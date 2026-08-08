@@ -35,6 +35,7 @@ export const OrderListPage: React.FC = () => {
 
   const paramSearch = searchParams.get('search') || searchParams.get('date') || '';
   const paramStatus = searchParams.get('status') || '';
+  const paramOrderDate = searchParams.get('order_date') || '';
 
   const [search, setSearch] = useState(paramSearch);
   const [statusFilter, setStatusFilter] = useState(paramStatus);
@@ -51,8 +52,8 @@ export const OrderListPage: React.FC = () => {
   const [shipmentOrder, setShipmentOrder] = useState<Order | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['orders-list', search, statusFilter],
-    queryFn: () => orderService.getOrders({ search, status: statusFilter }),
+    queryKey: ['orders-list', search, statusFilter, paramOrderDate],
+    queryFn: () => orderService.getOrders({ search, status: statusFilter, order_date: paramOrderDate || undefined }),
   });
 
   const approveMutation = useMutation({

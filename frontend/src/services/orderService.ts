@@ -50,7 +50,7 @@ export interface DashboardMetrics {
 }
 
 export const orderService = {
-  getOrders: async (params?: { page?: number; per_page?: number; status?: string; search?: string }): Promise<PaginatedResponse<Order>> => {
+  getOrders: async (params?: { page?: number; per_page?: number; status?: string; search?: string; order_date?: string }): Promise<PaginatedResponse<Order>> => {
     const res = await api.get('/orders', { params });
     return res.data;
   },
@@ -107,9 +107,14 @@ export const orderService = {
   },
 
   uploadPackingProof: async (id: number, formData: FormData): Promise<{ success: boolean; data: Order }> => {
-    const res = await api.post(`/orders/${id}/packing-proof`, formData, {
+    const res = await api.post(`/packing/packages/${id}/upload-proof`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+    return res.data;
+  },
+
+  configurePackages: async (order_id: number, packages: unknown[]) => {
+    const res = await api.post('/packing/configure-packages', { order_id, packages });
     return res.data;
   },
 

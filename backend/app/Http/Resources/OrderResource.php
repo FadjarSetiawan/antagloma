@@ -49,6 +49,13 @@ class OrderResource extends JsonResource
             'verifier'            => new UserResource($this->whenLoaded('verifier')),
             'items'               => OrderItemResource::collection($this->whenLoaded('items')),
             'packing_images'      => PackingImageResource::collection($this->whenLoaded('packingImages')),
+            'packages'            => $this->whenLoaded('packages', fn () => $this->packages->map(fn ($package) => [
+                'id' => $package->id, 'letter' => $package->letter, 'package_type' => $package->package_type,
+                'status' => $package->status, 'nota_printed' => $package->nota_printed, 'label_printed' => $package->label_printed,
+                'photo_uploaded' => (bool) $package->photo_uploaded_at, 'tracking_number' => $package->tracking_number,
+                'items' => $package->items->map(fn ($allocation) => ['order_item_id' => $allocation->order_item_id, 'quantity' => $allocation->quantity, 'product_name' => $allocation->item?->product_name]),
+                'packing_images' => PackingImageResource::collection($package->packingImages),
+            ])),
             'created_at'          => $this->created_at?->toIso8601String(),
             'verified_at'         => $this->verified_at?->toIso8601String(),
             'shipped_at'          => $this->shipped_at?->toIso8601String(),

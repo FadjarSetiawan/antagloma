@@ -22,10 +22,13 @@ class OrderController extends Controller
     {
         Gate::authorize('viewAny', Order::class);
 
-        $query = Order::with(['creator', 'verifier', 'items', 'packingImages']);
+        $query = Order::with(['creator', 'verifier', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+        }
+        if ($request->filled('order_date')) {
+            $query->whereDate('order_date', $request->order_date);
         }
 
         if ($request->filled('search')) {
@@ -74,7 +77,7 @@ class OrderController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $order = Order::with(['creator', 'verifier', 'items', 'packingImages'])->findOrFail($id);
+        $order = Order::with(['creator', 'verifier', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item'])->findOrFail($id);
         Gate::authorize('view', $order);
 
         return response()->json([

@@ -19,18 +19,9 @@ export const PackingQueuePage: React.FC = () => {
   });
 
   const handleSavePackages = async (orderId: number, packages: any[]) => {
-    const firstPacked = packages.find((p) => p.proof_file);
-    if (firstPacked) {
-      const formData = new FormData();
-      formData.append('image', firstPacked.proof_file);
-      if (firstPacked.notes) formData.append('notes', firstPacked.notes);
-      await orderService.uploadPackingProof(orderId, formData);
-    } else {
-      // Automatically transition order to PACKING_COMPLETED (moving it to "Belum Dibuatkan Nota")
-      await orderService.updateOrder(orderId, {
-        status: 'PACKING_COMPLETED',
-      });
-    }
+    await orderService.configurePackages(orderId, packages.map(({ id, letter, subOrderNumber, packageType, allocations, customWeight }) => ({
+      letter, package_type: packageType, allocations, weight: customWeight, sub_order_number: subOrderNumber,
+    })));
 
     queryClient.invalidateQueries({ queryKey: ['packing-queue'] });
     queryClient.invalidateQueries({ queryKey: ['orders-list'] });

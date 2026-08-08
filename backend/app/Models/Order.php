@@ -72,4 +72,6 @@ class Order extends Model
     {
         return $this->hasMany(PackingImage::class);
     }
+
+    public function packages(): HasMany { return $this->hasMany(OrderPackage::class); }
 }

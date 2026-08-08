@@ -137,19 +137,15 @@ class RegionController extends Controller
 
     protected function localRegencies(string $provinceId): array
     {
-        return [
-            ['id' => $provinceId . '01', 'name' => 'KOTA / KABUPATEN UTAMA'],
-            ['id' => $provinceId . '02', 'name' => 'KABUPATEN BARAT'],
-            ['id' => $provinceId . '03', 'name' => 'KABUPATEN TIMUR'],
-        ];
+        // Never return fabricated administrative regions when the authoritative
+        // provider is unavailable. The UI will show an empty cascading list.
+        return [];
     }
 
     protected function localDistricts(string $regencyId): array
     {
-        return [
-            ['id' => $regencyId . '01', 'name' => 'KECAMATAN PUSAT KOTA'],
-            ['id' => $regencyId . '02', 'name' => 'KECAMATAN SELATAN'],
-            ['id' => $regencyId . '03', 'name' => 'KECAMATAN UTARA'],
-        ];
+        // Never return fabricated administrative regions when the authoritative
+        // provider is unavailable. The UI will show an empty cascading list.
+        return [];
     }
 }

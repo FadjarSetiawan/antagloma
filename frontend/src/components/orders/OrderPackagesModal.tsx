@@ -352,8 +352,8 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                     )}
                   </div>
 
-                  {/* 2 Selectable Pills: Fullset vs Non-fullset */}
-                  <div className="grid grid-cols-2 gap-2">
+                  {/* Package type is intentionally omitted for Packing Kayu. */}
+                  {order.delivery_method !== 'Packing Kayu' && <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => handleSetPackageType(pkg.id, 'Fullset')}
@@ -379,7 +379,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                       {pkg.packageType === 'Non-fullset' && <Check className="w-3.5 h-3.5" />}
                       <span>Non-fullset</span>
                     </button>
-                  </div>
+                  </div>}
 
                   {/* Plant Checkbox List inside Package Card */}
                   <div className="space-y-1.5 pt-0.5">

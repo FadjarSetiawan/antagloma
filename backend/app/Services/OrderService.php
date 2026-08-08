@@ -125,8 +125,10 @@ class OrderService
                 ]);
             }
 
+            $deliveryMethod = $lockedOrder->delivery_method instanceof \BackedEnum ? $lockedOrder->delivery_method->value : (string) $lockedOrder->delivery_method;
+            $isDirectCompletion = in_array($deliveryMethod, ['Ambil di Tempat', 'Ambil Di Lokasi', 'Antar ke Rumah', 'Antar Ke Rumah'], true);
             $lockedOrder->update([
-                'status'      => OrderStatus::WAITING_PACKING,
+                'status'      => $isDirectCompletion ? OrderStatus::COMPLETED : OrderStatus::WAITING_PACKING,
                 'verified_by' => $user->id,
                 'verified_at' => now(),
             ]);
@@ -137,9 +139,12 @@ class OrderService
             ]);
 
             // Trigger Notification to Packing & Sales
+            if ($isDirectCompletion) {
+                $lockedOrder->update(['completed_at' => now()]);
+            }
             NotificationService::notifyOrderApproved($lockedOrder, $user);
 
-            return $lockedOrder->fresh(['creator', 'verifier', 'items', 'packingImages']);
+            return $lockedOrder->fresh(['creator', 'verifier', 'items', 'packingImages', 'packages']);
         });
     }
 
