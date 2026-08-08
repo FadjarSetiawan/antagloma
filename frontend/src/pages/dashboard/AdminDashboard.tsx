@@ -24,10 +24,10 @@ export const AdminDashboard: React.FC = () => {
 
   const waitingVerification = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
   const pendingShipping = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
-  const pendingInvoice = orders.filter((o: Order) => o.status === 'WAITING_PACKING' && (!o.packing_images || o.packing_images.length === 0)).length;
+  const pendingInvoice = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && (!o.tracking_number || o.tracking_number.trim() === '')).length;
 
-  // Card 4: Menunggu Foto Paket (orders in WAITING_PACKING waiting for packing proof upload)
-  const pendingPhotoUpload = orders.filter((o: Order) => o.status === 'WAITING_PACKING' && (!o.packing_images || o.packing_images.length === 0)).length;
+  // Card 4: Menunggu Foto Paket (orders in PACKING_COMPLETED waiting for packing proof upload)
+  const pendingPhotoUpload = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && (!o.packing_images || o.packing_images.length === 0)).length;
 
   // Table at bottom: Orders that have photo uploaded (PACKING_COMPLETED) waiting for resi input
   const waitingResiOrders = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && (!o.tracking_number || o.tracking_number.trim() === ''));
