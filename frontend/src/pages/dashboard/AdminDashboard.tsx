@@ -32,6 +32,17 @@ export const AdminDashboard: React.FC = () => {
   // Table at bottom: Orders that have photo uploaded (PACKING_COMPLETED) waiting for resi input
   const waitingResiOrders = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && (!o.tracking_number || o.tracking_number.trim() === ''));
 
+  const approveMutation = useMutation({
+    mutationFn: (id: number) => orderService.approveOrder(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['orders-list'] });
+      queryClient.invalidateQueries({ queryKey: ['orders-verification'] });
+      queryClient.invalidateQueries({ queryKey: ['packing-queue'] });
+      setSelectedDetailOrder(null);
+    },
+  });
+
   const shipmentMutation = useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: { shipping_cost?: number; tracking_number?: string } }) =>
       orderService.completeShipment(id, payload),
@@ -334,6 +345,8 @@ export const AdminDashboard: React.FC = () => {
       <OrderDetailModal
         order={selectedDetailOrder}
         onClose={() => setSelectedDetailOrder(null)}
+        onApprove={(id) => approveMutation.mutate(id)}
+        isActionLoading={approveMutation.isPending}
       />
 
       {/* Complete Shipment (Input Resi) Modal */}

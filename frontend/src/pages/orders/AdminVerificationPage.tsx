@@ -50,6 +50,7 @@ export const AdminVerificationPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       setVerifiedSuccessNum(res.data.order_number);
       setVerifyingOrder(null);
+      setSelectedOrder(null);
       setIsVerifyChecked(false);
       setTimeout(() => setVerifiedSuccessNum(null), 5000);
     },
