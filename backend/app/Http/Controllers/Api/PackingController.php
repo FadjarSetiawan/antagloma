@@ -57,7 +57,10 @@ class PackingController extends Controller
                     $package->items()->updateOrCreate(['order_item_id'=>$item->id], ['quantity'=>$quantity]);
                 }
             }
-            $order->update(['status'=>'WAITING_PACKING']);
+            // Configuration completes the "Belum Diatur" queue step. The order
+            // remains active for document/photo/resi workflow, but must no longer
+            // be returned by the WAITING_PACKING queue.
+            $order->update(['status'=>'PACKING_COMPLETED']);
             return $order->packages()->with('packingImages')->get();
         });
         return response()->json(['success'=>true,'data'=>$packages]);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
 import { Order } from '../../types/order';
 import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const DocumentPrintingPage: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<'unprinted' | 'printed'>('unprinted');
 
@@ -25,76 +26,48 @@ export const DocumentPrintingPage: React.FC = () => {
 
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
 
-  // Track printed status and printed timestamp per package subOrderNumber
-  const [printedPackages, setPrintedPackages] = useState<
-    Record<string, { printedAt?: string; printedNota?: boolean; printedLabel?: boolean }>
-  >({});
-
   const { data, isLoading } = useQuery({
     queryKey: ['document-printing-orders'],
-    queryFn: () => orderService.getOrders({ status: 'PACKING_COMPLETED' }),
+    queryFn: () => orderService.getOrders({ per_page: 100 }),
+  });
+
+  const printMutation = useMutation({
+    mutationFn: ({ packageId, document }: { packageId: number; document: 'nota' | 'label' }) =>
+      orderService.printPackageDocument(packageId, document),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['document-printing-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['orders-list'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+    },
   });
 
   const orders = data?.data || [];
 
-  // Filter orders: orders that have NOT uploaded packing proof photo yet stay in document printing queue
+  // Backend package records are the source of truth for both identity and print state.
   const expandedPackageCards = orders
     .filter((order) => order.status === 'PACKING_COMPLETED' || order.status === 'WAITING_PACKING')
     .sort((a, b) => a.id - b.id)
     .flatMap((order) => {
-      const itemCount = order.items?.length || 1;
-      const packagesList = [];
-
-      if (itemCount > 1) {
-        // Paket A (Fullset)
-        const firstGrade = order.items?.[0]?.grade || 'A';
-        const isGradeDOrAbove = ['D', 'D+', 'J', 'J+'].includes(firstGrade.toUpperCase());
-        const weightText = isGradeDOrAbove ? '3.5 Kg' : `Grade ${firstGrade} (tanpa berat)`;
-
-        packagesList.push({
-          id: `${order.id}-A`,
-          order,
-          subOrderNumber: `${order.order_number}-A`,
-          packageType: 'Fullset' as const,
-          plantCount: 1,
-          weightInfo: weightText,
-        });
-
-        // Paket B (Non-fullset)
-        packagesList.push({
-          id: `${order.id}-B`,
-          order,
-          subOrderNumber: `${order.order_number}-B`,
-          packageType: 'Non-fullset' as const,
-          plantCount: itemCount - 1,
-          weightInfo: `${(itemCount - 1) * 2.0} Kg`,
-        });
-      } else {
-        // Single package (Paket A)
-        const firstGrade = order.items?.[0]?.grade || 'A';
-        const isGradeDOrAbove = ['D', 'D+', 'J', 'J+'].includes(firstGrade.toUpperCase());
-        const weightText = isGradeDOrAbove ? '3.5 Kg' : `Grade ${firstGrade} (tanpa berat)`;
-
-        packagesList.push({
-          id: `${order.id}-A`,
-          order,
-          subOrderNumber: `${order.order_number}-A`,
-          packageType: 'Fullset' as const,
-          plantCount: 1,
-          weightInfo: weightText,
-        });
-      }
-
-      return packagesList;
+      return (order.packages || []).map((pkg) => ({
+        id: pkg.id,
+        packageId: pkg.id,
+        order,
+        subOrderNumber: `${order.order_number}-${pkg.letter}`,
+        packageType: pkg.package_type || 'Paket',
+        plantCount: (pkg.items || []).reduce((sum, item) => sum + item.quantity, 0),
+        weightInfo: 'Berat mengikuti konfigurasi paket',
+        printedNota: pkg.nota_printed,
+        printedLabel: pkg.label_printed,
+        photoUploaded: pkg.photo_uploaded,
+      }));
     });
 
-  const getCardPrintStatus = (subOrderNumber: string) => {
-    const info = printedPackages[subOrderNumber] || {};
+  const getCardPrintStatus = (card: typeof expandedPackageCards[number]) => {
     return {
-      printedNota: Boolean(info.printedNota),
-      printedLabel: Boolean(info.printedLabel),
-      isBothPrinted: Boolean(info.printedNota && info.printedLabel),
-      printedAt: info.printedAt || 'Baru Saja',
+      printedNota: card.printedNota,
+      printedLabel: card.printedLabel,
+      isBothPrinted: Boolean(card.printedNota && card.printedLabel),
+      printedAt: 'Tersimpan di server',
     };
   };
 
@@ -102,7 +75,7 @@ export const DocumentPrintingPage: React.FC = () => {
   const unprintedCards = expandedPackageCards.filter((card) => {
     const hasPhoto = Boolean(card.order.packing_images && card.order.packing_images.length > 0);
     if (hasPhoto) return false;
-    const status = getCardPrintStatus(card.subOrderNumber);
+    const status = getCardPrintStatus(card);
     return !status.isBothPrinted;
   });
 
@@ -110,56 +83,23 @@ export const DocumentPrintingPage: React.FC = () => {
   const printedCards = expandedPackageCards.filter((card) => {
     const hasPhoto = Boolean(card.order.packing_images && card.order.packing_images.length > 0);
     if (hasPhoto) return false;
-    const status = getCardPrintStatus(card.subOrderNumber);
+    const status = getCardPrintStatus(card);
     return status.isBothPrinted;
   });
 
-  const handlePrintNota = (order: Order, subOrderNumber?: string) => {
-    const nowStr = new Date().toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    }) + ` • ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
-
-    setPrintedPackages((prev) => {
-      const next = { ...prev };
-      if (subOrderNumber) {
-        const existing = next[subOrderNumber] || {};
-        next[subOrderNumber] = { ...existing, printedNota: true, printedAt: nowStr };
-      } else {
-        expandedPackageCards
-          .filter((c) => c.order.id === order.id)
-          .forEach((c) => {
-            const existing = next[c.subOrderNumber] || {};
-            next[c.subOrderNumber] = { ...existing, printedNota: true, printedAt: nowStr };
-          });
-      }
-      return next;
-    });
-
+  const handlePrintNota = (order: Order, packageId?: number) => {
+    if (packageId) printMutation.mutate({ packageId, document: 'nota' });
     setSelectedNotaOrder(order);
   };
 
   const handlePrintLabel = (pkgCard: typeof expandedPackageCards[0]) => {
-    const nowStr = new Date().toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    }) + ` • ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
-
-    setPrintedPackages((prev) => {
-      const existing = prev[pkgCard.subOrderNumber] || {};
-      return {
-        ...prev,
-        [pkgCard.subOrderNumber]: { ...existing, printedLabel: true, printedAt: nowStr },
-      };
-    });
+    printMutation.mutate({ packageId: pkgCard.packageId, document: 'label' });
 
     setSelectedLabelOrder({
       order: pkgCard.order,
       packageInfo: {
         subOrderNumber: pkgCard.subOrderNumber,
-        packageType: pkgCard.packageType,
+      packageType: pkgCard.packageType,
         itemsSummary: `${pkgCard.plantCount} tanaman`,
         weightInfo: pkgCard.weightInfo,
       },
@@ -190,7 +130,7 @@ export const DocumentPrintingPage: React.FC = () => {
       <div className="grid grid-cols-2 gap-3 pt-1">
         <button
           onClick={() => {
-            if (unprintedCards.length > 0) handlePrintNota(unprintedCards[0].order);
+            if (unprintedCards.length > 0) handlePrintNota(unprintedCards[0].order, unprintedCards[0].packageId);
           }}
           className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
         >
@@ -292,7 +232,7 @@ export const DocumentPrintingPage: React.FC = () => {
         ) : (
           <div className="space-y-3.5">
             {unprintedCards.map((pkgCard) => {
-              const printedStatus = getCardPrintStatus(pkgCard.subOrderNumber);
+              const printedStatus = getCardPrintStatus(pkgCard);
 
               return (
                 <div
@@ -352,7 +292,7 @@ export const DocumentPrintingPage: React.FC = () => {
                   <div className="grid grid-cols-2 gap-2.5 pt-1">
                     <button
                       type="button"
-                      onClick={() => handlePrintNota(pkgCard.order, pkgCard.subOrderNumber)}
+                      onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
                       className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
                       <Printer className="w-4 h-4 text-white" />
@@ -389,8 +329,6 @@ export const DocumentPrintingPage: React.FC = () => {
         ) : (
           <div className="space-y-3.5">
             {printedCards.map((pkgCard) => {
-              const printInfo = printedPackages[pkgCard.subOrderNumber];
-
               return (
                 <div
                   key={pkgCard.id}
@@ -432,7 +370,7 @@ export const DocumentPrintingPage: React.FC = () => {
                       <span>Nota & Label sudah lengkap dicetak</span>
                     </div>
                     <p className="text-[11px] text-slate-600 font-medium pl-6">
-                      Dicetak pada {printInfo?.printedAt || 'Baru Saja'}
+                      Dicetak pada status tersimpan di server
                     </p>
 
                     {/* Resi & Courier Sub-box */}
@@ -454,7 +392,7 @@ export const DocumentPrintingPage: React.FC = () => {
                   <div className="grid grid-cols-2 gap-2.5 pt-1">
                     <button
                       type="button"
-                      onClick={() => handlePrintNota(pkgCard.order, pkgCard.subOrderNumber)}
+                      onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
                       className="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
                       <Printer className="w-4 h-4 text-[#04593f]" />
