@@ -183,7 +183,8 @@ export const OrderListPage: React.FC = () => {
             const totalOrderAmount = plantTotalPrice + (order.buyer_shipping_cost || 0);
 
             // ALLOW EDIT & DELETE FOR SALES ONLY WHEN UNVERIFIED (WAITING_PROCESS). AUTOMATICALLY HIDE WHEN VERIFIED BY ADMIN.
-            const canModifySalesOrder = role === 'admin' || role === 'owner' || (role === 'sales' && order.status === 'WAITING_PROCESS');
+            const isSalesOrderOwner = role === 'sales' && order.created_by === user?.id;
+            const canModifySalesOrder = role === 'admin' || role === 'owner' || (isSalesOrderOwner && order.status === 'WAITING_PROCESS');
 
             return (
               <div

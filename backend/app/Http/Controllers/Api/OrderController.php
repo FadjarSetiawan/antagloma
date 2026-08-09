@@ -24,6 +24,12 @@ class OrderController extends Controller
 
         $query = Order::with(['creator', 'verifier', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item']);
 
+        $user = $request->user();
+        $role = $user?->role instanceof \BackedEnum ? $user->role->value : (string) ($user?->role ?? '');
+        if ($role === 'sales') {
+            $query->where('created_by', $user->id);
+        }
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }

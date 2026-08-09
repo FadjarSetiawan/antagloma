@@ -63,6 +63,7 @@ export interface OrderPackage {
 
 export interface Order {
   id: number;
+  created_by: number;
   order_number: string;
   order_date: string;
   customer_name: string;
