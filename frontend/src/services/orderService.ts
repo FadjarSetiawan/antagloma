@@ -136,6 +136,11 @@ export const orderService = {
     return res.data;
   },
 
+  getSalesPackingProgress: async (params?: { page?: number; per_page?: number }): Promise<PaginatedResponse<Order>> => {
+    const res = await api.get('/sales/packing-progress', { params });
+    return res.data;
+  },
+
   getRegions: async (parentCode?: string): Promise<Region[]> => {
     const res = await api.get('/regions', { params: { parent_code: parentCode } });
     return res.data.data;

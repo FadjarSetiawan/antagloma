@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PackingController;
 use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\SalesPackingController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -83,6 +84,9 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::post('/packages/{package}/print/{document}', [PackingController::class, 'printDocument']);
         Route::post('/packages/{package}/shipment', [PackingController::class, 'completePackageShipment']);
     });
+
+    // Read-only package progress for Sales (Admin/Owner are also allowed by OrderPolicy::viewAny).
+    Route::get('/sales/packing-progress', [SalesPackingController::class, 'progress']);
 
     // Reports API
     Route::prefix('reports')->group(function () {

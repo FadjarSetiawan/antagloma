@@ -18,6 +18,12 @@ export const SalesDashboard: React.FC = () => {
     refetchInterval: 5000,
   });
 
+  const { data: salesPackingData } = useQuery({
+    queryKey: ['sales-packing-progress'],
+    queryFn: () => orderService.getSalesPackingProgress({ per_page: 100 }),
+    refetchInterval: 5000,
+  });
+
   const orders: Order[] = dashboardData?.data || [];
 
   const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
@@ -31,7 +37,9 @@ export const SalesDashboard: React.FC = () => {
 
   // Card 3: Menunggu Packing (WAITING_PACKING queue)
   const waitingPackingCount = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
-  const configuredPackages = orders.flatMap((order) => (order.packages || []).map((pkg) => ({ order, pkg })));
+  const configuredPackages = (salesPackingData?.data || []).flatMap((order) =>
+    (order.packages || []).map((pkg) => ({ order, pkg }))
+  );
 
   // Card 4: Packing Selesai (PACKING_COMPLETED - Foto paket telah diunggah kebun)
   const packingCompletedCount = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED').length;
