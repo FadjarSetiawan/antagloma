@@ -19,8 +19,9 @@ class OrderPolicy
             return true;
         }
 
-        // Sales can only view orders created by themselves or general list
-        return $role === 'sales';
+        // Sales may view only orders they created. Admin/Owner/Packing were
+        // already allowed above and remain unchanged.
+        return $role === 'sales' && $order->created_by === $user->id;
     }
 
     public function create(User $user): bool
@@ -32,13 +33,9 @@ class OrderPolicy
     public function update(User $user, Order $order): bool
     {
         $role = $user->role->value ?? $user->role;
-        if (in_array($role, ['owner', 'admin'])) {
-            return true;
-        }
-
-        // Sales can ONLY edit their OWN orders while status is WAITING_PROCESS (IDOR Protection)
-        $statusStr = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
-        return $role === 'sales' && $order->created_by === $user->id && $statusStr === 'WAITING_PROCESS';
+        // Sales are read-only after order creation. Generic PUT/PATCH updates
+        // are reserved for Owner/Admin so status cannot be manipulated via API.
+        return in_array($role, ['owner', 'admin']);
     }
 
     public function approve(User $user, Order $order): bool

@@ -13,7 +13,11 @@ class UserController extends Controller
 {
     protected function authorizeOwnerOrAdmin(Request $request): void
     {
-        $role = strtolower($request->user()->role ?? '');
+        $userRole = $request->user()->role ?? '';
+        $role = $userRole instanceof \BackedEnum
+            ? $userRole->value
+            : strtolower((string) $userRole);
+
         if (!in_array($role, ['owner', 'admin'])) {
             abort(response()->json([
                 'success' => false,
