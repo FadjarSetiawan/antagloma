@@ -118,6 +118,11 @@ export const orderService = {
     return res.data;
   },
 
+  printPackageDocument: async (packageId: number, document: 'nota' | 'label') => {
+    const res = await api.post(`/packing/packages/${packageId}/print/${document}`);
+    return res.data;
+  },
+
   completeShipment: async (
     id: number,
     payload: { shipping_cost?: number; tracking_number?: string }

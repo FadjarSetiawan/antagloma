@@ -22,7 +22,8 @@ return new class extends Migration {
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
             $table->unique(['order_id', 'letter']);
-            $table->index(['nota_printed', 'label_printed', 'photo_uploaded_at']);
+            // Keep the explicit name below MySQL's 64-character identifier limit.
+            $table->index(['nota_printed', 'label_printed', 'photo_uploaded_at'], 'order_packages_print_state_idx');
         });
         Schema::create('order_package_items', function (Blueprint $table) {
             $table->id();
