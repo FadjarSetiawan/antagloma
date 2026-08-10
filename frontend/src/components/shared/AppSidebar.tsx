@@ -12,6 +12,7 @@ import {
   Sprout,
   Wallet,
   CheckCircle,
+  Percent,
 } from 'lucide-react';
 
 export const AppSidebar: React.FC = () => {
@@ -61,6 +62,8 @@ export const AppSidebar: React.FC = () => {
       icon: FileText,
       show: role === 'owner',
     },
+    { label: 'Commission', to: '/management/commission', icon: Percent, show: role === 'owner' },
+    { label: 'Discount', to: '/management/discount', icon: Wallet, show: role === 'owner' },
     {
       label: 'Kalkulator Komisi',
       to: '/commission',

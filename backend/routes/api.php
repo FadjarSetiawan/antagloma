@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommissionController;
+use App\Http\Controllers\Api\DiscountController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\MasterDataController;
 use App\Http\Controllers\Api\NotificationController;
@@ -96,6 +97,11 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
 
     // Commission Calculator API (Sales Staff Only)
     Route::get('/commission/my-commission', [CommissionController::class, 'index']);
+    Route::get('/sales/commission', [CommissionController::class, 'index']);
+    Route::get('/commissions', [CommissionController::class, 'index']);
+    Route::get('/commissions/{salesId}', [CommissionController::class, 'show']);
+    Route::put('/commissions/{salesId}', [CommissionController::class, 'update']);
+    Route::apiResource('discounts', DiscountController::class)->only(['index', 'store', 'update', 'destroy']);
 
     // User Account Management API (Owner / Admin Only)
     Route::apiResource('users', UserController::class);

@@ -222,6 +222,12 @@ export const MobileBottomNav: React.FC = () => {
 
               {role === 'owner' && (
                 <>
+                  <div onClick={() => { setIsProfileOpen(false); navigate('/management/commission'); }} className="p-3 rounded-2xl bg-slate-50 border border-slate-200 hover:bg-slate-100 flex items-center justify-between cursor-pointer transition-colors">
+                    <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center border border-emerald-100"><Wallet className="w-4 h-4" /></div><span>Management Commission</span></div><ChevronRight className="w-4 h-4 text-slate-400" />
+                  </div>
+                  <div onClick={() => { setIsProfileOpen(false); navigate('/management/discount'); }} className="p-3 rounded-2xl bg-slate-50 border border-slate-200 hover:bg-slate-100 flex items-center justify-between cursor-pointer transition-colors">
+                    <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center border border-emerald-100"><Wallet className="w-4 h-4" /></div><span>Management Discount</span></div><ChevronRight className="w-4 h-4 text-slate-400" />
+                  </div>
                   <div
                     onClick={() => {
                       setIsProfileOpen(false);

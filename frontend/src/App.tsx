@@ -17,6 +17,7 @@ import { MasterProductsPage } from './pages/master/MasterProductsPage';
 import { SalesCommissionPage } from './pages/sales/SalesCommissionPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
 import { UserManagementPage } from './pages/users/UserManagementPage';
+import { ManagementPage } from './pages/owner/ManagementPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,6 +56,8 @@ export const App: React.FC = () => {
               <Route path="documents/print" element={<DocumentPrintingPage />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route path="master/products" element={<MasterProductsPage />} />
+              <Route path="management/commission" element={<ManagementPage section="commission" />} />
+              <Route path="management/discount" element={<ManagementPage section="discount" />} />
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

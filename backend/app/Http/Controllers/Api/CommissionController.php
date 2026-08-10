@@ -15,10 +15,14 @@ class CommissionController extends Controller
         $user = $request->user();
         $monthStr = $request->query('month', now()->format('Y-m')); // e.g. 2026-08
 
-        $query = Order::with('items');
+        $query = Order::with(['items', 'creator']);
 
         // Filter by sales user if sales role
-        if ($user && $user->role === 'sales') {
+        $role = $user?->role instanceof \BackedEnum ? $user->role->value : (string) ($user?->role ?? '');
+        if ($role === 'owner') {
+            return response()->json(['success' => true, 'data' => \App\Models\User::where('role', 'sales')->orderBy('name')->get(['id', 'name', 'email', 'commission_rate'])]);
+        }
+        if ($role === 'sales') {
             $query->where('created_by', $user->id);
         }
 
@@ -40,7 +44,8 @@ class CommissionController extends Controller
             // Commission is 5% of Total Harga Tanaman (plantTotal).
             // It ONLY accrues when Admin has verified payment (status !== WAITING_PROCESS and status !== CANCELLED).
             $isVerified = !in_array($order->status, ['WAITING_PROCESS', 'CANCELLED']);
-            $commission = $isVerified ? round($plantTotal * 0.05) : 0;
+            $rate = (float) ($order->creator?->commission_rate ?? 5);
+            $commission = $isVerified ? round($plantTotal * $rate / 100) : 0;
 
             $orderMonth = Carbon::parse($order->order_date)->format('Y-m');
             if ($orderMonth === $monthStr && $isVerified) {
@@ -81,5 +86,23 @@ class CommissionController extends Controller
                 'all_history'        => array_values($orderHistory),
             ],
         ]);
+    }
+
+    public function show(Request $request, int $salesId): JsonResponse
+    {
+        $user = $request->user(); $role = $user->role instanceof \BackedEnum ? $user->role->value : (string) $user->role;
+        if ($role === 'sales' && $user->id !== $salesId) abort(403);
+        if (!in_array($role, ['owner', 'sales'], true)) abort(403);
+        $sales = \App\Models\User::where('id', $salesId)->where('role', 'sales')->firstOrFail();
+        return response()->json(['success' => true, 'data' => $sales->only(['id', 'name', 'email', 'commission_rate'])]);
+    }
+
+    public function update(Request $request, int $salesId): JsonResponse
+    {
+        $role = $request->user()->role instanceof \BackedEnum ? $request->user()->role->value : (string) $request->user()->role;
+        if ($role !== 'owner') abort(403);
+        $data = $request->validate(['commission_rate' => ['required', 'numeric', 'min:0', 'max:100']]);
+        $sales = \App\Models\User::where('id', $salesId)->where('role', 'sales')->firstOrFail(); $sales->update($data);
+        return response()->json(['success' => true, 'data' => $sales->only(['id', 'name', 'email', 'commission_rate'])]);
     }
 }

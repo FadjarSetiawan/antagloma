@@ -17,7 +17,8 @@ class OrderResource extends JsonResource
         }) : 0;
 
         $isVerified = !in_array($statusStr, ['WAITING_PROCESS', 'CANCELLED']);
-        $salesCommission = $isVerified ? round($plantTotal * 0.05) : 0;
+        $commissionRate = (float) ($this->creator?->commission_rate ?? 5);
+        $salesCommission = $isVerified ? round($plantTotal * $commissionRate / 100) : 0;
 
         return [
             'id'                  => $this->id,

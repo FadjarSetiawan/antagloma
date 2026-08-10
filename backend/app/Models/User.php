@@ -17,6 +17,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'commission_rate',
     ];
 
     protected $hidden = [
@@ -27,5 +28,6 @@ class User extends Authenticatable
     protected $casts = [
         'role' => UserRole::class,
         'password' => 'hashed',
+        'commission_rate' => 'float',
     ];
 }
