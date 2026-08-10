@@ -93,6 +93,7 @@ export interface Order {
   verified_at?: string;
   shipped_at?: string;
   completed_at?: string;
+  sales_informed_at?: string;
   packages?: OrderPackage[];
 }
 

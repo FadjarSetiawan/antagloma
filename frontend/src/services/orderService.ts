@@ -135,6 +135,10 @@ export const orderService = {
     const res = await api.get('/packing/queue');
     return res.data;
   },
+  markSalesInformed: async (id: number): Promise<{ success: boolean; message: string; data: Order }> => {
+    const res = await api.post(`/orders/${id}/sales-informed`);
+    return res.data;
+  },
 
   getSalesPackingProgress: async (params?: { page?: number; per_page?: number }): Promise<PaginatedResponse<Order>> => {
     const res = await api.get('/sales/packing-progress', { params });

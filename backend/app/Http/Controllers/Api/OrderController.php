@@ -151,4 +151,16 @@ class OrderController extends Controller
             'data'    => new OrderResource($completed),
         ]);
     }
+
+    public function markSalesInformed(Request $request, int $id): JsonResponse
+    {
+        $order = Order::with(['packages.packingImages'])->findOrFail($id);
+        Gate::authorize('salesInform', $order);
+        abort_unless(in_array($order->status->value, ['PACKING_COMPLETED', 'COMPLETED'], true), 422, 'Pesanan belum selesai diproses.');
+        $packages = $order->packages;
+        abort_if($packages->isEmpty() || $packages->contains(fn ($package) => blank($package->tracking_number)), 422, 'Semua package harus memiliki nomor resi terlebih dahulu.');
+        abort_if($packages->contains(fn ($package) => $package->packingImages->isEmpty()), 422, 'Semua package harus memiliki minimal satu foto packing terlebih dahulu.');
+        $order->update(['sales_informed_at' => now()]);
+        return response()->json(['success' => true, 'message' => 'Pesanan berhasil ditandai sudah diinformasikan.', 'data' => new OrderResource($order->fresh())]);
+    }
 }

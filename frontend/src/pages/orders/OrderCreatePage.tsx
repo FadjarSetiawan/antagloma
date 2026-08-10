@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { orderService, Region } from '../../services/orderService';
 import { AddPlantModal } from '../../components/orders/AddPlantModal';
 import { OrderItem } from '../../types/order';
@@ -32,6 +32,8 @@ export const OrderCreatePage: React.FC = () => {
 
   // Wizard Step State (1: Data Pesanan & Pengiriman, 2: Detail Tanaman, 3: Pembayaran & Konfirmasi)
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const formTopRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [step]);
 
   // Accordion Section States inside Step 1
   const [isSection1Open, setIsSection1Open] = useState(true);
@@ -163,7 +165,8 @@ export const OrderCreatePage: React.FC = () => {
   const totalItemCount = items.reduce((acc, curr) => acc + (Number(curr.quantity) || 0), 0);
   const totalDiscount = items.reduce((acc, curr) => acc + (Number(curr.discount) || 0) * (Number(curr.quantity) || 1), 0);
   const totalPlantPrice = items.reduce((acc, curr) => acc + (Number(curr.quantity) || 0) * (Number(curr.price) || 0), 0);
-  const actualShippingCost = deliveryMethod === 'Ambil Di Lokasi' ? 0 : Number(buyerShippingCost) || 0;
+  const isPickup = ['Ambil di Tempat', 'Ambil Di Lokasi'].includes(deliveryMethod);
+  const actualShippingCost = isPickup ? 0 : Number(buyerShippingCost) || 0;
   const grandTotal = totalPlantPrice + actualShippingCost;
 
   const handleSubmitFinal = async (e: React.FormEvent) => {
@@ -229,7 +232,7 @@ export const OrderCreatePage: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 pb-28">
+    <div ref={formTopRef} className="max-w-4xl mx-auto space-y-5 pb-28">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 bg-[#04593f] text-white border-2 border-emerald-400 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-extrabold animate-bounce">
@@ -679,7 +682,7 @@ export const OrderCreatePage: React.FC = () => {
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">INFORMASI PEMBAYARAN & ONGKIR</h3>
 
             {/* CONDITIONAL ONGKIR INPUT FIELD: SHOWN FOR Kirim Paket, Packing Kayu, & Antar Ke Rumah. HIDDEN FOR Ambil Di Lokasi */}
-            {deliveryMethod !== 'Ambil Di Lokasi' && (
+            {!isPickup && (
               <div>
                 <label className="block text-xs font-extrabold text-slate-900 mb-1 flex items-center gap-1.5">
                   <Truck className="w-4 h-4 text-[#04593f]" />

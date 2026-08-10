@@ -23,6 +23,7 @@ class SalesPackingController extends Controller
             'packages.packingImages.uploader',
         ])
             ->where('status', 'PACKING_COMPLETED')
+            ->when(($request->user()->role->value ?? $request->user()->role) === 'sales', fn ($query) => $query->where('created_by', $request->user()->id))
             ->orderBy('created_at')
             ->paginate($request->integer('per_page', 50));
 

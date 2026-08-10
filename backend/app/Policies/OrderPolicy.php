@@ -61,4 +61,10 @@ class OrderPolicy
         $role = $user->role->value ?? $user->role;
         return in_array($role, ['admin', 'owner']);
     }
+
+    public function salesInform(User $user, Order $order): bool
+    {
+        $role = $user->role->value ?? $user->role;
+        return in_array($role, ['owner', 'admin'], true) || ($role === 'sales' && $order->created_by === $user->id);
+    }
 }

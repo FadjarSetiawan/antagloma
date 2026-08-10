@@ -44,7 +44,7 @@ class OrderResource extends JsonResource
             'is_verified'         => $isVerified,
             'payment_proof_url'   => $this->payment_proof_path ? asset('storage/' . $this->payment_proof_path) : null,
             'payment_status'      => $this->payment_status ?? 'PENDING',
-            'shipping_cost'       => $this->shipping_cost,
+            'shipping_cost'       => $request->user()?->role?->value === 'sales' ? null : $this->shipping_cost,
             'tracking_number'     => $this->tracking_number,
             'creator'             => new UserResource($this->whenLoaded('creator')),
             'verifier'            => new UserResource($this->whenLoaded('verifier')),
@@ -61,6 +61,7 @@ class OrderResource extends JsonResource
             'verified_at'         => $this->verified_at?->toIso8601String(),
             'shipped_at'          => $this->shipped_at?->toIso8601String(),
             'completed_at'        => $this->completed_at?->toIso8601String(),
+            'sales_informed_at'   => $this->sales_informed_at?->toIso8601String(),
         ];
     }
 }

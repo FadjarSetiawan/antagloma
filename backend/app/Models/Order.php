@@ -40,6 +40,7 @@ class Order extends Model
         'verified_at',
         'shipped_at',
         'completed_at',
+        'sales_informed_at',
     ];
 
     protected $casts = [
@@ -49,6 +50,7 @@ class Order extends Model
         'verified_at'         => 'datetime',
         'shipped_at'          => 'datetime',
         'completed_at'        => 'datetime',
+        'sales_informed_at'   => 'datetime',
         'shipping_cost'       => 'float',
         'buyer_shipping_cost' => 'float',
     ];

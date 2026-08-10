@@ -1,337 +1,40 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Eye, Package, Tag, X, CheckCircle2 } from 'lucide-react';
 import { orderService } from '../../services/orderService';
-import { Order } from '../../types/order';
-import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
+import { Order, OrderPackage } from '../../types/order';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
-import { ShoppingBag, Clock, Package, CheckCircle2, ChevronRight, Plus, Truck, Tag, Eye } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+
+const packageType = (order: Order, pkg: OrderPackage) => pkg.package_type || (order.delivery_method === 'Packing Kayu' ? 'Packing Kayu' : 'Menunggu konfigurasi Admin');
 
 export const SalesDashboard: React.FC = () => {
-  const navigate = useNavigate();
+  const qc = useQueryClient(); const [detail, setDetail] = useState<Order | null>(null); const [photos, setPhotos] = useState<OrderPackage | null>(null); const [confirm, setConfirm] = useState<Order | null>(null); const [error, setError] = useState('');
+  const ordersQuery = useQuery({ queryKey: ['sales-orders-lifecycle'], queryFn: () => orderService.getOrders({ per_page: 100 }), refetchInterval: 5000 });
+  const progressQuery = useQuery({ queryKey: ['sales-packing-progress'], queryFn: () => orderService.getSalesPackingProgress({ per_page: 100 }), refetchInterval: 5000 });
+  const informed = useMutation({ mutationFn: (id: number) => orderService.markSalesInformed(id), onSuccess: () => { setConfirm(null); qc.invalidateQueries({ queryKey: ['sales-orders-lifecycle'] }); qc.invalidateQueries({ queryKey: ['sales-packing-progress'] }); }, onError: (e: any) => setError(e?.response?.data?.message || 'Gagal menandai pesanan.') });
+  const orders = ordersQuery.data?.data || []; const progress = progressQuery.data?.data || [];
+  const waiting = orders.filter(o => o.status === 'WAITING_PACKING');
+  const completed = progress.filter(o => (o.packages || []).some(p => p.photo_uploaded));
+  const ready = progress.filter(o => (o.packages || []).some(p => p.tracking_number) && !o.sales_informed_at);
+  const history = orders.filter(o => o.sales_informed_at);
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
+  const todayCount = orders.filter(o => o.order_date === today).length;
+  const allTracked = (o: Order) => !!o.packages?.length && o.packages.every(p => !!p.tracking_number);
+  const plants = (o: Order) => o.items?.map(i => `${i.product_name} ×${i.quantity}`) || [];
 
-  const [selectedDetailOrder, setSelectedDetailOrder] = useState<Order | null>(null);
-
-  const { data: dashboardData, isLoading } = useQuery({
-    queryKey: ['dashboard-metrics'],
-    queryFn: () => orderService.getOrders({ per_page: 100 }),
-    refetchInterval: 5000,
-  });
-
-  const { data: salesPackingData } = useQuery({
-    queryKey: ['sales-packing-progress'],
-    queryFn: () => orderService.getSalesPackingProgress({ per_page: 100 }),
-    refetchInterval: 5000,
-  });
-
-  const orders: Order[] = dashboardData?.data || [];
-
-  const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
-  const todayOrders = orders.filter((o: Order) => o.order_date === todayStr).length;
-
-  // Card 1: Menunggu Verifikasi (WAITING_PROCESS - Order baru belum diverifikasi admin)
-  const waitingVerificationCount = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
-
-  // Card 2: Menunggu Atur Paket (WAITING_PACKING - Pembayaran sudah diverifikasi admin, otomatis masuk ke sini)
-  const waitingConfigureCount = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
-
-  // Card 3: Menunggu Packing (WAITING_PACKING queue)
-  const waitingPackingCount = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
-  const configuredPackages = (salesPackingData?.data || []).flatMap((order) =>
-    (order.packages || []).map((pkg) => ({ order, pkg }))
-  );
-
-  // Card 4: Packing Selesai (PACKING_COMPLETED - Foto paket telah diunggah kebun)
-  const packingCompletedCount = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED').length;
-
-  // Bottom Table: Orders with Shipped / Tracking Number
-  const shippedOrdersWithResi = orders.filter((o: Order) => Boolean(o.tracking_number) || o.status === 'COMPLETED');
-
-  const statCards = [
-    {
-      title: 'Menunggu Verifikasi',
-      value: isLoading ? '...' : waitingVerificationCount,
-      caption: waitingVerificationCount > 0 ? `${waitingVerificationCount} menunggu dicek admin` : 'Semua diverifikasi',
-      hasNotification: waitingVerificationCount > 0,
-      buttonText: 'Lihat Order',
-      icon: ShoppingBag,
-      link: '/orders?status=WAITING_PROCESS',
-    },
-    {
-      title: 'Menunggu Atur Paket',
-      value: isLoading ? '...' : waitingConfigureCount,
-      caption: waitingConfigureCount > 0 ? `${waitingConfigureCount} paket siap diatur` : 'Semua teratur',
-      hasNotification: waitingConfigureCount > 0,
-      buttonText: 'Cek Status',
-      icon: Clock,
-      link: '/orders?status=WAITING_PACKING',
-    },
-    {
-      title: 'Menunggu Packing',
-      value: isLoading ? '...' : waitingPackingCount,
-      caption: waitingPackingCount > 0 ? `${waitingPackingCount} sedang dikemas` : 'Belum ada antrean',
-      hasNotification: waitingPackingCount > 0,
-      buttonText: 'Cek Antrean',
-      icon: Package,
-      link: '/packing',
-    },
-    {
-      title: 'Packing Selesai',
-      value: isLoading ? '...' : packingCompletedCount,
-      caption: packingCompletedCount > 0 ? `${packingCompletedCount} foto paket dikirim` : 'Belum ada foto',
-      hasNotification: packingCompletedCount > 0,
-      buttonText: 'Lihat Selesai',
-      icon: CheckCircle2,
-      link: '/orders?status=PACKING_COMPLETED',
-    },
-  ];
-
-  return (
-    <div className="space-y-4 sm:space-y-5 max-w-7xl pb-24 font-sans text-slate-900 px-1 sm:px-0">
-      {/* Header Banner - Streamlined & Clean */}
-      <div className="flex items-center justify-between pt-1">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Sales Dashboard</h1>
-          <p className="text-xs text-slate-500 font-normal mt-0.5">Kelola dan pantau transaksi penjualan tokomu.</p>
-        </div>
-
-        {/* Desktop-only action button */}
-        <button
-          onClick={() => navigate('/orders/create')}
-          className="hidden sm:flex px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold items-center gap-1.5 shadow-xs cursor-pointer"
-        >
-          <Plus className="w-4 h-4" /> Buat Order
-        </button>
-      </div>
-
-      {/* Banner Info: Pesanan Dibuat Hari Ini */}
-      <div
-        onClick={() => navigate(`/orders?order_date=${todayStr}`)}
-        className="bg-[#04593f] hover:bg-emerald-900 text-white rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-2xs cursor-pointer transition-all active:scale-98 group"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 text-white flex items-center justify-center flex-shrink-0">
-            <ShoppingBag className="w-5 h-5 text-emerald-300" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-xs sm:text-sm font-bold text-white leading-tight">Pesanan Dibuat Hari Ini</h3>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-700/80 text-emerald-100 text-[10px] font-black">
-                {isLoading ? '...' : `${todayOrders} Order`}
-              </span>
-            </div>
-            <p className="text-[10px] sm:text-[11px] text-emerald-100/90 font-medium mt-0.5">
-              Klik untuk melihat seluruh transaksi pesanan yang dibuat hari ini ({todayStr}).
-            </p>
-          </div>
-        </div>
-
-        <div className="px-3 py-1.5 bg-white/15 group-hover:bg-white/25 rounded-xl text-xs font-bold text-white flex items-center gap-1 flex-shrink-0">
-          <span>Lihat Hari Ini</span>
-          <ChevronRight className="w-3.5 h-3.5" />
-        </div>
-      </div>
-
-      {/* Sleek Compact 2x2 Grid Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
-        {statCards.map((card, idx) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={idx}
-              onClick={() => navigate(card.link)}
-              className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between space-y-2 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all cursor-pointer group"
-            >
-              <div className="flex items-center justify-between">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#04593f]" />
-                </div>
-                <span className="text-lg sm:text-2xl font-black text-slate-900">{card.value}</span>
-              </div>
-
-              <div>
-                <h3 className="text-xs font-bold text-slate-800 leading-tight block truncate">
-                  {card.title}
-                </h3>
-                
-                <div className="mt-1 flex items-center max-w-full">
-                  {card.hasNotification ? (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200/90 text-[9px] sm:text-[10px] font-bold shadow-2xs max-w-full truncate">
-                      <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
-                      </span>
-                      <span className="truncate">{card.caption}</span>
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-slate-400 font-normal leading-none truncate">{card.caption}</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="pt-1.5 border-t border-slate-100 flex justify-end">
-                <button
-                  type="button"
-                  className="w-full py-1.5 px-2 bg-emerald-50 group-hover:bg-[#04593f] text-[#04593f] group-hover:text-white rounded-xl text-[10px] sm:text-xs font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"
-                >
-                  <span>{card.buttonText}</span>
-                  <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <section className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">
-        <div>
-          <h2 className="text-xs sm:text-sm font-bold text-slate-900">Package Menunggu Packing</h2>
-          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">Package hasil konfigurasi Admin (read-only).</p>
-        </div>
-        {configuredPackages.length === 0 ? <p className="text-xs text-slate-400 py-3">Belum ada package yang dikonfigurasi.</p> : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            {configuredPackages.filter(({ pkg }) => pkg.status === 'DOCUMENT_PRINTING' || pkg.status === 'WAITING_PHOTO').map(({ order, pkg }) => (
-              <div key={pkg.id} className="border border-slate-200 rounded-xl p-3 bg-slate-50/70">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-slate-900">{order.order_number} · Paket {pkg.letter}</span>
-                  <span className="text-[10px] text-slate-500">{pkg.status === 'WAITING_PHOTO' ? 'Menunggu Foto' : 'Menunggu Packing'}</span>
-                </div>
-                <ul className="mt-2 text-[11px] text-slate-600 list-disc pl-4">
-                  {(pkg.items || []).map((item) => <li key={item.order_item_id}>{item.product_name || 'Tanaman'} · {item.quantity}</li>)}
-                </ul>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Dedicated Section: Tabel Daftar Pesanan yang Sudah Dikirimkan Nomor Resinya oleh Admin */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-          <div>
-            <h2 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
-              <Tag className="w-4 h-4 text-[#04593f]" />
-              <span>Daftar Pesanan Resi Terbit</span>
-            </h2>
-            <p className="text-[10px] sm:text-[11px] text-slate-400 font-normal mt-0.5">
-              Daftar pesanan dengan nomor resi terbit yang siap diinfokan ke pemesan
-            </p>
-          </div>
-
-          <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-emerald-50 text-[#04593f] border border-emerald-200 rounded-lg text-[10px] sm:text-xs font-bold flex-shrink-0">
-            {shippedOrdersWithResi.length} Resi
-          </span>
-        </div>
-
-        {isLoading ? (
-          <div className="py-6 text-center text-xs font-normal text-slate-400">
-            Memuat daftar resi pesanan...
-          </div>
-        ) : shippedOrdersWithResi.length === 0 ? (
-          <div className="py-6 text-center space-y-1">
-            <p className="text-xs font-bold text-slate-700">Belum Ada Nomor Resi yang Diinput Admin</p>
-            <p className="text-[10px] sm:text-[11px] text-slate-400">Nomor resi yang diinput admin akan otomatis muncul di sini.</p>
-          </div>
-        ) : (
-          <>
-            {/* MOBILE VIEW (< md screens): Responsive Cards with NO horizontal table scroll */}
-            <div className="space-y-2.5 md:hidden">
-              {shippedOrdersWithResi.map((order: Order) => (
-                <div key={order.id} className="p-3 bg-slate-50/90 border border-slate-200/90 rounded-xl space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-900 block text-xs">{order.order_number}</span>
-                      <span className="text-[10px] text-slate-400">{order.order_date}</span>
-                    </div>
-                    <OrderStatusBadge status={order.status} />
-                  </div>
-
-                  <div className="flex items-center justify-between text-[11px] text-slate-600 border-t border-slate-200/60 pt-2">
-                    <div>
-                      <span className="font-bold text-slate-900 block text-xs">{order.customer_name}</span>
-                      <span className="text-slate-500 font-medium text-[10px]">{order.phone} • {order.delivery_method}</span>
-                    </div>
-                    <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-300 text-[#04593f] font-black text-[11px] rounded-lg shadow-2xs">
-                      {order.tracking_number || 'Belum Input Resi'}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-end pt-1.5 border-t border-slate-200/60">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedDetailOrder(order)}
-                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Detail</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* DESKTOP VIEW (>= md screens): Full Data Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200/80 text-slate-600 font-bold text-[11px]">
-                  <tr>
-                    <th className="py-2.5 px-3">No. Order & Tgl</th>
-                    <th className="py-2.5 px-3">Customer / Pemesan</th>
-                    <th className="py-2.5 px-3">Metode Pengiriman</th>
-                    <th className="py-2.5 px-3">Nomor Resi</th>
-                    <th className="py-2.5 px-3 text-center">Status</th>
-                    <th className="py-2.5 px-3 text-center">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
-                  {shippedOrdersWithResi.map((order: Order) => (
-                    <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-3">
-                        <span className="font-bold text-slate-900 block">{order.order_number}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">{order.order_date}</span>
-                      </td>
-                      <td className="py-3 px-3">
-                        <span className="font-bold text-slate-900 block">{order.customer_name}</span>
-                        <span className="text-[10px] text-slate-500 font-medium">{order.phone}</span>
-                      </td>
-                      <td className="py-3 px-3">
-                        <span className="font-medium text-slate-700 flex items-center gap-1">
-                          <Truck className="w-3.5 h-3.5 text-[#04593f]" />
-                          {order.delivery_method}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3">
-                        <span className="inline-block px-2.5 py-1 bg-emerald-50 border border-emerald-300 text-[#04593f] font-black text-xs rounded-lg tracking-wide shadow-2xs">
-                          {order.tracking_number || 'Belum Input Resi'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-center">
-                        <OrderStatusBadge status={order.status} />
-                      </td>
-                      <td className="py-3 px-3 text-center">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedDetailOrder(order)}
-                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold inline-flex items-center gap-1 cursor-pointer transition-colors"
-                        >
-                          <Eye className="w-3.5 h-3.5 text-slate-500" />
-                          <span>Detail</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Order Detail Modal */}
-      <OrderDetailModal
-        order={selectedDetailOrder}
-        onClose={() => setSelectedDetailOrder(null)}
-      />
-    </div>
-  );
+  return <div className="space-y-4 max-w-5xl pb-24 font-sans text-slate-900">
+    <header><h1 className="text-lg sm:text-xl font-bold">Sales Dashboard</h1><p className="text-xs text-slate-500 mt-0.5">Pantau pesanan, packing, foto, dan resi milik Anda.</p></header>
+    <button onClick={() => window.location.assign(`/orders?order_date=${today}`)} className="w-full text-left bg-[#04593f] text-white rounded-2xl p-3.5"><span className="text-xs font-bold">Pesanan Dibuat Hari Ini · {todayCount} Order</span><span className="block text-[10px] text-emerald-100 mt-1">{today}</span></button>
+    <section><h2 className="text-sm font-black mb-2">Menunggu Packing</h2><div className="grid gap-3 sm:grid-cols-2">{waiting.length === 0 ? <Empty text="Belum ada order menunggu packing." /> : waiting.map(o => <article key={o.id} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3"><div className="flex justify-between gap-2"><div><b className="text-xs">{o.order_number}</b><p className="font-bold text-sm mt-1">{o.customer_name}</p></div><span className="h-fit rounded-full bg-amber-50 border border-amber-200 px-2 py-1 text-[10px] font-bold text-amber-800">Menunggu Packing</span></div><div><p className="text-[10px] font-bold uppercase text-slate-400">Pesanan</p><ul className="mt-1 text-xs text-slate-600 space-y-0.5">{plants(o).map(p => <li key={p}>• {p}</li>)}</ul></div><div className="text-xs"><span className="font-bold text-slate-400">Jenis Paket: </span>{o.packages?.length ? o.packages.map(p => packageType(o, p)).join(' · ') : 'Menunggu konfigurasi Admin'}</div><button onClick={() => setDetail(o)} className="min-h-11 w-full rounded-xl bg-slate-100 text-slate-700 text-xs font-bold"><Eye className="inline w-4 h-4 mr-1" />Lihat Detail</button></article>)}</div></section>
+    <section><h2 className="text-sm font-black mb-2">Packing Selesai</h2><div className="grid gap-3 sm:grid-cols-2">{completed.length === 0 ? <Empty text="Belum ada package dengan foto." /> : completed.map(o => <OrderPackageCard key={o.id} order={o} onPhoto={setPhotos} />)}</div></section>
+    <section><h2 className="text-sm font-black mb-2 flex items-center gap-2"><Tag className="w-4 h-4 text-[#04593f]" />Daftar Pesanan Resi Terbit</h2><div className="space-y-3">{ready.length === 0 ? <Empty text="Belum ada resi package." /> : ready.map(o => <article key={o.id} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3"><div><b className="text-xs">{o.order_number}</b><p className="font-bold text-sm">{o.customer_name}</p></div><div className="space-y-2">{o.packages?.map(p => <div key={p.id} className="rounded-xl bg-slate-50 p-3 flex justify-between gap-2"><div><b className="text-xs">Paket {p.letter}</b><p className="text-xs text-slate-600">{p.tracking_number ? `✓ ${p.tracking_number}` : '○ Belum Resi'}</p></div>{p.photo_uploaded && <button onClick={() => setPhotos(p)} className="text-xs font-bold text-[#04593f]">Lihat Foto</button>}</div>)}</div><p className="text-xs font-bold text-slate-500">{o.packages?.filter(p => p.tracking_number).length || 0}/{o.packages?.length || 0} paket sudah ada resi</p><button disabled={!allTracked(o) || informed.isPending} onClick={() => setConfirm(o)} className="min-h-11 w-full rounded-xl bg-[#04593f] text-white text-xs font-black disabled:bg-slate-200 disabled:text-slate-400">{allTracked(o) ? '✓ Selesai Diinfokan' : '🔒 Selesai Diinfokan'}</button></article>)}</div></section>
+    <section><h2 className="text-sm font-black mb-2">Riwayat Pesanan</h2><div className="space-y-2">{history.length === 0 ? <Empty text="Belum ada pesanan di riwayat." /> : history.map(o => <article key={o.id} className="bg-white border border-slate-200 rounded-2xl p-4"><b className="text-xs">{o.order_number}</b><p className="font-bold text-sm">{o.customer_name}</p><p className="text-xs text-emerald-700 font-bold mt-2">✓ Selesai Diinfokan</p><p className="text-[10px] text-slate-400">{o.sales_informed_at}</p></article>)}</div></section>
+    <OrderDetailModal order={detail} onClose={() => setDetail(null)} />
+    {photos && <PhotoModal pkg={photos} onClose={() => setPhotos(null)} />}
+    {confirm && <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-slate-900/40 p-3"><div className="w-full max-w-sm bg-white rounded-2xl p-5 space-y-4"><h2 className="font-black text-lg">Semua resi & foto sudah diinformasikan ke pembeli?</h2><p className="text-xs text-slate-600">✓ Nomor resi sudah tersedia<br/>✓ Foto paket sudah tersedia</p><p className="text-xs text-slate-500">Setelah dikonfirmasi, pesanan akan masuk ke Riwayat Pesanan.</p>{error && <p className="text-xs text-rose-600 font-bold">{error}</p>}<div className="grid grid-cols-2 gap-2"><button onClick={() => {setConfirm(null);setError('')}} className="min-h-11 rounded-xl bg-slate-100 font-bold">Batal</button><button onClick={() => informed.mutate(confirm.id)} disabled={informed.isPending} className="min-h-11 rounded-xl bg-[#04593f] text-white font-black disabled:opacity-50">{informed.isPending ? 'Menyimpan...' : 'Konfirmasi'}</button></div></div></div>}
+  </div>;
 };
+
+const Empty: React.FC<{ text: string }> = ({ text }) => <div className="bg-white border border-slate-200 rounded-2xl p-5 text-xs text-slate-400">{text}</div>;
+const OrderPackageCard: React.FC<{ order: Order; onPhoto: (pkg: OrderPackage) => void }> = ({ order, onPhoto }) => <article className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3"><b className="text-xs">{order.order_number}</b><p className="font-bold text-sm">{order.customer_name}</p>{order.packages?.filter(p => p.photo_uploaded).map(p => <div key={p.id} className="rounded-xl bg-slate-50 p-3 flex items-center justify-between"><div><b className="text-xs">Paket {p.letter}</b><p className="text-xs text-slate-500">{packageType(order, p)}</p></div><button onClick={() => onPhoto(p)} className="min-h-11 rounded-xl bg-[#04593f] px-3 text-white text-xs font-bold">Lihat Foto Paket</button></div>)}</article>;
+const PhotoModal: React.FC<{ pkg: OrderPackage; onClose: () => void }> = ({ pkg, onClose }) => <div className="fixed inset-0 z-[9999] bg-slate-900/60 flex items-end sm:items-center justify-center p-3"><div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-4"><div className="flex justify-between items-center mb-3"><h2 className="font-black">Foto Paket {pkg.letter}</h2><button onClick={onClose} className="min-h-11 min-w-11 flex items-center justify-center"><X /></button></div><div className="grid gap-3">{pkg.packing_images?.map(img => <img key={img.id} src={img.image_url} alt={`Foto Paket ${pkg.letter}`} className="w-full rounded-xl object-contain max-h-[60vh]" />)}</div></div></div>;
