@@ -20,7 +20,7 @@ export const SalesDashboard: React.FC = () => {
   const qc = useQueryClient(); const [detail, setDetail] = useState<Order | null>(null); const [photos, setPhotos] = useState<OrderPackage | null>(null); const [confirm, setConfirm] = useState<Order | null>(null); const [error, setError] = useState('');
   const ordersQuery = useQuery({ queryKey: ['sales-orders-lifecycle'], queryFn: () => orderService.getOrders({ per_page: 100 }), refetchInterval: 5000 });
   const progressQuery = useQuery({ queryKey: ['sales-packing-progress'], queryFn: () => orderService.getSalesPackingProgress({ per_page: 100 }), refetchInterval: 5000 });
-  const informed = useMutation({ mutationFn: (id: number) => orderService.markSalesInformed(id), onSuccess: () => { setConfirm(null); qc.invalidateQueries({ queryKey: ['sales-orders-lifecycle'] }); qc.invalidateQueries({ queryKey: ['sales-packing-progress'] }); }, onError: (e: any) => setError(e?.response?.data?.message || 'Gagal menandai pesanan.') });
+  const informed = useMutation({ mutationFn: (id: number) => orderService.markSalesInformed(id), onSuccess: () => { setError(''); setConfirm(null); qc.invalidateQueries({ queryKey: ['sales-orders-lifecycle'] }); qc.invalidateQueries({ queryKey: ['sales-packing-progress'] }); }, onError: (e: any) => setError(e?.response?.data?.message || 'Gagal menandai pesanan.') });
   const orders = ordersQuery.data?.data || []; const progress = progressQuery.data?.data || [];
   const allTracked = (o: Order) => !!o.packages?.length && o.packages.every(p => !!p.tracking_number);
   const allPhotos = (o: Order) => !!o.packages?.length && o.packages.every(hasPackagePhoto);
