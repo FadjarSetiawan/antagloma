@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
-import { Order } from '../../types/order';
+import { Order, OrderPackage } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
 import { CompleteShipmentModal } from '../../components/orders/CompleteShipmentModal';
+import { CompletePackageShipmentModal } from '../../components/orders/CompletePackageShipmentModal';
 import { Clock, Truck, FileText, Camera, ChevronRight, Plus, ArrowRight, PackageCheck, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,6 +15,7 @@ export const AdminDashboard: React.FC = () => {
 
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<Order | null>(null);
   const [selectedShipmentOrder, setSelectedShipmentOrder] = useState<Order | null>(null);
+  const [selectedShipmentPackage, setSelectedShipmentPackage] = useState<OrderPackage | null>(null);
 
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['dashboard-metrics'],
@@ -39,10 +41,11 @@ export const AdminDashboard: React.FC = () => {
   const waitingResiOrders = orders.filter(
     (o: Order) =>
       o.status === 'PACKING_COMPLETED' &&
-      o.packing_images &&
-      o.packing_images.length > 0 &&
-      (!o.tracking_number || o.tracking_number.trim() === '')
+      (o.packages?.length
+        ? o.packages.some((pkg) => !pkg.tracking_number)
+        : !!o.packing_images?.length && (!o.tracking_number || o.tracking_number.trim() === ''))
   );
+  const waitingPackagePhotos = orders.filter((o) => o.status === 'WAITING_PACKING' && !!o.packages?.length);
 
   const approveMutation = useMutation({
     mutationFn: (id: number) => orderService.approveOrder(id),
@@ -66,6 +69,32 @@ export const AdminDashboard: React.FC = () => {
 
   const handleConfirmShipment = async (orderId: number, payload: { shipping_cost: number; tracking_number: string }) => {
     await shipmentMutation.mutateAsync({ id: orderId, payload });
+  };
+
+  const packageShipmentMutation = useMutation({
+    mutationFn: ({ packageId, payload }: { packageId: number; payload: { shipping_cost: number; tracking_number: string } }) =>
+      orderService.completePackageShipment(packageId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['orders-list'] });
+      setSelectedShipmentPackage(null);
+    },
+  });
+
+  const packagePhotoMutation = useMutation({
+    mutationFn: ({ packageId, file }: { packageId: number; file: File }) => orderService.uploadPackageProof(packageId, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['orders-list'] });
+    },
+  });
+
+  const openShipment = (order: Order) => {
+    if (order.packages?.length) {
+      setSelectedShipmentPackage(order.packages.find((pkg) => !pkg.tracking_number) || order.packages[0]);
+    } else {
+      setSelectedShipmentOrder(order);
+    }
   };
 
   const statCards = [
@@ -176,6 +205,8 @@ export const AdminDashboard: React.FC = () => {
         })}
       </div>
 
+      {waitingPackagePhotos.length > 0 && <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs"><div><h2 className="text-xs sm:text-sm font-bold">Package Menunggu Foto</h2><p className="text-[10px] text-slate-400 mt-0.5">Upload minimal satu foto untuk setiap package.</p></div>{waitingPackagePhotos.map((order) => <div key={order.id} className="rounded-xl border border-slate-200 p-3 space-y-2"><div className="text-xs"><b>{order.order_number}</b><span className="text-slate-500"> · {order.customer_name}</span></div><div className="grid gap-2 sm:grid-cols-2">{order.packages?.map((pkg) => <div key={pkg.id} className="rounded-lg bg-slate-50 p-2 text-xs"><div className="flex justify-between"><b>Paket {pkg.letter}</b><span>{pkg.photo_uploaded ? 'Foto Ada' : 'Belum Foto'}</span></div>{!pkg.photo_uploaded && <input type="file" accept="image/jpeg,image/png,image/webp" className="mt-2 w-full text-[10px]" disabled={packagePhotoMutation.isPending} onChange={(e) => { const file = e.target.files?.[0]; if (file) packagePhotoMutation.mutate({ packageId: pkg.id, file }); e.currentTarget.value = ''; }} />}</div>)}</div></div>)}</div>}
+
       {/* Dedicated Section: Daftar Pesanan Menunggu Input Resi (Mobile Responsive Cards & Desktop Table) */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
@@ -229,14 +260,16 @@ export const AdminDashboard: React.FC = () => {
                     </span>
                   </div>
 
+                  {order.packages?.length ? <div className="space-y-1.5 border-t border-slate-200/60 pt-2">{order.packages.map((pkg) => <div key={pkg.id} className="rounded-lg bg-white border border-slate-200 p-2"><div className="flex justify-between text-[11px]"><b>Paket {pkg.letter}</b><span>{pkg.tracking_number ? 'Resi Ada' : 'Belum Resi'}</span></div><p className="text-[10px] text-slate-500">{pkg.package_type || 'Package'} · Foto {pkg.photo_uploaded ? 'Ada' : 'Belum'}</p>{pkg.items?.map((item) => <p key={item.order_item_id} className="text-[10px] text-slate-600">• {item.product_name || 'Tanaman'} ×{item.quantity}</p>)}</div>)}</div> : null}
+
                   <div className="flex items-center justify-end gap-1.5 pt-1.5 border-t border-slate-200/60">
                     <button
                       type="button"
-                      onClick={() => setSelectedShipmentOrder(order)}
+                      onClick={() => openShipment(order)}
                       className="px-3 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1 shadow-2xs cursor-pointer"
                     >
                       <PackageCheck className="w-3.5 h-3.5" />
-                      <span>Input Resi</span>
+                      <span>{order.packages?.length ? 'Input Resi Package' : 'Input Resi'}</span>
                     </button>
                     <button
                       type="button"
@@ -261,6 +294,7 @@ export const AdminDashboard: React.FC = () => {
                     <th className="py-2.5 px-3">Metode Pengiriman</th>
                     <th className="py-2.5 px-3 text-center">Foto Packing</th>
                     <th className="py-2.5 px-3 text-center">Status Resi</th>
+                    <th className="py-2.5 px-3">Package</th>
                     <th className="py-2.5 px-3 text-center">Aksi</th>
                   </tr>
                 </thead>
@@ -286,6 +320,7 @@ export const AdminDashboard: React.FC = () => {
                           ✓ Foto Ada ({order.packing_images?.length || 1})
                         </span>
                       </td>
+                      <td className="py-3 px-3"><div className="space-y-1">{order.packages?.map((pkg) => <div key={pkg.id} className="text-[10px]"><b>Paket {pkg.letter}</b> · {pkg.package_type || 'Package'}<div className="text-slate-500">{pkg.items?.map((item) => `${item.product_name || 'Tanaman'} ×${item.quantity}`).join(', ')}</div></div>)}</div></td>
                       <td className="py-3 px-3 text-center">
                         <span className="inline-block px-2 py-0.5 bg-amber-50 text-amber-900 border border-amber-200 text-[10px] font-bold rounded">
                           Belum Input Resi
@@ -295,11 +330,11 @@ export const AdminDashboard: React.FC = () => {
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => setSelectedShipmentOrder(order)}
+                            onClick={() => openShipment(order)}
                             className="px-2.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1 shadow-2xs cursor-pointer transition-colors"
                           >
                             <PackageCheck className="w-3.5 h-3.5" />
-                            <span>Input Resi</span>
+                            <span>{order.packages?.length ? 'Input Resi Package' : 'Input Resi'}</span>
                           </button>
                           <button
                             type="button"
@@ -366,6 +401,13 @@ export const AdminDashboard: React.FC = () => {
         order={selectedShipmentOrder}
         onClose={() => setSelectedShipmentOrder(null)}
         onConfirm={handleConfirmShipment}
+      />
+      <CompletePackageShipmentModal
+        pkg={selectedShipmentPackage}
+        onClose={() => setSelectedShipmentPackage(null)}
+        onConfirm={async (packageId, payload) => {
+          await packageShipmentMutation.mutateAsync({ packageId, payload });
+        }}
       />
     </div>
   );

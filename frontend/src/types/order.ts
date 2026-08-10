@@ -57,6 +57,8 @@ export interface OrderPackage {
   label_printed: boolean;
   photo_uploaded: boolean;
   tracking_number?: string;
+  shipping_cost?: number;
+  weight?: number;
   packing_images?: PackingImage[];
   items?: { order_item_id: number; quantity: number; product_name?: string }[];
 }

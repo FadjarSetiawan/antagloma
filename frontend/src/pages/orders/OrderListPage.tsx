@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService, UpdateOrderPayload } from '../../services/orderService';
-import { Order, OrderItem } from '../../types/order';
+import { Order, OrderItem, OrderPackage } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
 import { OrderEditModal } from '../../components/orders/OrderEditModal';
 import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
 import { CompleteShipmentModal } from '../../components/orders/CompleteShipmentModal';
+import { CompletePackageShipmentModal } from '../../components/orders/CompletePackageShipmentModal';
 import { CustomSelect } from '../../components/shared/CustomSelect';
 import {
   Plus,
@@ -50,6 +51,7 @@ export const OrderListPage: React.FC = () => {
   const [deletingOrder, setDeletingOrder] = useState<Order | null>(null);
   const [notaOrder, setNotaOrder] = useState<Order | null>(null);
   const [shipmentOrder, setShipmentOrder] = useState<Order | null>(null);
+  const [shipmentPackage, setShipmentPackage] = useState<OrderPackage | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['orders-list', search, statusFilter, paramOrderDate],
@@ -71,6 +73,12 @@ export const OrderListPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['orders-list'] });
       if (selectedOrder) setSelectedOrder(res.data);
     },
+  });
+
+  const packageShipmentMutation = useMutation({
+    mutationFn: ({ packageId, payload }: { packageId: number; payload: { shipping_cost: number; tracking_number: string } }) =>
+      orderService.completePackageShipment(packageId, payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['orders-list'] }),
   });
 
   const deleteMutation = useMutation({
@@ -261,7 +269,16 @@ export const OrderListPage: React.FC = () => {
                       </button>
                     )}
 
-                    {(role === 'admin' || role === 'owner') && order.status === 'PACKING_COMPLETED' && (
+                    {(role === 'admin' || role === 'owner') && order.status === 'PACKING_COMPLETED' && order.packages?.length && (
+                      <button
+                        onClick={() => setShipmentPackage(order.packages?.find((pkg) => !pkg.tracking_number) || order.packages![0])}
+                        className="px-2.5 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer"
+                      >
+                        <PackageCheck className="w-3.5 h-3.5 text-white" /> Resi Package
+                      </button>
+                    )}
+
+                    {(role === 'admin' || role === 'owner') && order.status === 'PACKING_COMPLETED' && !order.packages?.length && (
                       <button
                         onClick={() => setShipmentOrder(order)}
                         className="px-2.5 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer"
@@ -344,7 +361,9 @@ export const OrderListPage: React.FC = () => {
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
         onApprove={(id) => approveMutation.mutate(id)}
-        onOpenShipmentModal={(ord) => setShipmentOrder(ord)}
+        onOpenShipmentModal={(ord) => ord.packages?.length
+          ? setShipmentPackage(ord.packages.find((pkg) => !pkg.tracking_number) || ord.packages[0])
+          : setShipmentOrder(ord)}
         onOpenNota={(ord) => setNotaOrder(ord)}
         onEdit={(ord) => setEditingOrder(ord)}
         onDelete={(id) => setDeletingOrder(selectedOrder)}
@@ -369,6 +388,14 @@ export const OrderListPage: React.FC = () => {
         order={shipmentOrder}
         onClose={() => setShipmentOrder(null)}
         onConfirm={handleConfirmShipment}
+      />
+      <CompletePackageShipmentModal
+        pkg={shipmentPackage}
+        onClose={() => setShipmentPackage(null)}
+        onConfirm={async (packageId, payload) => {
+          await packageShipmentMutation.mutateAsync({ packageId, payload });
+          setShipmentPackage(null);
+        }}
       />
     </div>
   );

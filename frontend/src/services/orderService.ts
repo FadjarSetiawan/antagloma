@@ -1,5 +1,5 @@
 import { api } from './api';
-import { Order, OrderItem, Region } from '../types/order';
+import { Order, OrderItem, OrderPackage, Region } from '../types/order';
 
 export type { Region } from '../types/order';
 
@@ -133,6 +133,22 @@ export const orderService = {
 
   getPackingQueue: async (): Promise<PaginatedResponse<Order>> => {
     const res = await api.get('/packing/queue');
+    return res.data;
+  },
+
+  completePackageShipment: async (
+    packageId: number,
+    payload: { shipping_cost: number; tracking_number: string }
+  ): Promise<{ success: boolean; data: OrderPackage }> => {
+    const res = await api.post(`/packing/packages/${packageId}/shipment`, payload);
+    return res.data;
+  },
+
+  uploadPackageProof: async (packageId: number, file: File, notes?: string) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    if (notes) formData.append('notes', notes);
+    const res = await api.post(`/packing/packages/${packageId}/upload-proof`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
     return res.data;
   },
   markSalesInformed: async (id: number): Promise<{ success: boolean; message: string; data: Order }> => {

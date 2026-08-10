@@ -18,9 +18,17 @@ class PackingService
     {
         return DB::transaction(function () use ($package, $file, $notes, $user) {
             $locked = OrderPackage::whereKey($package->id)->lockForUpdate()->firstOrFail();
+            $order = Order::whereKey($locked->order_id)->lockForUpdate()->firstOrFail();
             $path = $file->storeAs('packing_proofs/' . date('Y/m'), Str::uuid().'.'.$file->getClientOriginalExtension(), 'public');
             $image = PackingImage::create(['order_id'=>$locked->order_id, 'order_package_id'=>$locked->id, 'image_path'=>$path, 'original_name'=>$file->getClientOriginalName(), 'notes'=>$notes ? strip_tags($notes) : null, 'uploaded_by'=>$user->id]);
             $locked->update(['photo_uploaded_at'=>now()]);
+            $hasUnphotographedPackage = $order->packages()
+                ->withCount('packingImages')
+                ->get()
+                ->contains(fn (OrderPackage $candidate) => $candidate->packing_images_count < 1 && !$candidate->photo_uploaded_at);
+            $order->update([
+                'status' => $hasUnphotographedPackage ? OrderStatus::WAITING_PACKING : OrderStatus::PACKING_COMPLETED,
+            ]);
             return $image;
         });
     }

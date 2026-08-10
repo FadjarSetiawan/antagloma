@@ -52,6 +52,7 @@ class OrderResource extends JsonResource
             'packing_images'      => PackingImageResource::collection($this->whenLoaded('packingImages')),
             'packages'            => $this->whenLoaded('packages', fn () => $this->packages->map(fn ($package) => [
                 'id' => $package->id, 'letter' => $package->letter, 'package_type' => $package->package_type,
+                'weight' => $package->weight, 'shipping_cost' => $request->user()?->role?->value === 'sales' ? null : $package->shipping_cost,
                 'status' => $package->status, 'nota_printed' => $package->nota_printed, 'label_printed' => $package->label_printed,
                 'photo_uploaded' => (bool) $package->photo_uploaded_at, 'tracking_number' => $package->tracking_number,
                 'items' => $package->items->map(fn ($allocation) => ['order_item_id' => $allocation->order_item_id, 'quantity' => $allocation->quantity, 'product_name' => $allocation->item?->product_name]),

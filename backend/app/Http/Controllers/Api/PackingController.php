@@ -22,10 +22,10 @@ class PackingController extends Controller
 
     public function queue(Request $request): JsonResponse
     {
-        // Antrean Packing Tanaman (Belum Diatur Pengiriman) ONLY shows orders with WAITING_PACKING status
-        // Once packages are configured, order status becomes PACKING_COMPLETED and moves to "Menunggu Cetak Dokumen"
+        // Initial configuration queue: only WAITING_PACKING orders without packages.
         $orders = Order::with(['creator', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item'])
             ->where('status', 'WAITING_PACKING')
+            ->whereDoesntHave('packages')
             ->orderBy('created_at')
             ->paginate(50);
 
@@ -93,10 +93,6 @@ class PackingController extends Controller
                 }
                 $package->items()->whereNotIn('order_item_id', $assignedItemIds ?: [0])->delete();
             }
-            // Configuration completes the "Belum Diatur" queue step. The order
-            // remains active for document/photo/resi workflow, but must no longer
-            // be returned by the WAITING_PACKING queue.
-            $order->update(['status'=>'PACKING_COMPLETED']);
             return $order->packages()->with('packingImages')->get();
         });
         return response()->json(['success'=>true,'data'=>$packages]);
@@ -115,6 +111,8 @@ class PackingController extends Controller
     {
         Gate::authorize('completeShipment', $package->order);
         $data = $request->validate(['tracking_number'=>'required|string|max:255','shipping_cost'=>'required|numeric|min:0']);
+        $orderStatus = $package->order->status instanceof \BackedEnum ? $package->order->status->value : (string) $package->order->status;
+        abort_unless($orderStatus === 'PACKING_COMPLETED', 422, 'Package belum berada pada tahap siap input resi.');
         $package->update(['tracking_number'=>strip_tags($data['tracking_number']), 'shipping_cost'=>$data['shipping_cost'], 'completed_at'=>now()]);
         return response()->json(['success'=>true,'data'=>$package->fresh()]);
     }

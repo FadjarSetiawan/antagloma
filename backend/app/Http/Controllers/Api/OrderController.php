@@ -137,6 +137,7 @@ class OrderController extends Controller
     {
         $order = Order::findOrFail($id);
         Gate::authorize('completeShipment', $order);
+        abort_if($order->packages()->exists(), 422, 'Order dengan package harus menggunakan shipment per package.');
 
         $request->validate([
             'shipping_cost'   => ['nullable', 'numeric', 'min:0'],
