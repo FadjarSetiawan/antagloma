@@ -22,14 +22,14 @@ export const SalesDashboard: React.FC = () => {
   const progressQuery = useQuery({ queryKey: ['sales-packing-progress'], queryFn: () => orderService.getSalesPackingProgress({ per_page: 100 }), refetchInterval: 5000 });
   const informed = useMutation({ mutationFn: (id: number) => orderService.markSalesInformed(id), onSuccess: () => { setConfirm(null); qc.invalidateQueries({ queryKey: ['sales-orders-lifecycle'] }); qc.invalidateQueries({ queryKey: ['sales-packing-progress'] }); }, onError: (e: any) => setError(e?.response?.data?.message || 'Gagal menandai pesanan.') });
   const orders = ordersQuery.data?.data || []; const progress = progressQuery.data?.data || [];
+  const allTracked = (o: Order) => !!o.packages?.length && o.packages.every(p => !!p.tracking_number);
+  const allPhotos = (o: Order) => !!o.packages?.length && o.packages.every(hasPackagePhoto);
   const waiting = orders.filter(o => o.status === 'WAITING_PACKING');
-  const completed = progress.filter(o => o.status === 'PACKING_COMPLETED' && !!o.packages?.length && o.packages.every(hasPackagePhoto));
+  const completed = progress.filter(o => o.status === 'PACKING_COMPLETED' && !!o.packages?.length && o.packages.every(hasPackagePhoto) && !allTracked(o));
   const ready = progress.filter(o => o.status === 'PACKING_COMPLETED' && (o.packages || []).some(p => p.tracking_number) && !o.sales_informed_at);
   const history = orders.filter(o => o.sales_informed_at);
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
   const todayCount = orders.filter(o => o.order_date === today).length;
-  const allTracked = (o: Order) => !!o.packages?.length && o.packages.every(p => !!p.tracking_number);
-  const allPhotos = (o: Order) => !!o.packages?.length && o.packages.every(hasPackagePhoto);
   const plants = (o: Order) => o.items?.map(i => `${i.product_name} ×${i.quantity}`) || [];
 
   return <div className="space-y-4 max-w-5xl pb-24 font-sans text-slate-900">
