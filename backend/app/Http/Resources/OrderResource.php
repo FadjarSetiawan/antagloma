@@ -11,6 +11,8 @@ class OrderResource extends JsonResource
     {
         $statusStr = $this->status instanceof \BackedEnum ? $this->status->value : (string) $this->status;
         $deliveryStr = $this->delivery_method instanceof \BackedEnum ? $this->delivery_method->value : (string) $this->delivery_method;
+        $role = $request->user()?->role instanceof \BackedEnum ? $request->user()->role->value : (string) ($request->user()?->role ?? '');
+        $isSales = $role === 'sales';
 
         $plantTotal = $this->items ? $this->items->sum(function ($item) {
             return (float) $item->quantity * (float) $item->price;
@@ -44,7 +46,7 @@ class OrderResource extends JsonResource
             'is_verified'         => $isVerified,
             'payment_proof_url'   => $this->payment_proof_path ? asset('storage/' . $this->payment_proof_path) : null,
             'payment_status'      => $this->payment_status ?? 'PENDING',
-            'shipping_cost'       => $request->user()?->role?->value === 'sales' ? null : $this->shipping_cost,
+            ...(!$isSales ? ['shipping_cost' => $this->shipping_cost] : []),
             'tracking_number'     => $this->tracking_number,
             'creator'             => new UserResource($this->whenLoaded('creator')),
             'verifier'            => new UserResource($this->whenLoaded('verifier')),
@@ -52,7 +54,8 @@ class OrderResource extends JsonResource
             'packing_images'      => PackingImageResource::collection($this->whenLoaded('packingImages')),
             'packages'            => $this->whenLoaded('packages', fn () => $this->packages->map(fn ($package) => [
                 'id' => $package->id, 'letter' => $package->letter, 'package_type' => $package->package_type,
-                'weight' => $package->weight, 'shipping_cost' => $request->user()?->role?->value === 'sales' ? null : $package->shipping_cost,
+                'weight' => $package->weight,
+                ...(!$isSales ? ['shipping_cost' => $package->shipping_cost] : []),
                 'status' => $package->status, 'nota_printed' => $package->nota_printed, 'label_printed' => $package->label_printed,
                 'photo_uploaded' => (bool) $package->photo_uploaded_at, 'tracking_number' => $package->tracking_number,
                 'items' => $package->items->map(fn ($allocation) => ['order_item_id' => $allocation->order_item_id, 'quantity' => $allocation->quantity, 'product_name' => $allocation->item?->product_name]),
