@@ -25,6 +25,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
   if (!order) return null;
 
   const totalOrderItems = order.items || [];
+  const isWoodPacking = order.delivery_method === 'Packing Kayu';
 
   // Helper to compute letter from index (0 -> 'A', 1 -> 'B', 2 -> 'C')
   const getLetter = (index: number) => String.fromCharCode(65 + index);
@@ -48,7 +49,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
         id: 'pkg-0',
         letter: 'A',
         subOrderNumber: `${order.order_number}-A`,
-        packageType: 'Fullset',
+        packageType: isWoodPacking ? 'Non-fullset' : 'Fullset',
         allocations: initialAllocations,
       },
     ];
@@ -87,7 +88,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
         id: `pkg-${Date.now()}`,
         letter,
         subOrderNumber: `${order.order_number}-${letter}`,
-        packageType: 'Fullset',
+        packageType: isWoodPacking ? 'Non-fullset' : 'Fullset',
         allocations: newAllocations,
       },
     ]);
@@ -151,7 +152,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
           delete newAllocations[itemIdx];
         } else {
           // Check item
-          if (pkg.packageType === 'Fullset') {
+          if (pkg.packageType === 'Fullset' && !isWoodPacking) {
             // FULLSET RULE: ONLY 1 PLANT CAN BE CHECKED AT A TIME
             newAllocations = { [itemIdx]: 1 };
           } else {
@@ -428,10 +429,11 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                             </div>
                           </div>
 
-                          {/* Quantity Value Badge */}
-                          <div className="w-10 py-0.5 bg-slate-100 border border-slate-200 rounded-lg text-center font-bold text-xs text-slate-800">
-                            {allocatedQty}
-                          </div>
+                          {isWoodPacking ? <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            <button type="button" disabled={!allocatedQty} onClick={() => setPackages(packages.map(p => p.id === pkg.id ? { ...p, allocations: { ...p.allocations, [itemIdx]: Math.max(0, allocatedQty - 1) } } : p))} className="h-8 w-8 rounded-lg border border-slate-200 font-black disabled:opacity-40">−</button>
+                            <span className="w-8 text-center font-black text-xs">{allocatedQty}</span>
+                            <button type="button" disabled={remainingAvailable <= 0} onClick={() => setPackages(packages.map(p => p.id === pkg.id ? { ...p, allocations: { ...p.allocations, [itemIdx]: allocatedQty + 1 } } : p))} className="h-8 w-8 rounded-lg bg-[#04593f] text-white font-black disabled:opacity-40">+</button>
+                          </div> : <div className="w-10 py-0.5 bg-slate-100 border border-slate-200 rounded-lg text-center font-bold text-xs text-slate-800">{allocatedQty}</div>}
                         </div>
                       );
                     })}

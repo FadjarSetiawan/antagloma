@@ -47,15 +47,21 @@ class PackingController extends Controller
         $deliveryMethod = $order->delivery_method instanceof \BackedEnum ? $order->delivery_method->value : (string) $order->delivery_method;
         abort_unless(in_array($deliveryMethod, ['Packing Kayu', 'Kirim Paket'], true), 422, 'Metode penerimaan ini tidak menggunakan paket.');
         $packages = DB::transaction(function () use ($request, $order) {
+            $inputs = collect($request->input('packages'));
+            $letters = $inputs->pluck('letter')->all();
+            $order->packages()->whereNotIn('letter', $letters)->delete();
             $used = [];
-            foreach ($request->input('packages') as $input) {
+            foreach ($inputs as $input) {
                 $package = $order->packages()->updateOrCreate(['letter'=>$input['letter']], ['package_type'=>$input['package_type'] ?? null, 'waiting_photo_at'=>null]);
+                $assignedItemIds = [];
                 foreach (($input['allocations'] ?? []) as $itemIndex => $quantity) {
                     $item = $order->items->get((int) $itemIndex); $quantity = (int) $quantity;
-                    if (!$item || $quantity < 1 || (($used[$item->id] ?? 0) + $quantity) > $item->quantity) abort(422, 'Alokasi paket melebihi quantity order.');
+                    if (!$item || $quantity < 1 || (($used[$item->id] ?? 0) + $quantity) > $item->quantity) abort(422, "Quantity {$item?->product_name} melebihi jumlah tanaman dalam order.");
                     $used[$item->id] = ($used[$item->id] ?? 0) + $quantity;
+                    $assignedItemIds[] = $item->id;
                     $package->items()->updateOrCreate(['order_item_id'=>$item->id], ['quantity'=>$quantity]);
                 }
+                $package->items()->whereNotIn('order_item_id', $assignedItemIds ?: [0])->delete();
             }
             // Configuration completes the "Belum Diatur" queue step. The order
             // remains active for document/photo/resi workflow, but must no longer
