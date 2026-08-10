@@ -224,9 +224,10 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
 
     // Calculate total allocated plants across all packages
     const totalAllocatedQty = totalOrderItems.reduce((sum, _, idx) => sum + getUsedQuantity(idx), 0);
+    const totalRequiredQty = totalOrderItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
 
-    if (totalAllocatedQty === 0) {
-      setError('Harap pilih minimal 1 tanaman untuk dimasukkan ke dalam paket.');
+    if (totalAllocatedQty !== totalRequiredQty) {
+      setError(`${Math.max(0, totalRequiredQty - totalAllocatedQty)} tanaman belum dimasukkan ke paket.`);
       return;
     }
 
@@ -507,7 +508,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || totalOrderItems.reduce((sum, item, idx) => sum + (item.quantity || 0) - getUsedQuantity(idx), 0) !== 0}
               className="px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
