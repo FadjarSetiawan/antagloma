@@ -157,6 +157,7 @@ class OrderController extends Controller
     {
         $order = Order::with(['packages.packingImages'])->findOrFail($id);
         Gate::authorize('salesInform', $order);
+        abort_if($order->sales_informed_at !== null, 422, 'Pesanan sudah ditandai sudah diinformasikan.');
         abort_unless(in_array($order->status->value, ['PACKING_COMPLETED', 'COMPLETED'], true), 422, 'Pesanan belum selesai diproses.');
         $packages = $order->packages;
         abort_if($packages->isEmpty() || $packages->contains(fn ($package) => blank($package->tracking_number)), 422, 'Semua package harus memiliki nomor resi terlebih dahulu.');
