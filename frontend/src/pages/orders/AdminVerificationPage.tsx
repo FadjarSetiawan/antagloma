@@ -16,7 +16,7 @@ import {
   Check,
   Building2,
   Wallet,
-} from 'lucide-react';
+  Truck,} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const AdminVerificationPage: React.FC = () => {
@@ -211,6 +211,13 @@ export const AdminVerificationPage: React.FC = () => {
                       <span className="text-slate-900 text-[11px] font-black">{order.bank_name || 'BCA'}</span>
                     </div>
                   </div>
+                  <div className="col-span-2 p-2.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-emerald-800 flex-shrink-0" />
+                    <div>
+                      <span className="text-[9px] text-slate-400 font-black block uppercase">Metode Pengiriman</span>
+                      <span className="text-slate-900 text-[11px] font-black">{order.delivery_method}</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Payment Proof Thumbnail */}
@@ -393,7 +400,14 @@ export const AdminVerificationPage: React.FC = () => {
       <OrderDetailModal
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
-        onApprove={(id) => approveMutation.mutate(id)}
+        onApprove={(id) => {
+          const order = orders.find((item) => item.id === id) ?? selectedOrder;
+          if (!order) return;
+
+          setSelectedOrder(null);
+          setVerifyingOrder(order);
+          setIsVerifyChecked(false);
+        }}
         onDelete={(id) => rejectMutation.mutate(id)}
       />
     </div>

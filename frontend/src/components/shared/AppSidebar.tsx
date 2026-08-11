@@ -69,7 +69,7 @@ export const AppSidebar: React.FC = () => {
       label: 'Riwayat Pesanan',
       to: '/dashboard#riwayat-pesanan',
       icon: History,
-      show: role === 'sales',
+      show: role === 'sales' || role === 'admin',
     },
   ];
 

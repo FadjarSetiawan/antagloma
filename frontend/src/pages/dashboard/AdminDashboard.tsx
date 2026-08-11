@@ -7,7 +7,7 @@ import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
 import { CompleteShipmentModal } from '../../components/orders/CompleteShipmentModal';
 import { CompletePackageShipmentModal } from '../../components/orders/CompletePackageShipmentModal';
 import { Clock, Truck, FileText, Camera, ChevronRight, Plus, ArrowRight, PackageCheck, Eye, CheckCircle2, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const packageTypeLabel = (value?: string) => {
   const normalized = (value || '').trim().toLowerCase();
@@ -19,6 +19,7 @@ const packageTypeLabel = (value?: string) => {
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
 
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<Order | null>(null);
@@ -26,6 +27,8 @@ export const AdminDashboard: React.FC = () => {
   const [selectedShipmentPackage, setSelectedShipmentPackage] = useState<OrderPackage | null>(null);
   const [verifyingOrder, setVerifyingOrder] = useState<Order | null>(null);
   const [isVerifyChecked, setIsVerifyChecked] = useState(false);
+  const [showPhotoQueue, setShowPhotoQueue] = useState(false);
+  const showAdminHistory = location.hash === '#riwayat-pesanan';
 
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['dashboard-metrics'],
@@ -183,7 +186,7 @@ export const AdminDashboard: React.FC = () => {
           return (
             <div
               key={idx}
-              onClick={() => navigate(card.link)}
+              onClick={() => card.title === 'Menunggu Foto Paket' ? setShowPhotoQueue(true) : navigate(card.link)}
               className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between space-y-2 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between">
@@ -227,10 +230,10 @@ export const AdminDashboard: React.FC = () => {
         })}
       </div>
 
-      {waitingPackagePhotos.length > 0 && <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs"><div><h2 className="text-xs sm:text-sm font-bold">Package Menunggu Foto</h2><p className="text-[10px] text-slate-400 mt-0.5">Upload minimal satu foto untuk setiap package.</p></div>{waitingPackagePhotos.map((order) => <div key={order.id} className="rounded-xl border border-slate-200 p-3 space-y-2"><div className="text-xs"><b>{order.order_number}</b></div><div className="grid gap-2 sm:grid-cols-2">{order.packages?.filter((pkg) => !pkg.photo_uploaded).map((pkg) => <div key={pkg.id} className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs space-y-2"><div className="flex items-start justify-between gap-2"><div><b className="block">Paket {pkg.letter}</b><span className="text-[10px] text-slate-500">Customer: {order.customer_name}</span></div><span className="shrink-0 rounded-lg bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-800">Menunggu Foto</span></div><p className="text-[11px] font-bold text-slate-700">Jenis: {packageTypeLabel(pkg.package_type)}</p><div className="text-[10px] text-slate-600 space-y-0.5">{pkg.items?.map((item) => <p key={item.order_item_id}>• {item.product_name || 'Tanaman'} ×{item.quantity}</p>)}</div><label className={`min-h-11 rounded-xl px-3 flex items-center justify-center text-xs font-black transition-colors ${packagePhotoMutation.isPending ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-[#04593f] hover:bg-emerald-900 text-white cursor-pointer'}`}><Camera className="w-4 h-4 mr-1.5" />Input Foto Paket<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={packagePhotoMutation.isPending} onChange={(e) => { const file = e.target.files?.[0]; if (file) packagePhotoMutation.mutate({ packageId: pkg.id, file }); e.currentTarget.value = ''; }} /></label></div>)}</div></div>)}</div>}
+      {showPhotoQueue && <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs"><div className="flex items-center justify-between border-b border-slate-100 pb-2.5"><div><h2 className="text-xs sm:text-sm font-bold">Menunggu Foto Paket</h2><p className="text-[10px] text-slate-400 mt-0.5">Upload minimal satu foto untuk setiap package.</p></div><button type="button" onClick={() => setShowPhotoQueue(false)} className="min-h-10 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">Kembali</button></div>{waitingPackagePhotos.length === 0 ? <div className="py-8 text-center text-xs text-slate-400">Tidak ada package yang menunggu foto.</div> : waitingPackagePhotos.map((order) => <div key={order.id} className="rounded-xl border border-slate-200 p-3 space-y-2"><div className="text-xs"><b>{order.order_number}</b></div><div className="grid gap-2 sm:grid-cols-2">{order.packages?.filter((pkg) => !pkg.photo_uploaded).map((pkg) => <div key={pkg.id} className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs space-y-2"><div className="flex items-start justify-between gap-2"><div><b className="block">Paket {pkg.letter}</b><span className="text-[10px] text-slate-500">Customer: {order.customer_name}</span></div><span className="shrink-0 rounded-lg bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-800">Menunggu Foto</span></div><p className="text-[11px] font-bold text-slate-700">Jenis: {packageTypeLabel(pkg.package_type)}</p><div className="text-[10px] text-slate-600 space-y-0.5">{pkg.items?.map((item) => <p key={item.order_item_id}>• {item.product_name || 'Tanaman'} ×{item.quantity}</p>)}</div><label className={`min-h-11 rounded-xl px-3 flex items-center justify-center text-xs font-black transition-colors ${packagePhotoMutation.isPending ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-[#04593f] hover:bg-emerald-900 text-white cursor-pointer'}`}><Camera className="w-4 h-4 mr-1.5" />Input Foto Paket<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={packagePhotoMutation.isPending} onChange={(e) => { const file = e.target.files?.[0]; if (file) packagePhotoMutation.mutate({ packageId: pkg.id, file }); e.currentTarget.value = ''; }} /></label></div>)}</div></div>)}</div>}
 
       {/* Dedicated Section: Daftar Pesanan Menunggu Input Resi (Mobile Responsive Cards & Desktop Table) */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">
+      {showAdminHistory && <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
           <div>
             <h2 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
@@ -375,7 +378,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </>
         )}
-      </div>
+      </div>}
 
       {/* Admin History: read-only view of orders whose shipment input is complete */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">

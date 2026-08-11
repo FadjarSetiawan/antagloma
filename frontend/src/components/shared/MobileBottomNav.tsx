@@ -29,7 +29,7 @@ export const MobileBottomNav: React.FC = () => {
   let centerTab = { label: 'Buat Order', to: '/orders/create', icon: Plus };
 
   if (role === 'admin') {
-    rightTab3 = { label: 'Riwayat Pesanan', to: '/dashboard', icon: History };
+    rightTab3 = { label: 'Riwayat Pesanan', to: '/dashboard#riwayat-pesanan', icon: History };
     centerTab = { label: 'Buat Order', to: '/orders/create', icon: Plus };
   } else if (role === 'owner') {
     rightTab3 = { label: 'Laporan', to: '/reports', icon: FileText };
