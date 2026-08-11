@@ -25,7 +25,7 @@ export const SalesDashboard: React.FC = () => {
   const allTracked = (o: Order) => !!o.packages?.length && o.packages.every(p => !!p.tracking_number);
   const allPhotos = (o: Order) => !!o.packages?.length && o.packages.every(hasPackagePhoto);
   const waiting = orders.filter(o => o.status === 'WAITING_PACKING');
-  const completed = progress.filter(o => o.status === 'PACKING_COMPLETED' && !!o.packages?.length && o.packages.every(hasPackagePhoto) && !allTracked(o));
+  const completed = progress.filter(o => o.status === 'PACKING_COMPLETED' && !!o.packages?.length && o.packages.every(hasPackagePhoto) && !(o.packages || []).some(p => p.tracking_number));
   const ready = progress.filter(o => o.status === 'PACKING_COMPLETED' && (o.packages || []).some(p => p.tracking_number) && !o.sales_informed_at);
   const history = orders.filter(o => o.sales_informed_at);
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());

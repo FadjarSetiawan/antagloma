@@ -52,6 +52,8 @@ export const OrderListPage: React.FC = () => {
   const [notaOrder, setNotaOrder] = useState<Order | null>(null);
   const [shipmentOrder, setShipmentOrder] = useState<Order | null>(null);
   const [shipmentPackage, setShipmentPackage] = useState<OrderPackage | null>(null);
+  const [verifyingOrder, setVerifyingOrder] = useState<Order | null>(null);
+  const [isVerifyChecked, setIsVerifyChecked] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['orders-list', search, statusFilter, paramOrderDate],
@@ -192,7 +194,7 @@ export const OrderListPage: React.FC = () => {
 
             // ALLOW EDIT & DELETE FOR SALES ONLY WHEN UNVERIFIED (WAITING_PROCESS). AUTOMATICALLY HIDE WHEN VERIFIED BY ADMIN.
             const isSalesOrderOwner = role === 'sales' && order.created_by === user?.id;
-            const canModifySalesOrder = role === 'admin' || role === 'owner' || (isSalesOrderOwner && order.status === 'WAITING_PROCESS');
+            const canModifySalesOrder = role === 'admin' || role === 'owner';
 
             return (
               <div
@@ -252,7 +254,7 @@ export const OrderListPage: React.FC = () => {
 
                     {(role === 'admin' || role === 'owner') && order.status === 'WAITING_PROCESS' && (
                       <button
-                        onClick={() => approveMutation.mutate(order.id)}
+                        onClick={() => { setSelectedOrder(null); setVerifyingOrder(order); setIsVerifyChecked(false); }}
                         disabled={approveMutation.isPending}
                         className="px-2.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer"
                       >
@@ -260,7 +262,7 @@ export const OrderListPage: React.FC = () => {
                       </button>
                     )}
 
-                    {(role === 'admin' || role === 'owner') && (order.status === 'WAITING_PACKING' || order.status === 'PACKING_COMPLETED' || order.status === 'COMPLETED') && (
+                    {(role === 'admin' || role === 'owner') && !order.packages?.length && (order.status === 'WAITING_PACKING' || order.status === 'PACKING_COMPLETED' || order.status === 'COMPLETED') && (
                       <button
                         onClick={() => setNotaOrder(order)}
                         className="px-2.5 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer"
@@ -316,6 +318,16 @@ export const OrderListPage: React.FC = () => {
         )}
       </div>
 
+      {verifyingOrder && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-5 space-y-4">
+            <div className="flex items-center gap-3"><CheckCircle className="w-6 h-6 text-[#04593f]" /><div><h3 className="text-sm font-black">Verifikasi Pembayaran</h3><p className="text-xs text-slate-500">{verifyingOrder.order_number}</p></div></div>
+            <p className="text-xs text-slate-600">Pastikan pembayaran order ini sudah diperiksa sebelum diverifikasi.</p>
+            <label className="flex items-start gap-2 text-xs text-slate-700"><input type="checkbox" checked={isVerifyChecked} onChange={(e) => setIsVerifyChecked(e.target.checked)} /> Saya memastikan pembayaran sudah diperiksa.</label>
+            <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => { setVerifyingOrder(null); setIsVerifyChecked(false); }} className="py-2.5 bg-slate-100 rounded-xl text-xs font-bold">Batal</button><button type="button" disabled={!isVerifyChecked || approveMutation.isPending} onClick={() => approveMutation.mutate(verifyingOrder.id)} className="py-2.5 bg-[#04593f] text-white rounded-xl text-xs font-bold disabled:opacity-50">{approveMutation.isPending ? 'Memproses...' : 'Ya, Verifikasi'}</button></div>
+          </div>
+        </div>
+      )}
       {/* Delete Order Confirmation Modal Popup */}
       {deletingOrder && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
@@ -360,7 +372,7 @@ export const OrderListPage: React.FC = () => {
       <OrderDetailModal
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
-        onApprove={(id) => approveMutation.mutate(id)}
+        onApprove={(id) => { const order = data?.data?.find((item) => item.id === id) || selectedOrder; if (order) { setSelectedOrder(null); setVerifyingOrder(order); setIsVerifyChecked(false); } }}
         onOpenShipmentModal={(ord) => ord.packages?.length
           ? setShipmentPackage(ord.packages.find((pkg) => !pkg.tracking_number) || ord.packages[0])
           : setShipmentOrder(ord)}

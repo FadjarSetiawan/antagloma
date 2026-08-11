@@ -1,6 +1,6 @@
 import React from 'react';
 import { Order } from '../../types/order';
-import { Printer, X, Tag, Truck, Sprout, Phone } from 'lucide-react';
+import { Printer, X, Tag, Sprout, Phone } from 'lucide-react';
 
 interface ShippingLabelModalProps {
   order: Order | null;
@@ -25,8 +25,15 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
   };
 
   const subOrderNum = packageInfo?.subOrderNumber || `${order.order_number}-A`;
-  const pkgType = packageInfo?.packageType || 'Fullset';
-  const weightText = packageInfo?.weightInfo || 'Tanpa Berat';
+  const rawPkgType = packageInfo?.packageType || 'Fullset';
+  const normalizedPkgType = rawPkgType.trim().toLowerCase();
+  const pkgType = normalizedPkgType === 'fullset'
+    ? 'Fullset'
+    : ['non-fullset', 'non fullset', 'non_fullset'].includes(normalizedPkgType)
+      ? 'Non Fullset'
+      : normalizedPkgType === 'packing kayu'
+        ? 'Packing Kayu'
+        : rawPkgType;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto no-print font-sans text-slate-900">
@@ -100,13 +107,15 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
               <div>
                 <div className="flex items-center gap-1.5">
                   <Sprout className="w-4 h-4 text-[#04593f]" />
-                  <span className="font-black text-sm uppercase tracking-wider text-slate-900 block leading-none">
+                  <span className="font-black text-base uppercase tracking-wider text-slate-900 block leading-none">
                     ANTAGLOMA FLORIST
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-500 font-bold block mt-0.5">
-                  Pengirim: Antagloma Kebun (+62 858-8180-8740)
-                </span>
+                <span className="text-xs text-slate-700 font-bold block mt-1">Pengirim: Antagloma Florist</span>
+                <div className="text-[11px] text-slate-700 font-bold leading-relaxed mt-0.5">
+                  <p className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-[#04593f]" />0858-9450-3333</p>
+                  <p className="pl-[18px]">0857-3333-1889</p>
+                </div>
               </div>
 
               <div className="text-right">
@@ -138,28 +147,6 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
               </div>
             </div>
 
-            {/* Expedited / Delivery Method & Weight info */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="p-2 bg-slate-100 border border-slate-300 rounded-lg">
-                <span className="text-[9px] text-slate-400 font-bold uppercase block">KURIR / KURIR METODE:</span>
-                <span className="font-bold text-slate-900 block flex items-center gap-1 mt-0.5">
-                  <Truck className="w-3.5 h-3.5 text-[#04593f]" /> {order.delivery_method}
-                </span>
-              </div>
-
-              <div className="p-2 bg-slate-100 border border-slate-300 rounded-lg">
-                <span className="text-[9px] text-slate-400 font-bold uppercase block">BERAT PAKET:</span>
-                <span className="font-bold text-slate-900 block mt-0.5">{weightText}</span>
-              </div>
-            </div>
-
-            {/* Notes if present */}
-            {order.notes && (
-              <div className="p-2 bg-amber-50 border border-amber-300 rounded-lg text-[10px]">
-                <span className="font-bold text-amber-950 uppercase block text-[9px]">CATATAN PENGIRIMAN:</span>
-                <p className="text-amber-900 font-medium italic mt-0.5">"{order.notes}"</p>
-              </div>
-            )}
           </div>
         </div>
 

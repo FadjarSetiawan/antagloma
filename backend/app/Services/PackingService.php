@@ -25,7 +25,7 @@ class PackingService
             $hasUnphotographedPackage = $order->packages()
                 ->withCount('packingImages')
                 ->get()
-                ->contains(fn (OrderPackage $candidate) => $candidate->packing_images_count < 1 && !$candidate->photo_uploaded_at);
+                ->contains(fn (OrderPackage $candidate) => $candidate->packing_images_count < 1);
             $order->update([
                 'status' => $hasUnphotographedPackage ? OrderStatus::WAITING_PACKING : OrderStatus::PACKING_COMPLETED,
             ]);

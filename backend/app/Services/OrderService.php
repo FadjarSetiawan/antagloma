@@ -73,7 +73,7 @@ class OrderService
                 'status'              => OrderStatus::WAITING_PROCESS,
                 'payment_method'      => $data['payment_method'],
                 'bank_name'           => $data['payment_method'] === 'Transfer Bank' ? ($data['bank_name'] ?? null) : null,
-                'buyer_shipping_cost' => $data['delivery_method'] === 'Kirim Paket' ? ($data['buyer_shipping_cost'] ?? 0) : 0,
+                'buyer_shipping_cost' => in_array($data['delivery_method'], ['Kirim Paket', 'Packing Kayu'], true) ? ($data['buyer_shipping_cost'] ?? 0) : 0,
                 'payment_proof_path'  => $proofPath,
                 'payment_status'      => 'PAID',
                 'created_by'          => $user->id,

@@ -46,7 +46,6 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
   const role = user?.role;
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
-  const isCreatorSales = role === 'sales' && order.creator?.id === user?.id;
 
   const formattedDate = order.order_date
     ? new Date(order.order_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' })
@@ -311,7 +310,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               )}
 
               {/* ADMIN / OWNER PRINT NOTA ACTION BUTTON */}
-              {isOwnerOrAdmin && (order.status === 'WAITING_PACKING' || order.status === 'PACKING_COMPLETED' || order.status === 'COMPLETED') && onOpenNota && (
+              {isOwnerOrAdmin && !order.packages?.length && (order.status === 'WAITING_PACKING' || order.status === 'PACKING_COMPLETED' || order.status === 'COMPLETED') && onOpenNota && (
                 <button
                   onClick={() => onOpenNota(order)}
                   className="px-3 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer"
@@ -333,7 +332,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               )}
 
               {/* EDIT BUTTON (SALES CAN ONLY EDIT IF UNVERIFIED - WAITING_PROCESS) */}
-              {(isOwnerOrAdmin || (isCreatorSales && order.status === 'WAITING_PROCESS')) && onEdit && (
+              {isOwnerOrAdmin && onEdit && (
                 <button
                   onClick={() => onEdit(order)}
                   className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl cursor-pointer"
@@ -344,7 +343,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               )}
 
               {/* DELETE BUTTON (SALES CAN ONLY DELETE IF UNVERIFIED - WAITING_PROCESS) */}
-              {(isOwnerOrAdmin || (isCreatorSales && order.status === 'WAITING_PROCESS')) && onDelete && (
+              {isOwnerOrAdmin && onDelete && (
                 <button
                   onClick={() => onDelete(order.id)}
                   className="p-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl cursor-pointer"

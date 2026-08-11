@@ -1,13 +1,14 @@
 import React from 'react';
-import { Order } from '../../types/order';
+import { Order, OrderPackage } from '../../types/order';
 import { Printer, X, Sprout } from 'lucide-react';
 
 interface PackingNotaModalProps {
   order: Order | null;
+  packageInfo?: OrderPackage | null;
   onClose: () => void;
 }
 
-export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, onClose }) => {
+export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packageInfo, onClose }) => {
   if (!order) return null;
 
   const handlePrint = () => {
@@ -17,6 +18,18 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, onClo
   const formattedDate = order.order_date
     ? new Date(order.order_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' })
     : '-';
+  const packageTypeValue = (packageInfo?.package_type || '').trim().toLowerCase();
+  const packageType = packageTypeValue === 'fullset'
+    ? 'Fullset'
+    : ['non-fullset', 'non fullset', 'non_fullset'].includes(packageTypeValue)
+      ? 'Non Fullset'
+      : packageTypeValue === 'packing kayu'
+        ? 'Packing Kayu'
+        : packageInfo?.package_type || order.delivery_method;
+  const packageItems = packageInfo?.items || order.items || [];
+  const packageWeight = packageInfo?.weight !== undefined && packageInfo?.weight !== null
+    ? `${packageInfo.weight} kg`
+    : 'Belum tersedia';
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto no-print">
@@ -106,6 +119,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, onClo
               </span>
               <p className="font-bold text-xs text-slate-900 block">{order.order_number}</p>
               <p className="text-[10px] text-slate-400 font-medium">Tgl: {formattedDate}</p>
+              {packageInfo && <p className="text-[10px] text-[#04593f] font-bold">Paket {packageInfo.letter}</p>}
             </div>
           </div>
 
@@ -118,8 +132,9 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, onClo
               <span className="font-bold text-slate-900 block text-xs">{order.customer_name}</span>
               <span className="font-medium text-slate-600 text-[11px] block">{order.phone}</span>
               <span className="inline-block mt-1 px-2 py-0.5 bg-[#04593f] text-white font-bold text-[10px] rounded">
-                Metode: {order.delivery_method}
+                Metode Kirim: {packageType}
               </span>
+              {packageInfo && <span className="inline-block mt-1 ml-1 px-2 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 font-bold text-[10px] rounded">Berat: {packageWeight}</span>}
             </div>
 
             <div className="pt-1.5 border-t border-slate-200/80">
@@ -151,24 +166,27 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, onClo
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-semibold text-slate-800 text-[11px]">
-                  {order.items && order.items.length > 0 ? (
-                    order.items.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50">
+                {packageItems.length > 0 ? (
+                  packageItems.map((item, idx) => {
+                    const itemName = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name);
+                    return (
+                    <tr key={idx} className="hover:bg-slate-50">
                         <td className="py-1.5 px-2 text-center">{idx + 1}</td>
                         <td className="py-1.5 px-2">
-                          <span className="font-bold text-slate-900 block">{item.tree_name || item.product_name}</span>
-                          {item.tree_code && (
+                          <span className="font-bold text-slate-900 block">{itemName}</span>
+                          {'tree_code' in item && item.tree_code && (
                             <span className="text-[9px] text-slate-400 font-normal">Code: {item.tree_code}</span>
                           )}
                         </td>
                         <td className="py-1.5 px-2">
                           <span className="px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-[9px] font-bold">
-                            Grade {item.grade || 'A'}
+                            {'grade' in item ? `Grade ${item.grade || 'A'}` : 'Package'}
                           </span>
                         </td>
                         <td className="py-1.5 px-2 text-center font-bold">{item.quantity}</td>
                       </tr>
-                    ))
+                    );
+                  })
                   ) : (
                     <tr>
                       <td colSpan={4} className="py-3 text-center text-slate-400 font-normal">

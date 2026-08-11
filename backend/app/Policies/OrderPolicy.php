@@ -44,6 +44,12 @@ class OrderPolicy
         return in_array($role, ['admin', 'owner']);
     }
 
+    public function managePackingQueue(User $user): bool
+    {
+        $role = $user->role->value ?? $user->role;
+        return in_array($role, ['packing', 'admin', 'owner'], true);
+    }
+
     public function uploadPacking(User $user, Order $order): bool
     {
         $role = $user->role->value ?? $user->role;

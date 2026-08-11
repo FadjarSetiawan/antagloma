@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
-import { Order } from '../../types/order';
+import { Order, OrderPackage } from '../../types/order';
 import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
 import { ShippingLabelModal } from '../../components/orders/ShippingLabelModal';
 import { Printer, Tag, Check, Package as PackageIcon, ArrowLeft, FileText, CheckCircle2, Eye, X } from 'lucide-react';
@@ -14,6 +14,7 @@ export const DocumentPrintingPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'unprinted' | 'printed'>('unprinted');
 
   const [selectedNotaOrder, setSelectedNotaOrder] = useState<Order | null>(null);
+  const [selectedNotaPackage, setSelectedNotaPackage] = useState<OrderPackage | null>(null);
   const [selectedLabelOrder, setSelectedLabelOrder] = useState<{
     order: Order;
     packageInfo: {
@@ -25,6 +26,8 @@ export const DocumentPrintingPage: React.FC = () => {
   } | null>(null);
 
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
+  const pendingCompletionPackageIds = useRef(new Set<number>());
+  const [printToast, setPrintToast] = useState<{ title: string; description: string } | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['document-printing-orders'],
@@ -38,6 +41,9 @@ export const DocumentPrintingPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['document-printing-orders'] });
       queryClient.invalidateQueries({ queryKey: ['orders-list'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+    },
+    onError: (_error, variables) => {
+      pendingCompletionPackageIds.current.delete(variables.packageId);
     },
   });
 
@@ -73,26 +79,54 @@ export const DocumentPrintingPage: React.FC = () => {
 
   // 1. Belum Dicetak: Cards where BOTH nota & label are NOT yet printed AND photo proof not uploaded
   const unprintedCards = expandedPackageCards.filter((card) => {
-    const hasPhoto = Boolean(card.order.packing_images && card.order.packing_images.length > 0);
-    if (hasPhoto) return false;
     const status = getCardPrintStatus(card);
-    return !status.isBothPrinted;
+    return !card.photoUploaded && !status.isBothPrinted;
   });
 
   // 2. Sudah Dicetak: Cards where BOTH nota & label ARE printed AND photo proof NOT uploaded yet
   const printedCards = expandedPackageCards.filter((card) => {
-    const hasPhoto = Boolean(card.order.packing_images && card.order.packing_images.length > 0);
-    if (hasPhoto) return false;
     const status = getCardPrintStatus(card);
-    return status.isBothPrinted;
+    return !card.photoUploaded && status.isBothPrinted;
   });
 
+  useEffect(() => {
+    if (!data || pendingCompletionPackageIds.current.size === 0) return;
+
+    const completedPackageIds = new Set(
+      expandedPackageCards
+        .filter((card) => card.printedNota && card.printedLabel)
+        .map((card) => card.packageId)
+    );
+    const newlyCompleted = [...pendingCompletionPackageIds.current].filter((id) => completedPackageIds.has(id));
+
+    if (newlyCompleted.length > 0) {
+      newlyCompleted.forEach((id) => pendingCompletionPackageIds.current.delete(id));
+      setPrintToast({
+        title: 'Nota & Label sudah dicetak semua',
+        description: 'Paket dipindahkan ke Sudah Dicetak',
+      });
+      window.setTimeout(() => setPrintToast(null), 3500);
+    }
+  }, [data, expandedPackageCards]);
+
+  const markPendingCompletion = (packageId: number, printedNota: boolean, printedLabel: boolean) => {
+    if (!(printedNota && printedLabel)) pendingCompletionPackageIds.current.add(packageId);
+  };
+
   const handlePrintNota = (order: Order, packageId?: number) => {
-    if (packageId) printMutation.mutate({ packageId, document: 'nota' });
+    if (packageId) {
+      const card = expandedPackageCards.find((item) => item.packageId === packageId);
+      if (card) markPendingCompletion(packageId, card.printedNota, card.printedLabel);
+      setSelectedNotaPackage(order.packages?.find((pkg) => pkg.id === packageId) || null);
+      printMutation.mutate({ packageId, document: 'nota' });
+    } else {
+      setSelectedNotaPackage(null);
+    }
     setSelectedNotaOrder(order);
   };
 
   const handlePrintLabel = (pkgCard: typeof expandedPackageCards[0]) => {
+    markPendingCompletion(pkgCard.packageId, pkgCard.printedNota, pkgCard.printedLabel);
     printMutation.mutate({ packageId: pkgCard.packageId, document: 'label' });
 
     setSelectedLabelOrder({
@@ -108,6 +142,12 @@ export const DocumentPrintingPage: React.FC = () => {
 
   return (
     <div className="space-y-4 max-w-xl mx-auto pb-24 font-sans text-slate-900">
+      {printToast && (
+        <div className="fixed top-4 right-4 left-4 sm:left-auto sm:w-80 z-[10000] rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-lg" role="status">
+          <p className="text-xs font-black text-[#04593f]">{printToast.title}</p>
+          <p className="text-[11px] text-emerald-800 mt-0.5">{printToast.description}</p>
+        </div>
+      )}
       {/* Header Bar */}
       <div className="flex items-center gap-3 pt-1 border-b border-slate-200/80 pb-3">
         <button
@@ -293,18 +333,18 @@ export const DocumentPrintingPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
-                      className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer ${printedStatus.printedNota ? 'bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300' : 'bg-[#04593f] hover:bg-emerald-900 text-white'}`}
                     >
-                      <Printer className="w-4 h-4 text-white" />
+                      {printedStatus.printedNota ? <CheckCircle2 className="w-4 h-4 text-[#04593f]" /> : <Printer className="w-4 h-4 text-white" />}
                       <span>{printedStatus.printedNota ? 'Cetak Ulang Nota' : 'Cetak Nota'}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer ${printedStatus.printedLabel ? 'bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300' : 'bg-[#04593f] hover:bg-emerald-900 text-white'}`}
                     >
-                      <Tag className="w-4 h-4 text-white" />
+                      {printedStatus.printedLabel ? <CheckCircle2 className="w-4 h-4 text-[#04593f]" /> : <Tag className="w-4 h-4 text-white" />}
                       <span>{printedStatus.printedLabel ? 'Cetak Ulang Label' : 'Cetak Label'}</span>
                     </button>
                   </div>
@@ -418,7 +458,11 @@ export const DocumentPrintingPage: React.FC = () => {
       {/* Nota Packing Thermal Modal */}
       <PackingNotaModal
         order={selectedNotaOrder}
-        onClose={() => setSelectedNotaOrder(null)}
+        packageInfo={selectedNotaPackage}
+        onClose={() => {
+          setSelectedNotaOrder(null);
+          setSelectedNotaPackage(null);
+        }}
       />
 
       {/* Shipping Address Label Modal */}

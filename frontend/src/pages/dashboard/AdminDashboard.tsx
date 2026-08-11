@@ -6,8 +6,16 @@ import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
 import { CompleteShipmentModal } from '../../components/orders/CompleteShipmentModal';
 import { CompletePackageShipmentModal } from '../../components/orders/CompletePackageShipmentModal';
-import { Clock, Truck, FileText, Camera, ChevronRight, Plus, ArrowRight, PackageCheck, Eye } from 'lucide-react';
+import { Clock, Truck, FileText, Camera, ChevronRight, Plus, ArrowRight, PackageCheck, Eye, CheckCircle2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
+const packageTypeLabel = (value?: string) => {
+  const normalized = (value || '').trim().toLowerCase();
+  if (normalized === 'fullset') return 'Fullset';
+  if (['non-fullset', 'non fullset', 'non_fullset'].includes(normalized)) return 'Non Fullset';
+  if (normalized === 'packing kayu') return 'Packing Kayu';
+  return value || 'Package';
+};
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -16,36 +24,48 @@ export const AdminDashboard: React.FC = () => {
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<Order | null>(null);
   const [selectedShipmentOrder, setSelectedShipmentOrder] = useState<Order | null>(null);
   const [selectedShipmentPackage, setSelectedShipmentPackage] = useState<OrderPackage | null>(null);
+  const [verifyingOrder, setVerifyingOrder] = useState<Order | null>(null);
+  const [isVerifyChecked, setIsVerifyChecked] = useState(false);
 
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['dashboard-metrics'],
-    queryFn: () => orderService.getOrders(),
+    queryFn: () => orderService.getOrders({ per_page: 100 }),
   });
 
   const orders: Order[] = dashboardData?.data || [];
 
   const waitingVerification = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
-  const pendingShipping = orders.filter((o: Order) => o.status === 'WAITING_PACKING').length;
-  // Card 3: Dokumen Pengiriman (Calculated by total sub-packages A/B/C)
+  const pendingShipping = orders.filter((o: Order) => o.status === 'WAITING_PACKING' && !o.packages?.length).length;
+  // Card 3: keep the dashboard count aligned with DocumentPrintingPage's
+  // "Belum Dicetak" source of truth: one count per eligible package whose
+  // Nota and Label are not both printed yet.
   const totalDocumentPackagesCount = orders
-    .filter((o: Order) => (o.status === 'PACKING_COMPLETED' || o.status === 'WAITING_PACKING') && (!o.packing_images || o.packing_images.length === 0))
-    .reduce((sum, order) => {
-      const itemCount = order.items?.length || 1;
-      return sum + (itemCount > 1 ? 2 : 1);
-    }, 0);
+    .filter((order: Order) =>
+      order.status === 'PACKING_COMPLETED' || order.status === 'WAITING_PACKING'
+    )
+    .reduce((sum, order) => sum + (order.packages || []).filter((pkg) => !pkg.photo_uploaded && !(pkg.nota_printed && pkg.label_printed)).length, 0);
 
-  // Card 4: Menunggu Foto Paket (orders in PACKING_COMPLETED waiting for packing proof upload)
-  const pendingPhotoUpload = orders.filter((o: Order) => o.status === 'PACKING_COMPLETED' && (!o.packing_images || o.packing_images.length === 0)).length;
+  // Card 4: count the actual packages still waiting for a photo.
+  const pendingPhotoUpload = orders
+    .filter((order: Order) => order.status === 'WAITING_PACKING')
+    .reduce((sum, order) => sum + (order.packages || []).filter((pkg) => !pkg.photo_uploaded).length, 0);
 
   // Table at bottom: Orders that have photo uploaded (PACKING_COMPLETED) waiting for resi input
   const waitingResiOrders = orders.filter(
     (o: Order) =>
       o.status === 'PACKING_COMPLETED' &&
       (o.packages?.length
-        ? o.packages.some((pkg) => !pkg.tracking_number)
+        ? o.packages.every((pkg) => pkg.photo_uploaded) && o.packages.some((pkg) => !pkg.tracking_number)
         : !!o.packing_images?.length && (!o.tracking_number || o.tracking_number.trim() === ''))
   );
-  const waitingPackagePhotos = orders.filter((o) => o.status === 'WAITING_PACKING' && !!o.packages?.length);
+  const waitingPackagePhotos = orders.filter(
+    (order) => order.status === 'WAITING_PACKING' && order.packages?.some((pkg) => !pkg.photo_uploaded)
+  );
+  const adminHistoryOrders = orders.filter((order) =>
+    order.packages?.length
+      ? order.status === 'PACKING_COMPLETED' && order.packages.every((pkg) => Boolean(pkg.tracking_number))
+      : order.status === 'COMPLETED'
+  );
 
   const approveMutation = useMutation({
     mutationFn: (id: number) => orderService.approveOrder(id),
@@ -55,6 +75,8 @@ export const AdminDashboard: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['orders-verification'] });
       queryClient.invalidateQueries({ queryKey: ['packing-queue'] });
       setSelectedDetailOrder(null);
+      setVerifyingOrder(null);
+      setIsVerifyChecked(false);
     },
   });
 
@@ -205,7 +227,7 @@ export const AdminDashboard: React.FC = () => {
         })}
       </div>
 
-      {waitingPackagePhotos.length > 0 && <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs"><div><h2 className="text-xs sm:text-sm font-bold">Package Menunggu Foto</h2><p className="text-[10px] text-slate-400 mt-0.5">Upload minimal satu foto untuk setiap package.</p></div>{waitingPackagePhotos.map((order) => <div key={order.id} className="rounded-xl border border-slate-200 p-3 space-y-2"><div className="text-xs"><b>{order.order_number}</b><span className="text-slate-500"> · {order.customer_name}</span></div><div className="grid gap-2 sm:grid-cols-2">{order.packages?.map((pkg) => <div key={pkg.id} className="rounded-lg bg-slate-50 p-2 text-xs"><div className="flex justify-between"><b>Paket {pkg.letter}</b><span>{pkg.photo_uploaded ? 'Foto Ada' : 'Belum Foto'}</span></div>{!pkg.photo_uploaded && <input type="file" accept="image/jpeg,image/png,image/webp" className="mt-2 w-full text-[10px]" disabled={packagePhotoMutation.isPending} onChange={(e) => { const file = e.target.files?.[0]; if (file) packagePhotoMutation.mutate({ packageId: pkg.id, file }); e.currentTarget.value = ''; }} />}</div>)}</div></div>)}</div>}
+      {waitingPackagePhotos.length > 0 && <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs"><div><h2 className="text-xs sm:text-sm font-bold">Package Menunggu Foto</h2><p className="text-[10px] text-slate-400 mt-0.5">Upload minimal satu foto untuk setiap package.</p></div>{waitingPackagePhotos.map((order) => <div key={order.id} className="rounded-xl border border-slate-200 p-3 space-y-2"><div className="text-xs"><b>{order.order_number}</b></div><div className="grid gap-2 sm:grid-cols-2">{order.packages?.filter((pkg) => !pkg.photo_uploaded).map((pkg) => <div key={pkg.id} className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs space-y-2"><div className="flex items-start justify-between gap-2"><div><b className="block">Paket {pkg.letter}</b><span className="text-[10px] text-slate-500">Customer: {order.customer_name}</span></div><span className="shrink-0 rounded-lg bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-800">Menunggu Foto</span></div><p className="text-[11px] font-bold text-slate-700">Jenis: {packageTypeLabel(pkg.package_type)}</p><div className="text-[10px] text-slate-600 space-y-0.5">{pkg.items?.map((item) => <p key={item.order_item_id}>• {item.product_name || 'Tanaman'} ×{item.quantity}</p>)}</div><label className={`min-h-11 rounded-xl px-3 flex items-center justify-center text-xs font-black transition-colors ${packagePhotoMutation.isPending ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-[#04593f] hover:bg-emerald-900 text-white cursor-pointer'}`}><Camera className="w-4 h-4 mr-1.5" />Input Foto Paket<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={packagePhotoMutation.isPending} onChange={(e) => { const file = e.target.files?.[0]; if (file) packagePhotoMutation.mutate({ packageId: pkg.id, file }); e.currentTarget.value = ''; }} /></label></div>)}</div></div>)}</div>}
 
       {/* Dedicated Section: Daftar Pesanan Menunggu Input Resi (Mobile Responsive Cards & Desktop Table) */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">
@@ -355,6 +377,67 @@ export const AdminDashboard: React.FC = () => {
         )}
       </div>
 
+      {/* Admin History: read-only view of orders whose shipment input is complete */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div>
+            <h2 className="text-xs sm:text-sm font-bold text-slate-900">Riwayat Pesanan</h2>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">Pesanan yang seluruh resinya sudah diinput.</p>
+          </div>
+          <span className="px-2 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[10px] font-bold">
+            {adminHistoryOrders.length} Order
+          </span>
+        </div>
+
+        {adminHistoryOrders.length === 0 ? (
+          <div className="py-6 text-center text-xs text-slate-400">Belum ada pesanan di riwayat.</div>
+        ) : (
+          <div className="space-y-2.5">
+            {adminHistoryOrders.map((order) => {
+              const informed = Boolean(order.sales_informed_at);
+              return (
+                <div key={order.id} className="p-3 bg-slate-50/90 border border-slate-200/90 rounded-xl space-y-2 text-xs">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-bold text-slate-900 block">{order.order_number}</span>
+                      <span className="text-[10px] text-slate-500">{order.customer_name}</span>
+                    </div>
+                    <span className={`shrink-0 px-2 py-1 rounded-lg border text-[10px] font-bold ${informed ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'}`}>
+                      {informed ? 'Sudah Diinfokan ke Pembeli' : 'Menunggu Sales Infokan Pembeli'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-slate-200/70 pt-2 text-[10px] text-slate-500">
+                    <span>{order.packages?.length || 0} Package</span>
+                    <button type="button" onClick={() => setSelectedDetailOrder(order)} className="font-bold text-[#04593f] hover:underline">
+                      Lihat Detail
+                    </button>
+                  </div>
+
+                  {order.packages?.length ? (
+                    <div className="space-y-1.5">
+                      {order.packages.map((pkg) => (
+                        <div key={pkg.id} className="rounded-lg bg-white border border-slate-200 p-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <b className="text-[11px]">Paket {pkg.letter} · {packageTypeLabel(pkg.package_type)}</b>
+                            <span className="text-[10px] text-emerald-700 font-bold">✓ {pkg.tracking_number}</span>
+                          </div>
+                          <div className="text-[10px] text-slate-600 mt-1 space-y-0.5">
+                            {pkg.items?.map((item) => <p key={item.order_item_id}>• {item.product_name || 'Tanaman'} ×{item.quantity}</p>)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-slate-500">Resi: {order.tracking_number || 'Tersedia pada order'}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Recent Activity List */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-2xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
@@ -392,9 +475,71 @@ export const AdminDashboard: React.FC = () => {
       <OrderDetailModal
         order={selectedDetailOrder}
         onClose={() => setSelectedDetailOrder(null)}
-        onApprove={(id) => approveMutation.mutate(id)}
+        onApprove={(id) => {
+          const order = orders.find((item) => item.id === id) || selectedDetailOrder;
+          if (order) {
+            setVerifyingOrder(order);
+            setIsVerifyChecked(false);
+          }
+        }}
         isActionLoading={approveMutation.isPending}
       />
+
+      {/* Payment Verification Confirmation Modal */}
+      {verifyingOrder && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 sm:p-6 w-full h-full overflow-y-auto">
+          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl w-[95%] max-w-md my-auto p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-emerald-800 text-white flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-black text-slate-900">Verifikasi Pembayaran</h3>
+              </div>
+              <button onClick={() => setVerifyingOrder(null)} className="p-1.5 text-slate-400 hover:text-slate-700 cursor-pointer" aria-label="Tutup">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 font-semibold leading-relaxed">
+              Apakah Anda yakin ingin memverifikasi pembayaran pesanan <span className="font-extrabold text-slate-900">{verifyingOrder.order_number}</span> atas nama <span className="font-extrabold text-slate-900">{verifyingOrder.customer_name}</span>?
+            </p>
+
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-bold text-emerald-950">
+              ✓ Pesanan yang diverifikasi akan masuk ke antrean pengaturan paket.
+            </div>
+
+            <label className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl cursor-pointer text-xs font-extrabold text-slate-900">
+              <input
+                type="checkbox"
+                checked={isVerifyChecked}
+                onChange={(event) => setIsVerifyChecked(event.target.checked)}
+                className="w-4 h-4 text-emerald-800 rounded focus:ring-emerald-700 mt-0.5 cursor-pointer"
+              />
+              <span>Saya sudah memeriksa bukti transfer dan dana masuk dengan benar.</span>
+            </label>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setVerifyingOrder(null)}
+                disabled={approveMutation.isPending}
+                className="py-3 px-4 bg-white border-2 border-slate-300 text-slate-800 rounded-2xl text-xs font-black cursor-pointer disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={!isVerifyChecked || approveMutation.isPending}
+                onClick={() => approveMutation.mutate(verifyingOrder.id)}
+                className="py-3 px-4 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-40 text-white rounded-2xl text-xs font-black shadow-md cursor-pointer"
+              >
+                {approveMutation.isPending ? 'Proses...' : 'Ya, Verifikasi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Complete Shipment (Input Resi) Modal */}
       <CompleteShipmentModal

@@ -22,6 +22,8 @@ class PackingController extends Controller
 
     public function queue(Request $request): JsonResponse
     {
+        Gate::authorize('managePackingQueue', Order::class);
+
         // Initial configuration queue: only WAITING_PACKING orders without packages.
         $orders = Order::with(['creator', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item'])
             ->where('status', 'WAITING_PACKING')
@@ -103,7 +105,13 @@ class PackingController extends Controller
         Gate::authorize('approve', $package->order);
         abort_unless(in_array($document, ['nota','label']), 422, 'Dokumen tidak valid.');
         $field = $document.'_printed'; $at = $field.'_at';
-        $package->update([$field=>true, $at=>now(), 'waiting_photo_at'=>($package->nota_printed && $package->label_printed && !$package->waiting_photo_at) ? now() : $package->waiting_photo_at]);
+        $willBeFullyPrinted = ($document === 'nota' ? true : $package->nota_printed)
+            && ($document === 'label' ? true : $package->label_printed);
+        $package->update([
+            $field => true,
+            $at => now(),
+            'waiting_photo_at' => ($willBeFullyPrinted && !$package->waiting_photo_at) ? now() : $package->waiting_photo_at,
+        ]);
         return response()->json(['success'=>true,'data'=>$package->fresh('packingImages')]);
     }
 

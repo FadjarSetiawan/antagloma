@@ -14,11 +14,12 @@ class CommissionController extends Controller
     {
         $user = $request->user();
         $monthStr = $request->query('month', now()->format('Y-m')); // e.g. 2026-08
+        $role = $user?->role instanceof \BackedEnum ? $user->role->value : (string) ($user?->role ?? '');
+        abort_unless(in_array($role, ['owner', 'sales'], true), 403);
 
         $query = Order::with(['items', 'creator']);
 
         // Filter by sales user if sales role
-        $role = $user?->role instanceof \BackedEnum ? $user->role->value : (string) ($user?->role ?? '');
         if ($role === 'owner') {
             return response()->json(['success' => true, 'data' => \App\Models\User::where('role', 'sales')->orderBy('name')->get(['id', 'name', 'email', 'commission_rate'])]);
         }
@@ -43,7 +44,8 @@ class CommissionController extends Controller
 
             // Commission is 5% of Total Harga Tanaman (plantTotal).
             // It ONLY accrues when Admin has verified payment (status !== WAITING_PROCESS and status !== CANCELLED).
-            $isVerified = !in_array($order->status, ['WAITING_PROCESS', 'CANCELLED']);
+            $orderStatus = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
+            $isVerified = !in_array($orderStatus, ['WAITING_PROCESS', 'CANCELLED'], true);
             $rate = (float) ($order->creator?->commission_rate ?? 5);
             $commission = $isVerified ? round($plantTotal * $rate / 100) : 0;
 
