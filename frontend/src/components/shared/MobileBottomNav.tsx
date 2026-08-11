@@ -5,6 +5,7 @@ import {
   LayoutGrid,
   ShoppingBag,
   Plus,
+  History,
   Wallet,
   User as UserIcon,
   Package,
@@ -24,7 +25,7 @@ export const MobileBottomNav: React.FC = () => {
   const role = user?.role;
 
   // Active slots for Sales, Admin, Owner
-  let rightTab3 = { label: 'Komisi', to: '/commission', icon: Wallet };
+  let rightTab3 = { label: 'Riwayat Pesanan', to: '/dashboard#riwayat-pesanan', icon: History };
   let centerTab = { label: 'Buat Order', to: '/orders/create', icon: Plus };
 
   if (role === 'admin') {
@@ -47,7 +48,7 @@ export const MobileBottomNav: React.FC = () => {
   } else if (
     (role === 'owner' && location.pathname.startsWith('/reports')) ||
     (role === 'admin' && location.pathname.startsWith('/packing')) ||
-    (role === 'sales' && location.pathname.startsWith('/commission'))
+    (role === 'sales' && location.pathname === '/dashboard' && location.hash === '#riwayat-pesanan')
   ) {
     activeIndex = 3;
   } else if (location.pathname.startsWith('/orders')) {
@@ -121,7 +122,7 @@ export const MobileBottomNav: React.FC = () => {
               }`}
               strokeWidth={activeIndex === 3 && !isProfileOpen ? 2.4 : 1.8}
             />
-            <span className="text-[10px] font-semibold text-slate-500">{role === 'sales' ? 'Komisi Saya' : rightTab3.label}</span>
+            <span className="text-[10px] font-semibold text-slate-500">{rightTab3.label}</span>
           </NavLink>
 
           {/* Slot 4: Profil Trigger */}
@@ -188,7 +189,7 @@ export const MobileBottomNav: React.FC = () => {
                 <div
                   onClick={() => {
                     setIsProfileOpen(false);
-                    navigate('/commission');
+                    navigate('/dashboard#riwayat-pesanan');
                   }}
                   className="p-3 rounded-2xl bg-slate-50 border border-slate-200 hover:bg-slate-100 flex items-center justify-between cursor-pointer transition-colors"
                 >
@@ -196,7 +197,7 @@ export const MobileBottomNav: React.FC = () => {
                     <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center border border-emerald-100">
                       <Wallet className="w-4 h-4" />
                     </div>
-                    <span>Kalkulator Komisi Sales</span>
+                    <span>Riwayat Pesanan</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </div>
