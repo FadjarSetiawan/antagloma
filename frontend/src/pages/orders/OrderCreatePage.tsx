@@ -162,6 +162,11 @@ export const OrderCreatePage: React.FC = () => {
   };
 
   // Financial Computations
+  const itemUnitPrice = (item: OrderItem) => {
+    const quantity = Number(item.quantity);
+    return quantity > 0 ? Number(item.price) / quantity : 0;
+  };
+
   const totalItemCount = items.reduce((acc, curr) => acc + (Number(curr.quantity) || 0), 0);
   const totalDiscount = items.reduce((acc, curr) => acc + (Number(curr.discount) || 0), 0);
   const totalPlantPrice = items.reduce((acc, curr) => acc + (Number(curr.price) || 0), 0);
@@ -592,8 +597,8 @@ export const OrderCreatePage: React.FC = () => {
                       </div>
 
                       <div>
-                        <span className="text-[10px] text-slate-400 font-black block uppercase">HARGA JUAL KESELURUHAN</span>
-                        <span className="font-black text-slate-900">Rp {Number(item.price).toLocaleString('id-ID')}</span>
+                        <span className="text-[10px] text-slate-400 font-black block uppercase">HARGA SATUAN</span>
+                        <span className="font-black text-slate-900">Rp {itemUnitPrice(item).toLocaleString('id-ID')}</span>
                       </div>
 
                       <div className="text-right">
