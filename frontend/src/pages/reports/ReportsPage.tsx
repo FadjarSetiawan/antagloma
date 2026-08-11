@@ -372,7 +372,7 @@ export const ReportsPage: React.FC = () => {
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div><h2 className="text-sm font-bold text-[#04593f]">ID Tanaman Paling Laku</h2><p className="text-[10px] text-slate-400 mt-0.5">{soldPlants.length} ID terjual pada periode ini</p></div>
           </div>
-          {soldPlants.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">Belum ada ID tanaman terjual.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-left text-xs"><thead className="bg-emerald-50 text-[#04593f] font-bold"><tr><th className="px-3 py-2.5">Rank</th><th className="px-3 py-2.5">ID</th><th className="px-3 py-2.5">Nama Tanaman</th><th className="px-3 py-2.5">Terjual (Pohon)</th><th className="px-3 py-2.5 text-right">Omzet</th></tr></thead><tbody className="divide-y divide-slate-100">{soldPlants.slice(0, 5).map((plant, index) => <tr key={plant.code}><td className="px-3 py-3 font-bold text-slate-900">{index + 1}</td><td className="px-3 py-3 font-bold">{plant.code}</td><td className="px-3 py-3">{plant.name}</td><td className="px-3 py-3 font-bold text-[#04593f]">{plant.quantity} Pohon</td><td className="px-3 py-3 text-right font-bold">Rp {plant.omzet.toLocaleString('id-ID')}</td></tr>)}</tbody></table></div>}
+          {soldPlants.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">Belum ada ID tanaman terjual.</p> : <div className="overflow-x-auto"><table className="w-full table-fixed text-left text-[10px] sm:text-xs"><thead className="bg-emerald-50 text-[#04593f] font-bold"><tr><th className="px-3 py-2.5">Rank</th><th className="px-3 py-2.5">ID</th><th className="px-2 sm:px-3 py-2.5">Nama Tanaman</th><th className="px-2 sm:px-3 py-2.5">Terjual (Pohon)</th><th className="px-3 py-2.5 text-right">Omzet</th></tr></thead><tbody className="divide-y divide-slate-100">{soldPlants.slice(0, 5).map((plant, index) => <tr key={plant.code}><td className="px-3 py-3 font-bold text-slate-900">{index + 1}</td><td className="px-3 py-3 font-bold">{plant.code}</td><td className="px-3 py-3">{plant.name}</td><td className="px-3 py-3 font-bold text-[#04593f]">{plant.quantity} Pohon</td><td className="px-3 py-3 text-right font-bold">Rp {plant.omzet.toLocaleString('id-ID')}</td></tr>)}</tbody></table></div>}
           {soldPlants.length > 5 && <p className="text-center text-xs font-bold text-[#04593f]">Lihat {soldPlants.length} ID Terjual</p>}
         </div>
         <div className="bg-white border border-orange-200/80 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-2xs">
@@ -411,7 +411,7 @@ export const ReportsPage: React.FC = () => {
           <div className="py-6 text-center text-xs text-slate-400">Belum ada tanaman terjual pada periode ini.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[620px] text-left text-xs">
+            <table className="w-full table-fixed text-left text-[10px] sm:text-xs">
               <thead className="bg-emerald-50 text-[#04593f] font-bold">
                 <tr>
                   <th className="px-3 py-2.5 rounded-l-xl">Grade</th>
