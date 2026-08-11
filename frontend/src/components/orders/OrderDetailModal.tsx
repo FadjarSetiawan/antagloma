@@ -52,7 +52,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     : '-';
 
   const plantTotalPrice = order.items
-    ? order.items.reduce((sum, item) => sum + (item.quantity || 1) * (item.price || 0), 0)
+    ? order.items.reduce((sum, item) => sum + (item.price || 0), 0)
     : 0;
   const shippingCost = order.buyer_shipping_cost || 0;
   const grandTotal = plantTotalPrice + shippingCost;

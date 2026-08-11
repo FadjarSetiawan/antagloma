@@ -189,7 +189,7 @@ export const OrderListPage: React.FC = () => {
           /* List of Orders */
           data?.data?.map((order: Order) => {
             const itemCount = order.items ? order.items.reduce((sum: number, item: OrderItem) => sum + item.quantity, 0) : 0;
-            const plantTotalPrice = order.items ? order.items.reduce((sum: number, item: OrderItem) => sum + (item.quantity * item.price), 0) : 0;
+            const plantTotalPrice = order.items ? order.items.reduce((sum: number, item: OrderItem) => sum + item.price, 0) : 0;
             const totalOrderAmount = plantTotalPrice + (order.buyer_shipping_cost || 0);
 
             // ALLOW EDIT & DELETE FOR SALES ONLY WHEN UNVERIFIED (WAITING_PROCESS). AUTOMATICALLY HIDE WHEN VERIFIED BY ADMIN.

@@ -44,14 +44,14 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
   const standardPrice = chosenGradeObj ? chosenGradeObj.standard_price : 0;
   const numQty = Number(quantity) || 1;
 
-  // Auto calculate Harga Jual = Harga Standar x Jumlah (Qty) whenever Grade or Qty changes
+  // Default total selling price when a grade is selected; quantity changes do not multiply this total
   useEffect(() => {
     if (chosenGradeObj) {
       if (chosenGradeObj.grade !== 'J+') {
         setPrice(chosenGradeObj.standard_price * numQty);
       }
     }
-  }, [selectedGrade, numQty]);
+  }, [selectedGrade]);
 
   const numPrice = Number(price) || 0;
   const totalStandardForQty = standardPrice * numQty;
@@ -187,7 +187,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
             </div>
 
             <div>
-              <label className="block text-xs font-extrabold text-slate-500 mb-1">Harga Standar (Readonly)</label>
+              <label className="block text-xs font-extrabold text-slate-500 mb-1">Harga Standar Satuan (Readonly)</label>
               <input
                 type="text"
                 readOnly
@@ -201,7 +201,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                Harga Jual (Rp) *
+                Harga Jual Keseluruhan (Rp) *
               </label>
               <input
                 type="number"

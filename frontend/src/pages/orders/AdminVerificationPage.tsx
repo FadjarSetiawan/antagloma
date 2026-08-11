@@ -171,7 +171,7 @@ export const AdminVerificationPage: React.FC = () => {
           </div>
         ) : (
           orders.map((order) => {
-            const plantTotalPrice = order.items ? order.items.reduce((s, item) => s + (item.quantity * item.price), 0) : 0;
+            const plantTotalPrice = order.items ? order.items.reduce((s, item) => s + item.price, 0) : 0;
             const totalAmount = plantTotalPrice + (order.buyer_shipping_cost || 0);
 
             return (

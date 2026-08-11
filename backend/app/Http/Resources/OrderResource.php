@@ -15,7 +15,7 @@ class OrderResource extends JsonResource
         $isSales = $role === 'sales';
 
         $plantTotal = $this->items ? $this->items->sum(function ($item) {
-            return (float) $item->quantity * (float) $item->price;
+            return (float) $item->price;
         }) : 0;
 
         $isVerified = !in_array($statusStr, ['WAITING_PROCESS', 'CANCELLED']);

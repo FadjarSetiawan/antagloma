@@ -163,8 +163,8 @@ export const OrderCreatePage: React.FC = () => {
 
   // Financial Computations
   const totalItemCount = items.reduce((acc, curr) => acc + (Number(curr.quantity) || 0), 0);
-  const totalDiscount = items.reduce((acc, curr) => acc + (Number(curr.discount) || 0) * (Number(curr.quantity) || 1), 0);
-  const totalPlantPrice = items.reduce((acc, curr) => acc + (Number(curr.quantity) || 0) * (Number(curr.price) || 0), 0);
+  const totalDiscount = items.reduce((acc, curr) => acc + (Number(curr.discount) || 0), 0);
+  const totalPlantPrice = items.reduce((acc, curr) => acc + (Number(curr.price) || 0), 0);
   const isPickup = ['Ambil di Tempat', 'Ambil Di Lokasi'].includes(deliveryMethod);
   const actualShippingCost = isPickup ? 0 : Number(buyerShippingCost) || 0;
   const grandTotal = totalPlantPrice + actualShippingCost;
@@ -592,14 +592,14 @@ export const OrderCreatePage: React.FC = () => {
                       </div>
 
                       <div>
-                        <span className="text-[10px] text-slate-400 font-black block uppercase">HARGA SATUAN</span>
+                        <span className="text-[10px] text-slate-400 font-black block uppercase">HARGA JUAL KESELURUHAN</span>
                         <span className="font-black text-slate-900">Rp {Number(item.price).toLocaleString('id-ID')}</span>
                       </div>
 
                       <div className="text-right">
                         <span className="text-[10px] text-slate-400 font-black block uppercase">SUBTOTAL</span>
                         <span className="font-black text-emerald-900">
-                          Rp {(item.quantity * item.price).toLocaleString('id-ID')}
+                          Rp {Number(item.price).toLocaleString('id-ID')}
                         </span>
                       </div>
                     </div>

@@ -59,7 +59,7 @@ export const ReportsPage: React.FC = () => {
   // Financial Calculations
   const calculateOrderGrandTotal = (order: Order) => {
     const itemsTotal = (order.items || []).reduce(
-      (sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.price) || 0),
+      (sum, item) => sum + (Number(item.price) || 0),
       0
     );
     const shipping = order.delivery_method === 'Kirim Paket' ? Number(order.buyer_shipping_cost) || 0 : 0;
@@ -68,7 +68,7 @@ export const ReportsPage: React.FC = () => {
 
   const calculateOrderItemsTotal = (order: Order) => {
     return (order.items || []).reduce(
-      (sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.price) || 0),
+      (sum, item) => sum + (Number(item.price) || 0),
       0
     );
   };

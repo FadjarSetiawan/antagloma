@@ -37,9 +37,8 @@ class CommissionController extends Controller
             $plantTotal = 0;
 
             foreach ($order->items as $item) {
-                $qty = (float) $item->quantity;
-                $price = (float) $item->price;
-                $plantTotal += ($qty * $price);
+                // item.price is the total selling price for the item quantity.
+                $plantTotal += (float) $item->price;
             }
 
             // Commission is 5% of Total Harga Tanaman (plantTotal).

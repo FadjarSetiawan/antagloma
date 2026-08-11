@@ -25,7 +25,7 @@ class OrderService
     public function generateOrderNumber(string $dateString): string
     {
         $dateObj = Carbon::parse($dateString);
-        $formattedDate = $dateObj->format('dmY'); // DDMMYYYY
+        $formattedDate = $dateObj->format('Ymd'); // YYYYMMDD
         $prefix = 'ORD-' . $formattedDate . '-';
 
         // Atomic row lock to prevent race conditions during order sequence generation
@@ -46,7 +46,7 @@ class OrderService
 
     public function createOrder(array $data, User $user): Order
     {
-        return DB::transaction(function () use ($data, $user) {
+        return retry(3, fn () => DB::transaction(function () use ($data, $user) {
             $orderDate = $data['order_date'] ?? now()->toDateString();
             $orderNumber = $this->generateOrderNumber($orderDate);
 
@@ -110,6 +110,8 @@ class OrderService
             NotificationService::notifyOrderCreated($order, $user);
 
             return $order->fresh(['creator', 'items']);
+        }), 50, function (\Throwable $e) {
+            return $e instanceof \Illuminate\Database\QueryException && $e->getCode() === '23000';
         });
     }
 
