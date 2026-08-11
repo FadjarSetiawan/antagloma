@@ -65,45 +65,51 @@ export const ReportsPage: React.FC = () => {
   });
 
   // Financial Calculations
-  const calculateOrderGrandTotal = (order: Order) => {
-    const itemsTotal = (order.items || []).reduce(
-      (sum, item) => sum + (Number(item.price) || 0),
+  // Total harga tanaman: price per item × quantity (tidak termasuk ongkir)
+  const calculateOrderItemsTotal = (order: Order) => {
+    return (order.items || []).reduce(
+      (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
       0
     );
-    const shipping = order.delivery_method === 'Kirim Paket' ? Number(order.buyer_shipping_cost) || 0 : 0;
+  };
+
+  const calculateOrderGrandTotal = (order: Order) => {
+    const itemsTotal = calculateOrderItemsTotal(order);
+    const shipping = Number(order.buyer_shipping_cost) || 0;
     return itemsTotal + shipping;
   };
 
-  const calculateOrderItemsTotal = (order: Order) => {
-    return (order.items || []).reduce(
-      (sum, item) => sum + (Number(item.price) || 0),
-      0
-    );
-  };
-
-  const totalOmzet = orders.reduce((sum, order) => sum + calculateOrderGrandTotal(order), 0);
+  // Total Omset Penjualan Tanaman = hanya harga tanaman (tidak termasuk ongkir pembeli)
   const totalPlantOmzet = orders.reduce((sum, order) => sum + calculateOrderItemsTotal(order), 0);
-  const totalShippingCost = orders.reduce(
-    (sum, order) => sum + (['Kirim Paket', 'Packing Kayu'].includes(order.delivery_method) ? Number(order.buyer_shipping_cost) || 0 : 0),
-    0
-  );
-  const totalExpeditionShipping = orders.reduce(
-    (sum, order) => sum + (order.packages?.length
-      ? order.packages.reduce((packageSum, pkg) => packageSum + (Number(pkg.shipping_cost) || 0), 0)
-      : Number(order.shipping_cost) || 0),
-    0
-  );
-  const totalShippingDifference = totalShippingCost - totalExpeditionShipping;
+
+  // Total Paket Dikirim = jumlah paket yang sudah ada foto paketnya (photo_uploaded === true)
   const totalPackagesSent = orders.reduce(
     (sum, order) => sum + (order.packages || []).filter((pkg) => pkg.photo_uploaded).length,
     0
   );
 
+  // Ongkir Dibayar Pembeli
+  const totalShippingCost = orders.reduce(
+    (sum, order) => sum + (Number(order.buyer_shipping_cost) || 0),
+    0
+  );
+
+  // Ongkir Ekspedisi (yang dibayarkan ke jasa kirim saat input resi)
+  const totalExpeditionShipping = orders.reduce(
+    (sum, order) => sum + (order.packages?.length
+      ? order.packages.reduce((packageSum, pkg) => packageSum + (Number((pkg as any).shipping_cost) || 0), 0)
+      : Number((order as any).shipping_cost) || 0),
+    0
+  );
+
+  // Selisih Ongkir = ongkir dibayar pembeli - ongkir ekspedisi
+  const totalShippingDifference = totalShippingCost - totalExpeditionShipping;
+
   const totalOrdersCount = orders.length;
   const completedOrdersCount = orders.filter((o) => o.status === 'COMPLETED' || o.status === 'PACKING_COMPLETED').length;
-  const avgOrderValue = totalOrdersCount > 0 ? Math.round(totalOmzet / totalOrdersCount) : 0;
   const completionRate = totalOrdersCount > 0 ? Math.round((completedOrdersCount / totalOrdersCount) * 100) : 0;
 
+  // Total Tanaman Terjual = jumlah qty semua item
   const totalPlantsCount = orders.reduce(
     (sum, order) => sum + (order.items || []).reduce((iSum, it) => iSum + (Number(it.quantity) || 1), 0),
     0
@@ -271,44 +277,81 @@ export const ReportsPage: React.FC = () => {
         {/* Background Decorative Accent */}
         <div className="absolute right-0 top-0 w-64 h-64 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-emerald-700/60 pb-4">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-emerald-200 tracking-wider block">
-              TOTAL OMZET PENJUALAN
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-white mt-0.5 tracking-tight">
-              {isLoading ? '...' : `Rp ${totalPlantOmzet.toLocaleString('id-ID')}`}
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-2 bg-emerald-900/60 border border-emerald-700/80 px-3 py-1.5 rounded-xl text-xs font-semibold text-emerald-100">
-            <TrendingUp className="w-4 h-4 text-emerald-300" />
-            <span>{totalPackagesSent} Paket Dikirim</span>
+        {/* Main Omset Figure */}
+        <div className="border-b border-emerald-700/60 pb-4 space-y-2">
+          <span className="text-[10px] uppercase font-bold text-emerald-300 tracking-widest block">
+            TOTAL OMZET PENJUALAN TANAMAN
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            {isLoading ? '...' : `Rp ${totalPlantOmzet.toLocaleString('id-ID')}`}
+          </h2>
+          <div className="inline-flex items-center gap-1.5 bg-emerald-800/70 border border-emerald-600/60 px-3 py-1 rounded-xl text-[11px] font-semibold text-emerald-100">
+            <ArrowUpRight className="w-3.5 h-3.5 text-emerald-300" />
+            <span>{completedOrdersCount} Pesanan Selesai ({completionRate}%)</span>
           </div>
         </div>
 
-        {/* Quick Sub-Metrics Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-0.5">
-          <div className="bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-700/40">
-            <span className="text-[10px] text-emerald-200/80 font-medium block">Total Order</span>
-            <span className="text-base font-bold text-white block mt-0.5">{totalOrdersCount} Transaksi</span>
+        {/* Sub-Metrics 2x2 Grid */}
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          {/* Total Pesanan */}
+          <div className="bg-emerald-800/50 p-3 rounded-xl border border-emerald-700/40 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-700/60 flex items-center justify-center flex-shrink-0">
+              <FileText className="w-4 h-4 text-emerald-200" />
+            </div>
+            <div>
+              <span className="text-[10px] text-emerald-200/70 font-medium block">Total Pesanan</span>
+              <span className="text-sm font-bold text-white block mt-0.5">{totalOrdersCount} Pesanan</span>
+            </div>
           </div>
 
-          <div className="bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-700/40">
-            <span className="text-[10px] text-emerald-200/80 font-medium block">Total Tanaman</span>
-            <span className="text-base font-bold text-white block mt-0.5">{totalPlantsCount} Pohon</span>
+          {/* Total Tanaman Terjual */}
+          <div className="bg-emerald-800/50 p-3 rounded-xl border border-emerald-700/40 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-700/60 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="w-4 h-4 text-emerald-200" />
+            </div>
+            <div>
+              <span className="text-[10px] text-emerald-200/70 font-medium block">Total Tanaman Terjual</span>
+              <span className="text-sm font-bold text-white block mt-0.5">{totalPlantsCount} Pohon</span>
+            </div>
           </div>
 
-          <div className="bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-700/40">
-            <span className="text-[10px] text-emerald-200/80 font-medium block">Total Paket Dikirim</span>
-            <span className="text-base font-bold text-white block mt-0.5">{totalPackagesSent} Paket</span>
+          {/* Total Paket Dikirim */}
+          <div className="bg-emerald-800/50 p-3 rounded-xl border border-emerald-700/40 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-700/60 flex items-center justify-center flex-shrink-0">
+              <Package className="w-4 h-4 text-emerald-200" />
+            </div>
+            <div>
+              <span className="text-[10px] text-emerald-200/70 font-medium block">Total Paket Dikirim</span>
+              <span className="text-sm font-bold text-white block mt-0.5">{totalPackagesSent} Paket</span>
+            </div>
           </div>
 
-          <div className="bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-700/40">
-            <span className="text-[10px] text-emerald-200/80 font-medium block">Selisih Ongkir</span>
-            <span className="text-base font-bold text-white block mt-0.5">
-              {totalShippingDifference >= 0 ? '+ ' : '- '}Rp {Math.abs(totalShippingDifference).toLocaleString('id-ID')}
-            </span>
+          {/* Ongkir Dibayar Pembeli */}
+          <div className="bg-emerald-800/50 p-3 rounded-xl border border-emerald-700/40 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-700/60 flex items-center justify-center flex-shrink-0">
+              <Truck className="w-4 h-4 text-emerald-200" />
+            </div>
+            <div>
+              <span className="text-[10px] text-emerald-200/70 font-medium block">Ongkir Dibayar Pembeli</span>
+              <span className="text-sm font-bold text-white block mt-0.5">Rp {totalShippingCost.toLocaleString('id-ID')}</span>
+            </div>
+          </div>
+
+          {/* Selisih Ongkir — full width */}
+          <div className="col-span-2 bg-emerald-800/50 p-3 rounded-xl border border-emerald-700/40 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-700/60 flex items-center justify-center flex-shrink-0">
+              <DollarSign className="w-4 h-4 text-emerald-200" />
+            </div>
+            <div>
+              <span className="text-[10px] text-emerald-200/70 font-medium block">Selisih Ongkir
+                <span className="ml-1.5 text-emerald-300 font-normal">(Ongkir Pembeli − Ongkir Ekspedisi)</span>
+              </span>
+              <span className={`text-sm font-bold block mt-0.5 ${
+                totalShippingDifference >= 0 ? 'text-emerald-200' : 'text-rose-300'
+              }`}>
+                {totalShippingDifference >= 0 ? '+' : '-'}Rp {Math.abs(totalShippingDifference).toLocaleString('id-ID')}
+              </span>
+            </div>
           </div>
         </div>
       </div>
