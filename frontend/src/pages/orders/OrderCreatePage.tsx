@@ -228,8 +228,8 @@ export const OrderCreatePage: React.FC = () => {
   const districtOptions = districts.map((d) => ({ value: d.id, label: d.name }));
 
   const bankOptions = [
-    { value: 'BCA', label: 'Bank BCA (829-0123-456 a.n. Antagloma)' },
-    { value: 'BRI', label: 'Bank BRI (0021-01-000123-50-1 a.n. Antagloma)' },
+    { value: 'BCA', label: 'Bank BCA a.n. Antagloma Florist' },
+    { value: 'BRI', label: 'Bank BRI a.n. Antagloma Florist' },
   ];
 
   const paymentCardMethods = [

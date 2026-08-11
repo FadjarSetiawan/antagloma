@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
+import { masterService } from '../../services/masterService';
 import { Order } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
@@ -27,6 +28,8 @@ export const ReportsPage: React.FC = () => {
   const [periodFilter, setPeriodFilter] = useState<'all' | 'month' | 'today'>('all');
   const [search, setSearch] = useState('');
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<Order | null>(null);
+  const [showGradeReport, setShowGradeReport] = useState(false);
+  const [showPlantPerformance, setShowPlantPerformance] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['reports-orders-list'],
@@ -34,9 +37,14 @@ export const ReportsPage: React.FC = () => {
   });
 
   const allOrders: Order[] = data?.data || [];
+  const { data: masterTrees = [] } = useQuery({
+    queryKey: ['master-trees-report'],
+    queryFn: () => masterService.getTrees(),
+  });
 
   const todayStr = new Date().toISOString().split('T')[0];
   const currentMonthStr = new Date().toISOString().slice(0, 7);
+  const reportPeriodLabel = periodFilter === 'today' ? 'Hari Ini' : periodFilter === 'month' ? 'Bulan Ini' : 'Semua Waktu';
 
   // Filter orders by period
   const orders = allOrders.filter((o) => {
@@ -100,6 +108,35 @@ export const ReportsPage: React.FC = () => {
     (sum, order) => sum + (order.items || []).reduce((iSum, it) => iSum + (Number(it.quantity) || 1), 0),
     0
   );
+
+  const gradeSummary = Object.values(
+    orders.reduce<Record<string, { grade: string; quantity: number; omzet: number }>>((summary, order) => {
+      (order.items || []).forEach((item) => {
+        const grade = item.grade?.trim() || 'Tanpa Grade';
+        const quantity = Number(item.quantity) || 0;
+        const omzet = Number(item.price) || 0;
+        const current = summary[grade] || { grade, quantity: 0, omzet: 0 };
+        current.quantity += quantity;
+        current.omzet += omzet;
+        summary[grade] = current;
+      });
+      return summary;
+    }, {})
+  ).sort((a, b) => a.grade.localeCompare(b.grade, 'id'));
+
+  const plantSales = orders.reduce<Record<string, { code: string; name: string; quantity: number; omzet: number }>>((summary, order) => {
+    (order.items || []).forEach((item) => {
+      const code = item.tree_code || item.product_name;
+      if (!code) return;
+      const current = summary[code] || { code, name: item.tree_name || item.product_name, quantity: 0, omzet: 0 };
+      current.quantity += Number(item.quantity) || 0;
+      current.omzet += Number(item.price) || 0;
+      summary[code] = current;
+    });
+    return summary;
+  }, {});
+  const soldPlants = Object.values(plantSales).sort((a, b) => b.quantity - a.quantity || b.omzet - a.omzet);
+  const unsoldPlants = masterTrees.filter((tree) => !plantSales[tree.code]);
 
   // Payment Breakdown
   const bcaOmzet = orders
@@ -311,6 +348,103 @@ export const ReportsPage: React.FC = () => {
           <span className="text-[10px] text-slate-400 font-normal block">Ongkir dibayar pembeli</span>
         </div>
       </div>
+
+      {/* Plant Performance */}
+      <button
+        type="button"
+        onClick={() => setShowPlantPerformance((visible) => !visible)}
+        className="w-full bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between text-left shadow-2xs hover:border-[#04593f] transition-colors cursor-pointer"
+      >
+        <span className="flex items-center gap-3">
+          <span className="w-9 h-9 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center">
+            <TrendingUp className="w-4 h-4" />
+          </span>
+          <span>
+            <span className="block text-sm font-bold text-slate-900">Performa ID Tanaman</span>
+            <span className="block text-[10px] sm:text-[11px] text-slate-400 mt-0.5">ID tanaman paling laku dan yang belum terjual</span>
+          </span>
+        </span>
+        <span className="text-xl text-slate-400" aria-hidden="true">{showPlantPerformance ? '⌃' : '›'}</span>
+      </button>
+
+      {showPlantPerformance && <div className="space-y-3">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-2xs">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div><h2 className="text-sm font-bold text-[#04593f]">ID Tanaman Paling Laku</h2><p className="text-[10px] text-slate-400 mt-0.5">{soldPlants.length} ID terjual pada periode ini</p></div>
+          </div>
+          {soldPlants.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">Belum ada ID tanaman terjual.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-left text-xs"><thead className="bg-emerald-50 text-[#04593f] font-bold"><tr><th className="px-3 py-2.5">Rank</th><th className="px-3 py-2.5">ID</th><th className="px-3 py-2.5">Nama Tanaman</th><th className="px-3 py-2.5">Terjual (Pohon)</th><th className="px-3 py-2.5 text-right">Omzet</th></tr></thead><tbody className="divide-y divide-slate-100">{soldPlants.slice(0, 5).map((plant, index) => <tr key={plant.code}><td className="px-3 py-3 font-bold text-slate-900">{index + 1}</td><td className="px-3 py-3 font-bold">{plant.code}</td><td className="px-3 py-3">{plant.name}</td><td className="px-3 py-3 font-bold text-[#04593f]">{plant.quantity} Pohon</td><td className="px-3 py-3 text-right font-bold">Rp {plant.omzet.toLocaleString('id-ID')}</td></tr>)}</tbody></table></div>}
+          {soldPlants.length > 5 && <p className="text-center text-xs font-bold text-[#04593f]">Lihat {soldPlants.length} ID Terjual</p>}
+        </div>
+        <div className="bg-white border border-orange-200/80 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-2xs">
+          <div className="flex items-center justify-between"><div><h2 className="text-sm font-bold text-orange-700">ID Belum Terjual</h2><p className="text-[10px] text-slate-400 mt-0.5">ID tanaman yang belum ada penjualan pada periode ini.</p></div><span className="px-2.5 py-1 rounded-xl bg-orange-50 text-orange-700 text-xs font-bold">{unsoldPlants.length} ID</span></div>
+          {unsoldPlants.length === 0 ? <p className="text-xs text-slate-400">Semua ID sudah memiliki penjualan.</p> : <div className="flex flex-wrap gap-2">{unsoldPlants.slice(0, 8).map((tree) => <span key={tree.id} className="px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-100 text-[10px] font-bold text-orange-700">{tree.code}</span>)}{unsoldPlants.length > 8 && <span className="px-3 py-1.5 text-[10px] font-bold text-orange-700">...</span>}</div>}
+        </div>
+      </div>}
+
+      {/* Grade Sales Summary */}
+      <button
+        type="button"
+        onClick={() => setShowGradeReport((visible) => !visible)}
+        className="w-full bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between text-left shadow-2xs hover:border-[#04593f] transition-colors cursor-pointer"
+      >
+        <span className="flex items-center gap-3">
+          <span className="w-9 h-9 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center">
+            <PieChart className="w-4 h-4" />
+          </span>
+          <span>
+            <span className="block text-sm font-bold text-slate-900">Penjualan Per Grade</span>
+            <span className="block text-[10px] sm:text-[11px] text-slate-400 mt-0.5">Ringkasan penjualan berdasarkan grade tanaman</span>
+          </span>
+        </span>
+        <span className="text-xl text-slate-400" aria-hidden="true">{showGradeReport ? '⌃' : '›'}</span>
+      </button>
+
+      {showGradeReport && <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-2xs">
+        <div className="border-b border-slate-100 pb-3">
+          <h2 className="text-sm sm:text-base font-bold text-slate-900">Laporan Penjualan {reportPeriodLabel} – Per Grade</h2>
+          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">
+            Ringkasan penjualan berdasarkan grade tanaman pada periode yang dipilih.
+          </p>
+        </div>
+
+        {gradeSummary.length === 0 ? (
+          <div className="py-6 text-center text-xs text-slate-400">Belum ada tanaman terjual pada periode ini.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[620px] text-left text-xs">
+              <thead className="bg-emerald-50 text-[#04593f] font-bold">
+                <tr>
+                  <th className="px-3 py-2.5 rounded-l-xl">Grade</th>
+                  <th className="px-3 py-2.5">Jumlah Terjual</th>
+                  <th className="px-3 py-2.5">Harga Jual Satuan</th>
+                  <th className="px-3 py-2.5 text-right">Total Omzet</th>
+                  <th className="px-2 py-2.5 rounded-r-xl text-right" aria-label="Detail"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {gradeSummary.map((row) => (
+                  <tr key={row.grade} className="text-slate-700">
+                    <td className="px-3 py-3 font-bold text-slate-900">Grade {row.grade}</td>
+                    <td className="px-3 py-3">{row.quantity.toLocaleString('id-ID')} Pohon</td>
+                    <td className="px-3 py-3">Rp {(row.quantity > 0 ? row.omzet / row.quantity : 0).toLocaleString('id-ID')}</td>
+                    <td className="px-3 py-3 text-right font-bold text-slate-900">Rp {row.omzet.toLocaleString('id-ID')}</td>
+                    <td className="px-2 py-3 text-right text-xl text-slate-400" aria-hidden="true">›</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot className="bg-emerald-50 font-bold text-[#04593f]">
+                <tr>
+                  <td className="px-3 py-3 rounded-l-xl">Total</td>
+                  <td className="px-3 py-3">{gradeSummary.reduce((sum, row) => sum + row.quantity, 0).toLocaleString('id-ID')} Pohon</td>
+                  <td className="px-3 py-3">-</td>
+                  <td className="px-3 py-3 text-right">Rp {gradeSummary.reduce((sum, row) => sum + row.omzet, 0).toLocaleString('id-ID')}</td>
+                  <td className="px-2 py-3 rounded-r-xl"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+      </div>}
 
       {/* Transactions List Container */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 space-y-3.5 shadow-2xs">
