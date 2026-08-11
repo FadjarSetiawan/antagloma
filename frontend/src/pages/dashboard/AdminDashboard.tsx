@@ -43,7 +43,7 @@ export const AdminDashboard: React.FC = () => {
     .filter((order: Order) =>
       order.status === 'PACKING_COMPLETED' || order.status === 'WAITING_PACKING'
     )
-    .reduce((sum, order) => sum + (order.packages || []).filter((pkg) => !pkg.photo_uploaded && !(pkg.nota_printed && pkg.label_printed)).length, 0);
+    .reduce((sum, order) => sum + (order.packages || []).filter((pkg) => !(pkg.nota_printed && pkg.label_printed)).length, 0);
 
   // Card 4: count the actual packages still waiting for a photo.
   const pendingPhotoUpload = orders

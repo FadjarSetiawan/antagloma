@@ -29,7 +29,7 @@ export const MobileBottomNav: React.FC = () => {
   let centerTab = { label: 'Buat Order', to: '/orders/create', icon: Plus };
 
   if (role === 'admin') {
-    rightTab3 = { label: 'Packing', to: '/packing', icon: Package };
+    rightTab3 = { label: 'Riwayat Pesanan', to: '/dashboard', icon: History };
     centerTab = { label: 'Buat Order', to: '/orders/create', icon: Plus };
   } else if (role === 'owner') {
     rightTab3 = { label: 'Laporan', to: '/reports', icon: FileText };
@@ -47,7 +47,7 @@ export const MobileBottomNav: React.FC = () => {
     activeIndex = 2;
   } else if (
     (role === 'owner' && location.pathname.startsWith('/reports')) ||
-    (role === 'admin' && location.pathname.startsWith('/packing')) ||
+    (role === 'admin' && location.pathname === '/dashboard') ||
     (role === 'sales' && location.pathname === '/dashboard' && location.hash === '#riwayat-pesanan')
   ) {
     activeIndex = 3;

@@ -12,7 +12,6 @@ use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SalesPackingController;
 use App\Http\Controllers\Api\UserController;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,23 +19,6 @@ use Illuminate\Support\Facades\Route;
 | Security Hardened API Routes
 |--------------------------------------------------------------------------
 */
-
-// One-click Web Browser Migration Helper Route (No Terminal Needed!)
-Route::middleware('auth:sanctum')->get('/run-migrate', function () {
-    try {
-        Artisan::call('migrate', ['--force' => true]);
-        return response()->json([
-            'success' => true,
-            'message' => 'Migration berhasil dieksekusi di database!',
-            'output'  => Artisan::output(),
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Gagal jalankan migration: ' . $e->getMessage(),
-        ], 500);
-    }
-});
 
 // Public Authentication (Rate limited to 5 attempts per minute to prevent Brute Force & DoS)
 Route::middleware('throttle:5,1')->post('/login', [AuthController::class, 'login']);

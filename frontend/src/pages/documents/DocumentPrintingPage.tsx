@@ -74,8 +74,8 @@ export const DocumentPrintingPage: React.FC = () => {
     printedAt: 'Tersimpan di server',
   });
 
-  const unprintedCards = expandedPackageCards.filter((card) => !card.photoUploaded && !getCardPrintStatus(card).isBothPrinted);
-  const printedCards = expandedPackageCards.filter((card) => !card.photoUploaded && getCardPrintStatus(card).isBothPrinted);
+  const unprintedCards = expandedPackageCards.filter((card) => !getCardPrintStatus(card).isBothPrinted);
+  const printedCards = expandedPackageCards.filter((card) => getCardPrintStatus(card).isBothPrinted);
   useEffect(() => {
     if (!data || pendingCompletionPackageIds.current.size === 0) return;
 
