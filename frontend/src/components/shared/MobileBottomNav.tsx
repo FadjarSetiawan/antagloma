@@ -189,7 +189,7 @@ export const MobileBottomNav: React.FC = () => {
                 <div
                   onClick={() => {
                     setIsProfileOpen(false);
-                    navigate('/dashboard#riwayat-pesanan');
+                    navigate('/commission');
                   }}
                   className="p-3 rounded-2xl bg-slate-50 border border-slate-200 hover:bg-slate-100 flex items-center justify-between cursor-pointer transition-colors"
                 >
@@ -197,7 +197,7 @@ export const MobileBottomNav: React.FC = () => {
                     <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center border border-emerald-100">
                       <Wallet className="w-4 h-4" />
                     </div>
-                    <span>Riwayat Pesanan</span>
+                    <span>Komisi Saya</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </div>
