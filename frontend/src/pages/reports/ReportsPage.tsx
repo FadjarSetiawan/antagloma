@@ -76,7 +76,18 @@ export const ReportsPage: React.FC = () => {
   const totalOmzet = orders.reduce((sum, order) => sum + calculateOrderGrandTotal(order), 0);
   const totalPlantOmzet = orders.reduce((sum, order) => sum + calculateOrderItemsTotal(order), 0);
   const totalShippingCost = orders.reduce(
-    (sum, order) => sum + (order.delivery_method === 'Kirim Paket' ? Number(order.buyer_shipping_cost) || 0 : 0),
+    (sum, order) => sum + (['Kirim Paket', 'Packing Kayu'].includes(order.delivery_method) ? Number(order.buyer_shipping_cost) || 0 : 0),
+    0
+  );
+  const totalExpeditionShipping = orders.reduce(
+    (sum, order) => sum + (order.packages?.length
+      ? order.packages.reduce((packageSum, pkg) => packageSum + (Number(pkg.shipping_cost) || 0), 0)
+      : Number(order.shipping_cost) || 0),
+    0
+  );
+  const totalShippingDifference = totalShippingCost - totalExpeditionShipping;
+  const totalPackagesSent = orders.reduce(
+    (sum, order) => sum + (order.packages || []).filter((pkg) => pkg.photo_uploaded).length,
     0
   );
 
@@ -229,13 +240,13 @@ export const ReportsPage: React.FC = () => {
               TOTAL OMZET PENJUALAN
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-white mt-0.5 tracking-tight">
-              {isLoading ? '...' : `Rp ${totalOmzet.toLocaleString('id-ID')}`}
+              {isLoading ? '...' : `Rp ${totalPlantOmzet.toLocaleString('id-ID')}`}
             </h2>
           </div>
 
           <div className="flex items-center gap-2 bg-emerald-900/60 border border-emerald-700/80 px-3 py-1.5 rounded-xl text-xs font-semibold text-emerald-100">
             <TrendingUp className="w-4 h-4 text-emerald-300" />
-            <span>{completedOrdersCount} Pesanan Selesai ({completionRate}%)</span>
+            <span>{totalPackagesSent} Paket Dikirim</span>
           </div>
         </div>
 
@@ -252,16 +263,14 @@ export const ReportsPage: React.FC = () => {
           </div>
 
           <div className="bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-700/40">
-            <span className="text-[10px] text-emerald-200/80 font-medium block">Rata-rata Order (AOV)</span>
-            <span className="text-base font-bold text-white block mt-0.5">
-              Rp {avgOrderValue.toLocaleString('id-ID')}
-            </span>
+            <span className="text-[10px] text-emerald-200/80 font-medium block">Total Paket Dikirim</span>
+            <span className="text-base font-bold text-white block mt-0.5">{totalPackagesSent} Paket</span>
           </div>
 
           <div className="bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-700/40">
-            <span className="text-[10px] text-emerald-200/80 font-medium block">Pendapatan Tanaman</span>
+            <span className="text-[10px] text-emerald-200/80 font-medium block">Selisih Ongkir</span>
             <span className="text-base font-bold text-white block mt-0.5">
-              Rp {totalPlantOmzet.toLocaleString('id-ID')}
+              {totalShippingDifference >= 0 ? '+ ' : '- '}Rp {Math.abs(totalShippingDifference).toLocaleString('id-ID')}
             </span>
           </div>
         </div>
