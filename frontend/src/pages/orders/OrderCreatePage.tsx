@@ -201,6 +201,8 @@ export const OrderCreatePage: React.FC = () => {
         items,
       });
 
+      setToastMessage('Pesanan baru berhasil dibuat.');
+      await new Promise((resolve) => window.setTimeout(resolve, 1400));
       navigate('/orders');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Gagal membuat pesanan baru.');

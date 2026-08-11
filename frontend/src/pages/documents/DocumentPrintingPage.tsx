@@ -28,6 +28,7 @@ export const DocumentPrintingPage: React.FC = () => {
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
   const pendingCompletionPackageIds = useRef(new Set<number>());
   const [printToast, setPrintToast] = useState<{ title: string; description: string } | null>(null);
+  const [bulkPrintQueue, setBulkPrintQueue] = useState<{ document: 'nota' | 'label'; cards: typeof expandedPackageCards; index: number } | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['document-printing-orders'],
@@ -53,42 +54,28 @@ export const DocumentPrintingPage: React.FC = () => {
   const expandedPackageCards = orders
     .filter((order) => order.status === 'PACKING_COMPLETED' || order.status === 'WAITING_PACKING')
     .sort((a, b) => a.id - b.id)
-    .flatMap((order) => {
-      return (order.packages || []).map((pkg) => ({
-        id: pkg.id,
-        packageId: pkg.id,
-        order,
-        subOrderNumber: `${order.order_number}-${pkg.letter}`,
-        packageType: pkg.package_type || 'Paket',
-        plantCount: (pkg.items || []).reduce((sum, item) => sum + item.quantity, 0),
-        weightInfo: 'Berat mengikuti konfigurasi paket',
-        printedNota: pkg.nota_printed,
-        printedLabel: pkg.label_printed,
-        photoUploaded: pkg.photo_uploaded,
-      }));
-    });
+    .flatMap((order) => (order.packages || []).map((pkg) => ({
+      id: pkg.id,
+      packageId: pkg.id,
+      order,
+      subOrderNumber: `${order.order_number}-${pkg.letter}`,
+      packageType: pkg.package_type || 'Paket',
+      plantCount: (pkg.items || []).reduce((sum, item) => sum + item.quantity, 0),
+      weightInfo: 'Berat mengikuti konfigurasi paket',
+      printedNota: pkg.nota_printed,
+      printedLabel: pkg.label_printed,
+      photoUploaded: pkg.photo_uploaded,
+    })));
 
-  const getCardPrintStatus = (card: typeof expandedPackageCards[number]) => {
-    return {
-      printedNota: card.printedNota,
-      printedLabel: card.printedLabel,
-      isBothPrinted: Boolean(card.printedNota && card.printedLabel),
-      printedAt: 'Tersimpan di server',
-    };
-  };
-
-  // 1. Belum Dicetak: Cards where BOTH nota & label are NOT yet printed AND photo proof not uploaded
-  const unprintedCards = expandedPackageCards.filter((card) => {
-    const status = getCardPrintStatus(card);
-    return !card.photoUploaded && !status.isBothPrinted;
+  const getCardPrintStatus = (card: typeof expandedPackageCards[number]) => ({
+    printedNota: card.printedNota,
+    printedLabel: card.printedLabel,
+    isBothPrinted: Boolean(card.printedNota && card.printedLabel),
+    printedAt: 'Tersimpan di server',
   });
 
-  // 2. Sudah Dicetak: Cards where BOTH nota & label ARE printed AND photo proof NOT uploaded yet
-  const printedCards = expandedPackageCards.filter((card) => {
-    const status = getCardPrintStatus(card);
-    return !card.photoUploaded && status.isBothPrinted;
-  });
-
+  const unprintedCards = expandedPackageCards.filter((card) => !card.photoUploaded && !getCardPrintStatus(card).isBothPrinted);
+  const printedCards = expandedPackageCards.filter((card) => !card.photoUploaded && getCardPrintStatus(card).isBothPrinted);
   useEffect(() => {
     if (!data || pendingCompletionPackageIds.current.size === 0) return;
 
@@ -140,6 +127,31 @@ export const DocumentPrintingPage: React.FC = () => {
     });
   };
 
+  const startBulkPrint = (document: 'nota' | 'label', cards: typeof expandedPackageCards) => {
+    if (!cards.length) return;
+    setBulkPrintQueue({ document, cards, index: 0 });
+    if (document === 'nota') handlePrintNota(cards[0].order, cards[0].packageId);
+    else handlePrintLabel(cards[0]);
+  };
+
+  const closeBulkPreview = () => {
+    if (!bulkPrintQueue) {
+      setSelectedNotaOrder(null);
+      setSelectedLabelOrder(null);
+      return;
+    }
+    const nextIndex = bulkPrintQueue.index + 1;
+    if (nextIndex < bulkPrintQueue.cards.length) {
+      const next = bulkPrintQueue.cards[nextIndex];
+      setBulkPrintQueue({ ...bulkPrintQueue, index: nextIndex });
+      if (bulkPrintQueue.document === 'nota') handlePrintNota(next.order, next.packageId);
+      else handlePrintLabel(next);
+      return;
+    }
+    setBulkPrintQueue(null);
+    setSelectedNotaOrder(null);
+    setSelectedLabelOrder(null);
+  };
   return (
     <div className="space-y-4 max-w-xl mx-auto pb-24 font-sans text-slate-900">
       {printToast && (
@@ -169,23 +181,21 @@ export const DocumentPrintingPage: React.FC = () => {
       {/* Top Batch Action Buttons */}
       <div className="grid grid-cols-2 gap-3 pt-1">
         <button
-          onClick={() => {
-            if (unprintedCards.length > 0) handlePrintNota(unprintedCards[0].order, unprintedCards[0].packageId);
-          }}
-          className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+          disabled={bulkPrintQueue !== null || unprintedCards.every((card) => card.printedNota)}
+          onClick={() => startBulkPrint('nota', unprintedCards.filter((card) => !card.printedNota))}
+          className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Printer className="w-4 h-4 text-white" />
-          <span>Cetak Semua Nota</span>
+          <span>{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Nota'}</span>
         </button>
 
         <button
-          onClick={() => {
-            if (unprintedCards.length > 0) handlePrintLabel(unprintedCards[0]);
-          }}
-          className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+          disabled={bulkPrintQueue !== null || unprintedCards.every((card) => card.printedLabel)}
+          onClick={() => startBulkPrint('label', unprintedCards.filter((card) => !card.printedLabel))}
+          className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Tag className="w-4 h-4 text-white" />
-          <span>Cetak Semua Label</span>
+          <span>{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Label'}</span>
         </button>
       </div>
 
@@ -459,17 +469,14 @@ export const DocumentPrintingPage: React.FC = () => {
       <PackingNotaModal
         order={selectedNotaOrder}
         packageInfo={selectedNotaPackage}
-        onClose={() => {
-          setSelectedNotaOrder(null);
-          setSelectedNotaPackage(null);
-        }}
+        onClose={() => { closeBulkPreview(); setSelectedNotaPackage(null); }}
       />
 
       {/* Shipping Address Label Modal */}
       <ShippingLabelModal
         order={selectedLabelOrder?.order || null}
         packageInfo={selectedLabelOrder?.packageInfo}
-        onClose={() => setSelectedLabelOrder(null)}
+        onClose={closeBulkPreview}
       />
 
       {/* Detail Order Modal */}

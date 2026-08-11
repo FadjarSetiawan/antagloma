@@ -118,7 +118,14 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
         if (pkg.id !== pkgId) return pkg;
 
         let newAllocations = { ...pkg.allocations };
-        if (type === 'Fullset') {
+        if (type === 'Non-fullset') {
+          // A selected Non Fullset item starts at the maximum quantity still available.
+          newAllocations = Object.fromEntries(Object.keys(newAllocations).map((key) => {
+            const itemIdx = Number(key);
+            const targetItem = totalOrderItems[itemIdx];
+            return [itemIdx, targetItem ? Math.max(0, targetItem.quantity - getUsedQuantity(itemIdx, pkg.id)) : 0];
+          }).filter(([, quantity]) => quantity > 0));
+        } else if (type === 'Fullset') {
           // Keep only the first selected item when switching to Fullset
           const keys = Object.keys(newAllocations);
           if (keys.length > 1) {
@@ -427,13 +434,18 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                               <span className="px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded text-[10px] font-bold">
                                 Grade {item.grade || 'A'}
                               </span>
+                              {pkg.packageType === 'Fullset' && (
+                                <span className="w-full text-[10px] text-slate-500 font-medium">
+                                  Tersedia {item.quantity} pohon · {allocatedQty > 0 ? `${allocatedQty} pohon di Paket ${pkg.letter}` : 'belum dialokasikan ke paket ini'}
+                                </span>
+                              )}
                             </div>
                           </div>
 
-                          {isWoodPacking ? <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          {(isWoodPacking || pkg.packageType === 'Non-fullset') ? <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                             <button type="button" disabled={!allocatedQty} onClick={() => setPackages(packages.map(p => p.id === pkg.id ? { ...p, allocations: { ...p.allocations, [itemIdx]: Math.max(0, allocatedQty - 1) } } : p))} className="h-8 w-8 rounded-lg border border-slate-200 font-black disabled:opacity-40">−</button>
                             <span className="w-8 text-center font-black text-xs">{allocatedQty}</span>
-                            <button type="button" disabled={remainingAvailable <= 0} onClick={() => setPackages(packages.map(p => p.id === pkg.id ? { ...p, allocations: { ...p.allocations, [itemIdx]: allocatedQty + 1 } } : p))} className="h-8 w-8 rounded-lg bg-[#04593f] text-white font-black disabled:opacity-40">+</button>
+                            <button type="button" disabled={allocatedQty >= remainingAvailable} onClick={() => setPackages(packages.map(p => p.id === pkg.id ? { ...p, allocations: { ...p.allocations, [itemIdx]: Math.min(remainingAvailable, allocatedQty + 1) } } : p))} className="h-8 w-8 rounded-lg bg-[#04593f] text-white font-black disabled:opacity-40">+</button>
                           </div> : <div className="w-10 py-0.5 bg-slate-100 border border-slate-200 rounded-lg text-center font-bold text-xs text-slate-800">{allocatedQty}</div>}
                         </div>
                       );
