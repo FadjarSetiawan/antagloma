@@ -57,7 +57,24 @@ export const OrderListPage: React.FC = () => {
 
   const { data, isLoading } = useQuery({
     queryKey: ['orders-list', search, statusFilter, paramOrderDate],
-    queryFn: () => orderService.getOrders({ search, status: statusFilter, order_date: paramOrderDate || undefined }),
+    queryFn: async () => {
+      // Fetch orders
+      const res = await orderService.getOrders({ search, status: statusFilter === 'COMPLETED' ? undefined : statusFilter, order_date: paramOrderDate || undefined, per_page: 200 });
+      if (statusFilter === 'COMPLETED') {
+        // Filter orders that are fully shipped/completed on client-side to reflect both COMPLETED status and PACKING_COMPLETED with tracked packages
+        res.data = res.data.filter((order) => {
+          if (order.status === 'COMPLETED') return true;
+          if (order.status === 'PACKING_COMPLETED') {
+            if (order.packages && order.packages.length > 0) {
+              return order.packages.every(pkg => pkg.tracking_number);
+            }
+            return !!order.tracking_number;
+          }
+          return false;
+        });
+      }
+      return res;
+    },
   });
 
   const approveMutation = useMutation({
