@@ -121,7 +121,7 @@ export const MobileBottomNav: React.FC = () => {
               }`}
               strokeWidth={activeIndex === 3 && !isProfileOpen ? 2.4 : 1.8}
             />
-            <span className="text-[10px] font-semibold text-slate-500">{rightTab3.label}</span>
+            <span className="text-[8.5px] tracking-tighter font-semibold text-slate-500 whitespace-nowrap">{rightTab3.label}</span>
           </NavLink>
 
           {/* Slot 4: Profil Trigger */}
