@@ -42,7 +42,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     : 'Belum tersedia';
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto no-print">
+    <div id="packing-nota-modal-container" className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto no-print">
       <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col font-sans">
         {/* Header Modal Bar */}
         <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0 no-print">
@@ -63,7 +63,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           <div className="flex items-center gap-1.5">
             <button
               onClick={handlePrint}
-              className="min-h-9 px-2.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[11px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
+              className="min-h-9 px-2.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[10.5px] font-normal flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Cetak Nota</span>
@@ -83,7 +83,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           <style>{`
             @media print {
               /* Hide all components from React layout completely */
-              #no-print-wrapper, .no-print, div[role="dialog"] {
+              #no-print-wrapper, .no-print, div[role="dialog"], body > div:not(#packing-nota-modal-container) {
                 display: none !important;
                 visibility: hidden !important;
               }
@@ -94,8 +94,9 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 padding: 0 !important;
                 background-color: white !important;
               }
-              .print-area, .print-area * {
+              #packing-nota-modal-container, .print-area, .print-area * {
                 visibility: visible !important;
+                display: block !important;
               }
               .print-area {
                 position: absolute !important;
@@ -106,7 +107,6 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 margin: 0 !important;
                 padding: 4mm !important;
                 box-sizing: border-box !important;
-                display: block !important;
               }
               .print-area table,
               .print-area tr {

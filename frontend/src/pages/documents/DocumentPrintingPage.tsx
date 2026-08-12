@@ -339,22 +339,22 @@ export const DocumentPrintingPage: React.FC = () => {
                   </div>
 
                   {/* Action Buttons Row */}
-                  <div className="grid grid-cols-2 gap-2.5 pt-1">
+                  <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
-                      className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer ${printedStatus.printedNota ? 'bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300' : 'bg-[#04593f] hover:bg-emerald-900 text-white'}`}
+                      className={`min-h-[38px] py-1.5 px-2 rounded-xl text-[10.5px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${printedStatus.printedNota ? 'bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300' : 'bg-[#04593f] hover:bg-emerald-900 text-white'}`}
                     >
-                      {printedStatus.printedNota ? <CheckCircle2 className="w-4 h-4 text-[#04593f]" /> : <Printer className="w-4 h-4 text-white" />}
+                      {printedStatus.printedNota ? <CheckCircle2 className="w-3.5 h-3.5 text-[#04593f]" /> : <Printer className="w-3.5 h-3.5 text-white" />}
                       <span>{printedStatus.printedNota ? 'Cetak Ulang Nota' : 'Cetak Nota'}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer ${printedStatus.printedLabel ? 'bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300' : 'bg-[#04593f] hover:bg-emerald-900 text-white'}`}
+                      className={`min-h-[38px] py-1.5 px-2 rounded-xl text-[10.5px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${printedStatus.printedLabel ? 'bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300' : 'bg-[#04593f] hover:bg-emerald-900 text-white'}`}
                     >
-                      {printedStatus.printedLabel ? <CheckCircle2 className="w-4 h-4 text-[#04593f]" /> : <Tag className="w-4 h-4 text-white" />}
+                      {printedStatus.printedLabel ? <CheckCircle2 className="w-3.5 h-3.5 text-[#04593f]" /> : <Tag className="w-3.5 h-3.5 text-white" />}
                       <span>{printedStatus.printedLabel ? 'Cetak Ulang Label' : 'Cetak Label'}</span>
                     </button>
                   </div>
@@ -439,22 +439,22 @@ export const DocumentPrintingPage: React.FC = () => {
                   </div>
 
                   {/* Action Buttons Row - Soft Light Green Mint Buttons Matching Screenshot */}
-                  <div className="grid grid-cols-2 gap-2.5 pt-1">
+                  <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
-                      className="min-h-10 py-2 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="min-h-[38px] py-1.5 px-2 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-xl text-[10.5px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
-                      <Printer className="w-4 h-4 text-[#04593f]" />
+                      <Printer className="w-3.5 h-3.5 text-[#04593f]" />
                       <span>Cetak Ulang Nota</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className="min-h-10 py-2 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="min-h-[38px] py-1.5 px-2 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-xl text-[10.5px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
-                      <Tag className="w-4 h-4 text-[#04593f]" />
+                      <Tag className="w-3.5 h-3.5 text-[#04593f]" />
                       <span>Cetak Ulang Label</span>
                     </button>
                   </div>
