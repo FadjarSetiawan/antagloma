@@ -98,11 +98,11 @@ export const CompleteShipmentModal: React.FC<CompleteShipmentModalProps> = ({ or
             </button>
             <button
               type="submit"
-              disabled={isLoading}
-              className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs sm:text-sm font-extrabold rounded-xl transition-all duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50"
+              disabled={!trackingNumber.trim() || Number(shippingCost) <= 0 || isLoading}
+              className="px-5 py-2.5 bg-[#04593f] hover:bg-emerald-900 disabled:opacity-40 text-white text-xs font-black rounded-xl transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-              {isLoading ? 'Menyimpan...' : 'Konfirmasi & Selesaikan Order'}
+              <span>{isLoading ? 'Menyimpan...' : 'Selesaikan & Simpan Resi'}</span>
             </button>
           </div>
         </form>
