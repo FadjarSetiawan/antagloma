@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Sparkles,
   Check,
+  Trash2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,6 +30,14 @@ export const NotificationsPage: React.FC = () => {
 
   const markReadMutation = useMutation({
     mutationFn: (id: number) => notificationService.markAsRead(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications-page'] });
+      queryClient.invalidateQueries({ queryKey: ['user-notifications'] });
+    },
+  });
+
+  const deleteNotifMutation = useMutation({
+    mutationFn: (id: number) => notificationService.deleteNotification(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications-page'] });
       queryClient.invalidateQueries({ queryKey: ['user-notifications'] });
@@ -196,20 +205,36 @@ export const NotificationsPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Right Action Button */}
-                {notif.link && (
+                {/* Right Action Buttons */}
+                <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+                  {notif.link && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!notif.is_read) markReadMutation.mutate(notif.id);
+                        navigate(notif.link!);
+                      }}
+                      className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <span>Buka</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  
                   <button
                     type="button"
                     onClick={() => {
-                      if (!notif.is_read) markReadMutation.mutate(notif.id);
-                      navigate(notif.link!);
+                      if (confirm('Hapus notifikasi ini?')) {
+                        deleteNotifMutation.mutate(notif.id);
+                      }
                     }}
-                    className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1 flex-shrink-0 cursor-pointer transition-colors mt-0.5"
+                    disabled={deleteNotifMutation.isPending}
+                    className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl flex items-center justify-center cursor-pointer transition-colors"
+                    title="Hapus Notifikasi"
                   >
-                    <span>Buka</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
-                )}
+                </div>
               </div>
             ))}
           </div>

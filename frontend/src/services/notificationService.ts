@@ -26,4 +26,9 @@ export const notificationService = {
     const res = await api.post<{ success: boolean; message: string }>('/notifications/read-all');
     return res.data;
   },
+
+  async deleteNotification(id: number) {
+    const res = await api.delete<{ success: boolean; message: string }>(`/notifications/${id}`);
+    return res.data;
+  },
 };
