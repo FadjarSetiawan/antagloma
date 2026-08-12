@@ -63,22 +63,4 @@
   body {
     background-color: white !important;
   }
-  /* Hide everything on screen when printing */
-  body > * {
-    visibility: hidden !important;
-  }
-  /* Ensure print modal target and its inner content are visible */
-  .print-area, .print-area * {
-    visibility: visible !important;
-  }
-  .print-area {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
-  }
-  .no-print {
-    display: none !important;
-    visibility: hidden !important;
-  }
 }

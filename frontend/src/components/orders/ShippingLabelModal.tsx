@@ -76,21 +76,23 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
           {/* Print specific style overrides */}
           <style>{`
             @media print {
+              /* Hide all components from React layout */
+              #root, header, main, nav, aside, footer, div[role="dialog"], .no-print {
+                display: none !important;
+                visibility: hidden !important;
+              }
               html, body {
                 width: 100mm !important;
                 height: 100mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
-                overflow: visible !important;
-              }
-              body * {
-                visibility: hidden;
+                background-color: white !important;
               }
               .print-area, .print-area * {
                 visibility: visible !important;
+                display: block !important;
               }
               .print-area {
-                display: block !important;
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
@@ -98,12 +100,9 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
                 max-width: 100mm !important;
                 height: 100mm !important;
                 max-height: 100mm !important;
-                overflow: hidden !important;
-                padding: 2mm !important;
                 margin: 0 !important;
-              }
-              .no-print {
-                display: none !important;
+                padding: 4mm !important;
+                box-sizing: border-box !important;
               }
               @page {
                 size: 100mm 100mm;
