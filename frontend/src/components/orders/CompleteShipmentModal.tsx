@@ -72,10 +72,17 @@ export const CompleteShipmentModal: React.FC<CompleteShipmentModalProps> = ({ or
           <div>
             <label className="block text-xs font-bold text-slate-900 mb-1">Ongkir Ekspedisi (Rp)</label>
             <input
-              type="number"
-              min={0}
-              value={shippingCost}
-              onChange={(e) => setShippingCost(Number(e.target.value) || 0)}
+              type="text"
+              value={shippingCost === 0 ? '' : Number(shippingCost).toLocaleString('id-ID')}
+              onFocus={(e) => e.target.select()}
+              onChange={(e) => {
+                const cleanValue = e.target.value.replace(/\./g, '');
+                if (cleanValue === '') {
+                  setShippingCost(0);
+                } else if (/^\d+$/.test(cleanValue)) {
+                  setShippingCost(Number(cleanValue));
+                }
+              }}
               placeholder="0"
               className="w-full px-3 py-3 border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 font-extrabold"
             />

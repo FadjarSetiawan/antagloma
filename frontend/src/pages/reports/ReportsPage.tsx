@@ -20,9 +20,9 @@ import {
   Search,
   Eye,
   PieChart,
-  DollarSign,
   Package,
 } from 'lucide-react';
+import { RpIcon } from '../../components/shared/RpIcon';
 
 export const ReportsPage: React.FC = () => {
   const [periodFilter, setPeriodFilter] = useState<'all' | 'month' | 'today'>('all');
@@ -340,7 +340,7 @@ export const ReportsPage: React.FC = () => {
           {/* Selisih Ongkir — full width */}
           <div className="col-span-2 bg-emerald-800/50 p-3 rounded-xl border border-emerald-700/40 flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-emerald-700/60 flex items-center justify-center flex-shrink-0">
-              <DollarSign className="w-4 h-4 text-emerald-200" />
+              <RpIcon className="w-4 h-4 text-emerald-200" />
             </div>
             <div>
               <span className="text-[10px] text-emerald-200/70 font-medium block">Selisih Ongkir

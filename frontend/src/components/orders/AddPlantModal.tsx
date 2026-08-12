@@ -204,14 +204,17 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
                 Total Harga Jual *
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
                 required
-                value={price}
+                value={price === '' ? '' : Number(price).toLocaleString('id-ID')}
                 onFocus={(e) => e.target.select()}
                 onChange={(e) => {
-                  const val = e.target.value;
-                  setPrice(val === '' ? '' : parseFloat(val));
+                  const cleanValue = e.target.value.replace(/\./g, '');
+                  if (cleanValue === '') {
+                    setPrice('');
+                  } else if (/^\d+$/.test(cleanValue)) {
+                    setPrice(Number(cleanValue));
+                  }
                 }}
                 className="w-full px-3.5 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
               />

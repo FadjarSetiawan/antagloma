@@ -47,7 +47,24 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
           <p className="pt-1 font-bold">Foto: {pkg.photo_uploaded ? 'Sudah ada' : 'Belum ada'}</p>
         </div>
         <label className="block text-xs font-bold text-slate-700">Nomor Resi<input value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 px-3 text-sm" /></label>
-          <label className="block text-xs font-bold text-slate-700">Ongkir Ekspedisi<input type="number" min="0" value={shippingCost} onFocus={() => { if (shippingCost === '0') setShippingCost(''); }} onChange={(e) => setShippingCost(e.target.value)} className="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 px-3 text-sm" /></label>
+          <label className="block text-xs font-bold text-slate-700">Ongkir Ekspedisi
+            <input
+              type="text"
+              value={shippingCost === '0' || shippingCost === '' ? '' : Number(shippingCost).toLocaleString('id-ID')}
+              onFocus={(e) => {
+                e.target.select();
+              }}
+              onChange={(e) => {
+                const cleanValue = e.target.value.replace(/\./g, '');
+                if (cleanValue === '') {
+                  setShippingCost('');
+                } else if (/^\d+$/.test(cleanValue)) {
+                  setShippingCost(cleanValue);
+                }
+              }}
+              className="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-extrabold"
+            />
+          </label>
         {error && <p className="text-xs font-bold text-rose-600">{error}</p>}
         <div className="grid grid-cols-2 gap-2"><button type="button" onClick={onClose} className="min-h-11 rounded-xl bg-slate-100 text-sm font-bold">Batal</button><button type="submit" disabled={saving} className="min-h-11 rounded-xl bg-[#04593f] text-white text-sm font-black disabled:opacity-50">{saving ? 'Menyimpan...' : 'Simpan Resi'}</button></div>
       </form>

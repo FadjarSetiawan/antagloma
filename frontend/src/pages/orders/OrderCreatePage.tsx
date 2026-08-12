@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { RpIcon } from '../../components/shared/RpIcon';
 
 export const OrderCreatePage: React.FC = () => {
   const { user } = useAuth();
@@ -689,20 +690,29 @@ export const OrderCreatePage: React.FC = () => {
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">INFORMASI PEMBAYARAN & ONGKIR</h3>
 
             {/* CONDITIONAL ONGKIR INPUT FIELD: SHOWN FOR Kirim Paket, Packing Kayu, & Antar Ke Rumah. HIDDEN FOR Ambil Di Lokasi */}
-            {!isPickup && (
+             {!isPickup && (
               <div>
                 <label className="block text-xs font-extrabold text-slate-900 mb-1 flex items-center gap-1.5">
                   <Truck className="w-4 h-4 text-[#04593f]" />
                   <span>Ongkir dibayar pembeli (Rp) *</span>
                 </label>
                 <input
-                  type="number"
-                  min="0"
+                  type="text"
                   required
-                  value={buyerShippingCost}
-                  onFocus={(e) => e.target.select()}
-                  onChange={(e) => setBuyerShippingCost(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="Contoh: 25000"
+                  value={buyerShippingCost === '' ? '' : Number(buyerShippingCost).toLocaleString('id-ID')}
+                  onFocus={(e) => {
+                    // select raw unformatted string on focus
+                    e.target.select();
+                  }}
+                  onChange={(e) => {
+                    const cleanValue = e.target.value.replace(/\./g, '');
+                    if (cleanValue === '') {
+                      setBuyerShippingCost('');
+                    } else if (/^\d+$/.test(cleanValue)) {
+                      setBuyerShippingCost(Number(cleanValue));
+                    }
+                  }}
+                  placeholder="Contoh: 25.000"
                   className="w-full px-3.5 py-3 border-2 border-slate-200 rounded-2xl text-xs font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
                 />
               </div>
