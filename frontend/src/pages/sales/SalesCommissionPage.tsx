@@ -130,8 +130,8 @@ export const SalesCommissionPage: React.FC = () => {
                   <span className="text-sm sm:text-base font-black text-emerald-800">
                     Rp {item.commission.toLocaleString('id-ID')}
                   </span>
-                  <span className="px-2.5 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl text-[10px] font-extrabold flex items-center gap-1 shadow-xs">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg text-[9px] font-normal leading-tight flex items-center gap-1 shadow-xs">
+                    <CheckCircle2 className="w-2.5 h-2.5 text-emerald-700" />
                     <span>Sudah Dibayarkan</span>
                   </span>
                 </div>

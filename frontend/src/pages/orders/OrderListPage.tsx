@@ -274,7 +274,7 @@ export const OrderListPage: React.FC = () => {
                     {(role === 'admin' || role === 'owner') && order.status === 'PACKING_COMPLETED' && order.packages?.length && (
                       <button
                         onClick={() => setShipmentPackage(order.packages?.find((pkg) => !pkg.tracking_number) || order.packages![0])}
-                        className="px-2.5 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer"
+                        className="px-2 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-xl text-[10px] font-normal whitespace-nowrap flex items-center gap-1 shadow-2xs cursor-pointer"
                       >
                         <PackageCheck className="w-3.5 h-3.5 text-white" /> Resi Package
                       </button>
