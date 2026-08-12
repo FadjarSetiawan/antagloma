@@ -81,6 +81,19 @@ class OrderController extends Controller
         ], 201);
     }
 
+    public function nextNumber(Request $request): JsonResponse
+    {
+        Gate::authorize('create', Order::class);
+
+        $validated = $request->validate(['order_date' => ['nullable', 'date_format:Y-m-d']]);
+        $date = $validated['order_date'] ?? now()->toDateString();
+
+        return response()->json([
+            'success' => true,
+            'data' => ['order_number' => $this->orderService->previewNextOrderNumber($date)],
+        ]);
+    }
+
     public function show(int $id): JsonResponse
     {
         $order = Order::with(['creator', 'verifier', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item'])->findOrFail($id);

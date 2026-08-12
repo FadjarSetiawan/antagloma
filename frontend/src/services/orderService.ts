@@ -54,6 +54,10 @@ export const orderService = {
     const res = await api.get('/orders', { params });
     return res.data;
   },
+  getNextOrderNumber: async (orderDate: string): Promise<string> => {
+    const res = await api.get('/orders/next-number', { params: { order_date: orderDate } });
+    return res.data.data.order_number;
+  },
 
   getOrderById: async (id: number): Promise<{ success: boolean; data: Order }> => {
     const res = await api.get(`/orders/${id}`);

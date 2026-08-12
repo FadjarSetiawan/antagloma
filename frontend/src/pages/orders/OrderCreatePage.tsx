@@ -76,18 +76,20 @@ export const OrderCreatePage: React.FC = () => {
 
   // Auto-generate preview order number
   useEffect(() => {
-    orderService
-      .getOrders({ per_page: 1 })
-      .then((res) => {
-        const total = res.meta?.total || 0;
-        const dateStr = orderDate.replace(/-/g, '');
-        const seq = String(total + 1).padStart(4, '0');
-        setPreviewOrderNum(`ORD-${dateStr}-${seq}`);
-      })
+    const refreshPreview = () => orderService
+      .getNextOrderNumber(orderDate)
+      .then((orderNumber) => setPreviewOrderNum(orderNumber))
       .catch(() => {
         const dateStr = orderDate.replace(/-/g, '');
         setPreviewOrderNum(`ORD-${dateStr}-0001`);
       });
+    refreshPreview();
+    window.addEventListener('focus', refreshPreview);
+    const refreshTimer = window.setInterval(refreshPreview, 5000);
+    return () => {
+      window.removeEventListener('focus', refreshPreview);
+      window.clearInterval(refreshTimer);
+    };
   }, [orderDate]);
 
   // Load Provinces

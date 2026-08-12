@@ -49,6 +49,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     Route::prefix('orders')->group(function () {
         Route::get('/', [OrderController::class, 'index']);
         Route::post('/', [OrderController::class, 'store']);
+        Route::get('/next-number', [OrderController::class, 'nextNumber']);
         Route::get('/{id}', [OrderController::class, 'show']);
         Route::put('/{id}', [OrderController::class, 'update']);
         Route::patch('/{id}', [OrderController::class, 'update']);

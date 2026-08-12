@@ -44,6 +44,21 @@ class OrderService
         return $prefix . $sequence;
     }
 
+    public function previewNextOrderNumber(string $dateString): string
+    {
+        $dateObj = Carbon::parse($dateString);
+        $formattedDate = $dateObj->format('Ymd');
+        $prefix = 'ORD-' . $formattedDate . '-';
+        $lastOrder = Order::whereDate('order_date', $dateObj->toDateString())
+            ->where('order_number', 'like', $prefix . '%')
+            ->orderByDesc('order_number')
+            ->first();
+
+        $nextSequence = $lastOrder ? ((int) substr($lastOrder->order_number, -4)) + 1 : 1;
+
+        return $prefix . str_pad((string) $nextSequence, 4, '0', STR_PAD_LEFT);
+    }
+
     public function createOrder(array $data, User $user): Order
     {
         return retry(3, fn () => DB::transaction(function () use ($data, $user) {
