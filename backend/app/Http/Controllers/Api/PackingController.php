@@ -73,11 +73,11 @@ class PackingController extends Controller
                     $unallocated[] = ['order_item_id' => $item->id, 'product_name' => $item->product_name, 'required' => $required, 'allocated' => $actual];
                 }
             }
-            if ($invalidItems || $unallocated) {
+            if ($invalidItems) {
                 throw new HttpResponseException(response()->json([
                     'success' => false,
-                    'message' => 'Semua tanaman harus dimasukkan ke paket sebelum packing diselesaikan.',
-                    'errors' => ['unallocated_items' => $unallocated, 'invalid_items' => $invalidItems],
+                    'message' => 'Alokasi item tidak valid.',
+                    'errors' => ['invalid_items' => $invalidItems],
                 ], 422));
             }
             $letters = $inputs->pluck('letter')->all();

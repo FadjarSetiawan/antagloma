@@ -231,10 +231,9 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
 
     // Calculate total allocated plants across all packages
     const totalAllocatedQty = totalOrderItems.reduce((sum, _, idx) => sum + getUsedQuantity(idx), 0);
-    const totalRequiredQty = totalOrderItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
 
-    if (totalAllocatedQty !== totalRequiredQty) {
-      setError(`${Math.max(0, totalRequiredQty - totalAllocatedQty)} tanaman belum dimasukkan ke paket.`);
+    if (totalAllocatedQty === 0) {
+      setError('Pilih minimal 1 tanaman untuk dimasukkan ke paket.');
       return;
     }
 
