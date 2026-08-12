@@ -57,7 +57,7 @@ export const AdminVerificationPage: React.FC = () => {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (id: number) => orderService.deleteOrder(id),
+    mutationFn: ({ id, reason }: { id: number; reason: string }) => orderService.rejectOrder(id, reason),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['orders-verification'] });
       queryClient.invalidateQueries({ queryKey: ['orders-list'] });
@@ -417,7 +417,7 @@ export const AdminVerificationPage: React.FC = () => {
               <button
                 type="button"
                 disabled={!selectedRejectReason || rejectMutation.isPending}
-                onClick={() => rejectMutation.mutate(rejectingOrder.id)}
+                onClick={() => rejectMutation.mutate({ id: rejectingOrder.id, reason: selectedRejectReason })}
                 className="py-3 px-4 bg-[#d92d20] hover:bg-rose-700 disabled:opacity-40 text-white rounded-2xl text-xs font-bold shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <X className="w-4 h-4" />
@@ -455,7 +455,13 @@ export const AdminVerificationPage: React.FC = () => {
           setVerifyingOrder(order);
           setIsVerifyChecked(false);
         }}
-        onDelete={(id) => rejectMutation.mutate(id)}
+        onDelete={(id) => {
+          const order = orders.find((item) => item.id === id) ?? selectedOrder;
+          if (!order) return;
+          setSelectedOrder(null);
+          setRejectingOrder(order);
+          setSelectedRejectReason('');
+        }}
       />
     </div>
   );

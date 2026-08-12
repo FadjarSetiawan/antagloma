@@ -80,6 +80,7 @@ export interface Order {
   full_address: string;
   notes?: string;
   status: OrderStatus;
+  rejection_reason?: string;
   payment_method?: 'Transfer Bank' | 'QRIS' | 'Tunai';
   bank_name?: 'BCA' | 'BRI';
   buyer_shipping_cost?: number;

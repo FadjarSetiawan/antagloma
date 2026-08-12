@@ -206,6 +206,29 @@ class OrderService
         });
     }
 
+    public function rejectOrder(Order $order, string $reason, User $verifier): Order
+    {
+        return DB::transaction(function () use ($order, $reason, $verifier) {
+            $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->firstOrFail();
+
+            $lockedOrder->update([
+                'status'           => OrderStatus::CANCELLED,
+                'payment_status'   => 'REJECTED',
+                'rejection_reason' => $reason,
+                'verified_by'      => $verifier->id,
+                'verified_at'      => now(),
+            ]);
+
+            AuditLogService::logSecurityEvent('ORDER_REJECTED', $verifier, [
+                'order_id'         => $lockedOrder->id,
+                'order_number'     => $lockedOrder->order_number,
+                'rejection_reason' => $reason,
+            ]);
+
+            return $lockedOrder->fresh(['creator', 'verifier', 'items', 'packingImages']);
+        });
+    }
+
     public function deleteOrder(Order $order): bool
     {
         AuditLogService::logSecurityEvent('ORDER_DELETED', auth()->user(), [

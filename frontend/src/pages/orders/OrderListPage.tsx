@@ -24,6 +24,8 @@ import {
   Lightbulb,
   FileText,
   AlertTriangle,
+  XCircle,
+  Info,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -254,6 +256,96 @@ export const OrderListPage: React.FC = () => {
             // ALLOW EDIT & DELETE FOR SALES ONLY WHEN UNVERIFIED (WAITING_PROCESS). AUTOMATICALLY HIDE WHEN VERIFIED BY ADMIN.
             const isSalesOrderOwner = role === 'sales' && order.created_by === user?.id;
             const canModifySalesOrder = role === 'admin' || role === 'owner';
+
+            if (order.status === 'CANCELLED') {
+              return (
+                <div
+                  key={order.id}
+                  onClick={() => setSelectedOrder(order)}
+                  className="bg-white border-2 border-rose-200 rounded-3xl p-4 sm:p-5 space-y-4 shadow-sm hover:border-rose-300 transition-all cursor-pointer relative font-sans"
+                >
+                  {/* Header Row */}
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="space-y-1">
+                      <span className="font-extrabold text-slate-900 text-sm sm:text-base block">{order.order_number}</span>
+                      <span className="text-xs text-slate-400 font-semibold flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                        {order.order_date}
+                      </span>
+                    </div>
+                    <span className="px-3 py-1 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold shrink-0">
+                      Pembayaran Ditolak
+                    </span>
+                  </div>
+
+                  {/* Customer & Delivery */}
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 font-medium">Customer:</span>
+                      <span className="font-bold text-slate-900">{order.customer_name} ({order.phone})</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 font-medium">Metode Pengiriman:</span>
+                      <span className="font-bold text-emerald-800 flex items-center gap-1">
+                        <Truck className="w-3.5 h-3.5 text-emerald-800" />
+                        {order.delivery_method}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Rejection Alert Box */}
+                  <div className="p-4 bg-rose-50/70 border border-rose-100 rounded-2xl flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-full bg-rose-100/90 text-rose-600 border border-rose-200 flex items-center justify-center shrink-0">
+                      <XCircle className="w-5 h-5" />
+                    </div>
+                    <div className="text-xs space-y-1.5 text-slate-800 font-medium flex-1">
+                      <p className="font-bold text-rose-900 text-xs sm:text-sm">Pembayaran ditolak oleh Admin</p>
+                      <p className="text-slate-700 font-medium">
+                        <span className="font-bold">Alasan:</span> {order.rejection_reason || 'Nominal transfer tidak sesuai'}
+                      </p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed pt-1">
+                        Pesanan dibatalkan. Jika ingin melanjutkan pembelian, pelanggan harus membuat pesanan baru.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Items Breakdown Box */}
+                  {order.items && order.items.length > 0 && (
+                    <div className="bg-slate-50/70 border border-slate-100 rounded-2xl p-3.5 space-y-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        RINCIAN BARANG RANGKAIAN ({order.items.length} ITEM):
+                      </p>
+                      <div className="space-y-1">
+                        {order.items.map((item) => (
+                          <div key={item.id} className="flex items-center justify-between text-xs font-bold text-slate-800">
+                            <span>• {item.product_name} {item.variant ? `(${item.variant})` : ''}</span>
+                            <span className="text-slate-600 font-semibold">— {item.quantity} Qty</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Totals */}
+                  <div className="space-y-2 border-t border-slate-100 pt-3">
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                      <span className="font-bold text-slate-800">Total Pesanan</span>
+                      <span className="font-black text-emerald-900">Rp {totalOrderAmount.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                      <span className="font-bold text-slate-800">Komisi Anda</span>
+                      <span className="font-black text-rose-600">Rp 0</span>
+                    </div>
+                  </div>
+
+                  {/* Notice Footer */}
+                  <div className="p-3 bg-rose-50/50 border border-rose-100 rounded-2xl flex items-center gap-2 text-[11px] font-medium text-rose-900">
+                    <Info className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>Pesanan ini dibatalkan karena pembayaran ditolak.</span>
+                  </div>
+                </div>
+              );
+            }
 
             return (
               <div

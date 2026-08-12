@@ -28,6 +28,7 @@ class Order extends Model
         'full_address',
         'notes',
         'status',
+        'rejection_reason',
         'payment_method',
         'bank_name',
         'buyer_shipping_cost',

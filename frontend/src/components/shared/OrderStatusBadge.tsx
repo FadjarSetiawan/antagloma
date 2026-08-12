@@ -10,7 +10,7 @@ const statusConfig: Record<OrderStatus, { label: string; className: string }> = 
   WAITING_PACKING: { label: 'Belum Diatur', className: 'bg-blue-600 text-white font-bold shadow-2xs' },
   PACKING_COMPLETED: { label: 'Packing Selesai', className: 'bg-[#04593f] text-white font-extrabold shadow-2xs' },
   COMPLETED: { label: 'Selesai', className: 'bg-emerald-900 text-white font-black shadow-2xs' },
-  CANCELLED: { label: 'Dibatalkan', className: 'bg-slate-600 text-white font-bold shadow-2xs' },
+  CANCELLED: { label: 'Pembayaran Ditolak', className: 'bg-rose-100 text-rose-700 border border-rose-200 font-bold' },
 };
 
 export const OrderStatusBadge: React.FC<Props> = ({ status }) => {

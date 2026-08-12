@@ -146,6 +146,24 @@ class OrderController extends Controller
         ]);
     }
 
+    public function reject(Request $request, int $id): JsonResponse
+    {
+        $order = Order::findOrFail($id);
+        Gate::authorize('approve', $order);
+
+        $request->validate([
+            'reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        $rejected = $this->orderService->rejectOrder($order, $request->reason, $request->user());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pembayaran pesanan berhasil ditolak.',
+            'data'    => new OrderResource($rejected),
+        ]);
+    }
+
     public function completeShipment(Request $request, int $id): JsonResponse
     {
         $order = Order::findOrFail($id);

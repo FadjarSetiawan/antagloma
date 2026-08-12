@@ -38,6 +38,7 @@ class OrderResource extends JsonResource
             'full_address'        => $this->full_address,
             'notes'               => $this->notes,
             'status'              => $statusStr,
+            'rejection_reason'    => $this->rejection_reason,
             'payment_method'      => $this->payment_method ?? 'Transfer Bank',
             'bank_name'           => $this->bank_name,
             'buyer_shipping_cost' => $this->buyer_shipping_cost ?? 0,

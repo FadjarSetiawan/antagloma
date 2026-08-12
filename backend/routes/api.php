@@ -55,6 +55,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::patch('/{id}', [OrderController::class, 'update']);
         Route::delete('/{id}', [OrderController::class, 'destroy']);
         Route::match(['post', 'patch'], '/{id}/approve', [OrderController::class, 'approve']);
+        Route::match(['post', 'patch'], '/{id}/reject', [OrderController::class, 'reject']);
         Route::match(['post', 'patch'], '/{id}/shipment', [OrderController::class, 'completeShipment']);
         Route::match(['post', 'patch'], '/{id}/complete-shipment', [OrderController::class, 'completeShipment']);
         Route::post('/{id}/sales-informed', [OrderController::class, 'markSalesInformed']);
