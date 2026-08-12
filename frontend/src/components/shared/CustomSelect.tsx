@@ -112,13 +112,13 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
             setSearchTerm('');
           }
         }}
-        className={`w-full px-4 py-3.5 bg-white border-2 rounded-2xl text-xs font-black flex items-center justify-between transition-all cursor-pointer shadow-xs ${
+        className={`w-full px-4 py-3.5 bg-white border-2 rounded-2xl text-xs font-normal flex items-center justify-between transition-all cursor-pointer shadow-xs ${
           isOpen
             ? 'border-emerald-800 ring-2 ring-emerald-700/20'
             : 'border-slate-200 hover:border-slate-300'
         } ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-50' : ''}`}
       >
-        <span className={`truncate pr-2 ${selectedOption ? 'text-slate-900 font-extrabold' : 'text-slate-400 font-bold'}`}>
+        <span className={`truncate pr-2 ${selectedOption ? 'text-slate-900 font-semibold' : 'text-slate-400 font-normal'}`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
@@ -180,7 +180,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                         setIsOpen(false);
                         setSearchTerm('');
                       }}
-                      className={`w-full text-left px-3.5 py-3 rounded-2xl text-xs font-black flex items-center justify-between transition-colors cursor-pointer ${
+                      className={`w-full text-left px-3.5 py-3 rounded-2xl text-xs font-normal flex items-center justify-between transition-colors cursor-pointer ${
                         isSelected
                           ? 'bg-emerald-800 text-white shadow-sm'
                           : 'text-slate-800 hover:bg-slate-100 hover:text-slate-900'
