@@ -80,7 +80,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
         </div>
 
         {/* Printable Shipping Label Body Container */}
-        <div className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs">
+        <div className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs flex-1 flex flex-col justify-center">
           {/* Print specific style overrides */}
           <style>{`
             @media print {
@@ -96,21 +96,44 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
                 padding: 0 !important;
                 background-color: white !important;
               }
-              #shipping-label-modal-container, .print-area, .print-area * {
-                visibility: visible !important;
-                display: block !important;
-              }
-              .print-area {
+              #shipping-label-modal-container {
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
                 width: 100mm !important;
-                max-width: 100mm !important;
                 height: 100mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                display: block !important;
+                visibility: visible !important;
+              }
+              #shipping-label-modal-container > div {
+                border: none !important;
+                box-shadow: none !important;
+                width: 100mm !important;
+                height: 100mm !important;
+                max-width: 100mm !important;
+                max-height: 100mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+              }
+              .print-area {
+                width: 100mm !important;
+                height: 100mm !important;
+                max-width: 100mm !important;
                 max-height: 100mm !important;
                 margin: 0 !important;
                 padding: 4mm !important;
                 box-sizing: border-box !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                visibility: visible !important;
+              }
+              .print-area * {
+                visibility: visible !important;
               }
               @page {
                 size: 100mm 100mm;
@@ -120,32 +143,32 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
           `}</style>
 
           {/* Shipping Sticker Box */}
-          <div className="border border-slate-300 rounded-xl p-4.5 space-y-3.5 bg-white flex flex-col justify-between shadow-xs">
+          <div className="border border-slate-300 rounded-xl p-3.5 space-y-3 bg-white flex flex-col justify-between shadow-xs h-full min-h-[280px]">
             {/* Header Store & Package Barcode */}
-            <div className="border-b border-slate-300 pb-3.5 flex items-start justify-between gap-3">
+            <div className="border-b border-slate-300 pb-2.5 flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <Sprout className="w-5.5 h-5.5 text-[#04593f]" />
-                  <span className="font-bold text-[12px] uppercase tracking-wide text-slate-900 block leading-none">
+                  <Sprout className="w-5 h-5 text-[#04593f]" />
+                  <span className="font-bold text-[11.5px] uppercase tracking-wide text-slate-900 block leading-none">
                     ANTAGLOMA FLORIST
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-500 font-medium block mt-1.5">Pengirim: Antagloma Florist</span>
-                <div className="text-[9.5px] text-slate-500 leading-normal mt-0.5">
-                  <p className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-slate-400" /> 0858-9450-3333 / 0857-3333-1889</p>
+                <span className="text-[10px] text-slate-500 font-medium block mt-1">Pengirim: Antagloma Florist</span>
+                <div className="text-[9px] text-slate-500 leading-normal mt-0.5">
+                  <p className="flex items-center gap-1.5"><Phone className="w-3 h-3 text-slate-400" /> 0858-9450-3333 / 0857-3333-1889</p>
                 </div>
               </div>
 
               <div className="text-right flex-shrink-0">
-                <span className="inline-block px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-[#04593f] font-semibold text-[8.5px] rounded uppercase tracking-wider">
+                <span className="inline-block px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-[#04593f] font-semibold text-[8px] rounded uppercase tracking-wider">
                   {pkgType}
                 </span>
-                <p className="font-semibold text-[11px] text-slate-900 block mt-1.5 break-words">{subOrderNum}</p>
+                <p className="font-semibold text-[10.5px] text-slate-900 block mt-1 break-words">{subOrderNum}</p>
               </div>
             </div>
 
             {/* Receiver Name & Address Large Box */}
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2 flex-1 flex flex-col justify-center text-xs">
+            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2 flex-1 flex flex-col justify-center text-xs my-1">
               <span className="text-[9px] font-bold uppercase text-slate-400 block tracking-wider">
                 PENERIMA / ALAMAT PENGIRIMAN:
               </span>
@@ -168,7 +191,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
             </div>
 
             {/* Footer Note */}
-            <div className="border-t border-slate-300 pt-2 flex items-center justify-between text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+            <div className="border-t border-slate-300 pt-1.5 flex items-center justify-between text-[8px] font-bold text-slate-400 uppercase tracking-widest">
               <span>Antagloma Florist</span>
               <span>Stiker Alamat Thermal 10x10 cm</span>
             </div>
