@@ -84,8 +84,17 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
           {/* Print specific style overrides */}
           <style>{`
             @media print {
-              body * {
+              /* Hide all components from React layout completely */
+              #no-print-wrapper, .no-print, div[role="dialog"] {
+                display: none !important;
                 visibility: hidden !important;
+              }
+              html, body {
+                width: 100mm !important;
+                height: 100mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background-color: white !important;
               }
               .print-area, .print-area * {
                 visibility: visible !important;

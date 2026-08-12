@@ -22,14 +22,16 @@ export const DashboardLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <AppHeader />
-      <div className="flex flex-1">
-        <AppSidebar />
-        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-12">
-          <Outlet />
-        </main>
+      <div id="no-print-wrapper" className="flex flex-col flex-1">
+        <AppHeader />
+        <div className="flex flex-1">
+          <AppSidebar />
+          <main className="flex-1 p-4 md:p-6 pb-24 md:pb-12">
+            <Outlet />
+          </main>
+        </div>
+        <MobileBottomNav />
       </div>
-      <MobileBottomNav />
     </div>
   );
 };
