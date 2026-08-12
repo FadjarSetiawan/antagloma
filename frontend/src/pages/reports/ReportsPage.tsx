@@ -120,7 +120,7 @@ export const ReportsPage: React.FC = () => {
       (order.items || []).forEach((item) => {
         const grade = item.grade?.trim() || 'Tanpa Grade';
         const quantity = Number(item.quantity) || 0;
-        const omzet = Number(item.price) || 0;
+        const omzet = (Number(item.price) || 0) * quantity;
         const current = summary[grade] || { grade, quantity: 0, omzet: 0 };
         current.quantity += quantity;
         current.omzet += omzet;
@@ -134,9 +134,10 @@ export const ReportsPage: React.FC = () => {
     (order.items || []).forEach((item) => {
       const code = item.tree_code || item.product_name;
       if (!code) return;
+      const quantity = Number(item.quantity) || 0;
       const current = summary[code] || { code, name: item.tree_name || item.product_name, quantity: 0, omzet: 0 };
-      current.quantity += Number(item.quantity) || 0;
-      current.omzet += Number(item.price) || 0;
+      current.quantity += quantity;
+      current.omzet += (Number(item.price) || 0) * quantity;
       summary[code] = current;
     });
     return summary;
