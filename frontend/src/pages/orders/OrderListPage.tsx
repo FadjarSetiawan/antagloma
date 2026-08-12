@@ -372,7 +372,7 @@ export const OrderListPage: React.FC = () => {
       <OrderDetailModal
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
-        onApprove={(id) => { const order = data?.data?.find((item) => item.id === id) || selectedOrder; if (order) { setSelectedOrder(null); setVerifyingOrder(order); setIsVerifyChecked(false); } }}
+        onApprove={(id) => { const order = data?.data?.find((item: Order) => item.id === id) || selectedOrder; if (order) { setSelectedOrder(null); setVerifyingOrder(order); setIsVerifyChecked(false); } }}
         onOpenShipmentModal={(ord) => ord.packages?.length
           ? setShipmentPackage(ord.packages.find((pkg) => !pkg.tracking_number) || ord.packages[0])
           : setShipmentOrder(ord)}
