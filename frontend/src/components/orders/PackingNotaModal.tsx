@@ -12,7 +12,17 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
   if (!order) return null;
 
   const handlePrint = () => {
+    const originalTitle = document.title;
+    const cleanOrderNumber = (order.order_number || 'order').replace(/[^a-zA-Z0-9-]/g, '_');
+    const cleanPkgLetter = packageInfo ? `-${packageInfo.letter}` : '';
+    document.title = `Nota_Packing_${cleanOrderNumber}${cleanPkgLetter}`;
+    
     window.print();
+    
+    // Restore original document title after print dialog closes
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 100);
   };
 
   const formattedDate = order.order_date
@@ -72,21 +82,11 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           {/* Print specific style overrides */}
           <style>{`
             @media print {
-              /* Hide all components from React layout */
-              #root, header, main, nav, aside, footer, div[role="dialog"], .no-print {
-                display: none !important;
+              body * {
                 visibility: hidden !important;
-              }
-              html, body {
-                width: 80mm !important;
-                height: auto !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                background-color: white !important;
               }
               .print-area, .print-area * {
                 visibility: visible !important;
-                display: block !important;
               }
               .print-area {
                 position: absolute !important;
@@ -97,6 +97,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 margin: 0 !important;
                 padding: 4mm !important;
                 box-sizing: border-box !important;
+                display: block !important;
               }
               .print-area table,
               .print-area tr {
