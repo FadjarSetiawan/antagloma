@@ -40,11 +40,13 @@ export const OrderListPage: React.FC = () => {
 
   const [search, setSearch] = useState(paramSearch);
   const [statusFilter, setStatusFilter] = useState(paramStatus);
+  const [orderDateFilter, setOrderDateFilter] = useState(paramOrderDate);
 
   useEffect(() => {
     if (paramSearch) setSearch(paramSearch);
     if (paramStatus) setStatusFilter(paramStatus);
-  }, [paramSearch, paramStatus]);
+    if (paramOrderDate) setOrderDateFilter(paramOrderDate);
+  }, [paramSearch, paramStatus, paramOrderDate]);
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
@@ -56,10 +58,10 @@ export const OrderListPage: React.FC = () => {
   const [isVerifyChecked, setIsVerifyChecked] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['orders-list', search, statusFilter, paramOrderDate],
+    queryKey: ['orders-list', search, statusFilter, orderDateFilter],
     queryFn: async () => {
       // Fetch orders
-      const res = await orderService.getOrders({ search, status: statusFilter === 'COMPLETED' ? undefined : statusFilter, order_date: paramOrderDate || undefined, per_page: 200 });
+      const res = await orderService.getOrders({ search, status: statusFilter === 'COMPLETED' ? undefined : statusFilter, order_date: orderDateFilter || undefined, per_page: 200 });
       if (statusFilter === 'COMPLETED') {
         // Filter orders that are fully shipped/completed on client-side to reflect both COMPLETED status and PACKING_COMPLETED with tracked packages
         res.data = res.data.filter((order) => {
@@ -164,12 +166,32 @@ export const OrderListPage: React.FC = () => {
           />
         </div>
 
-        <CustomSelect
-          options={statusOptions}
-          value={statusFilter}
-          onChange={setStatusFilter}
-          placeholder="-- Pilih Filter Status --"
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <CustomSelect
+            options={statusOptions}
+            value={statusFilter}
+            onChange={setStatusFilter}
+            placeholder="-- Pilih Filter Status --"
+          />
+
+          <div className="relative">
+            <input
+              type="date"
+              value={orderDateFilter}
+              onChange={(e) => setOrderDateFilter(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 shadow-2xs cursor-pointer min-h-[42px]"
+            />
+            {orderDateFilter && (
+              <button
+                type="button"
+                onClick={() => setOrderDateFilter('')}
+                className="absolute right-3.5 top-3 text-[10px] font-bold text-rose-600 hover:underline cursor-pointer"
+              >
+                Clear Tanggal
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Orders List Container */}
