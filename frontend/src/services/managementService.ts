@@ -11,4 +11,18 @@ export const managementService = {
   createDiscount: async (data: Omit<Discount,'id'>) => (await api.post('/discounts', data)).data,
   updateDiscount: async (id:number, data: Partial<Omit<Discount,'id'>>) => (await api.put(`/discounts/${id}`, data)).data,
   deactivateDiscount: async (id:number) => (await api.delete(`/discounts/${id}`)).data,
+  
+  getCommissionsByMonth: async (month: string) => {
+    const res = await api.get<{success: boolean; data: Array<SalesCommission & { payout_status: 'PAID' | 'UNPAID'; payout_proof_path: string | null; payout_date: string | null }>}>('/commissions', { params: { month } });
+    return res.data;
+  },
+
+  payCommission: async (formData: FormData) => {
+    const res = await api.post<{success: boolean; message: string; data: any}>('/commissions/payouts', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  },
 };

@@ -21,7 +21,25 @@ class CommissionController extends Controller
 
         // Filter by sales user if sales role
         if ($role === 'owner') {
-            return response()->json(['success' => true, 'data' => \App\Models\User::where('role', 'sales')->orderBy('name')->get(['id', 'name', 'email', 'commission_rate'])]);
+            $salesList = \App\Models\User::where('role', 'sales')->orderBy('name')->get(['id', 'name', 'email', 'commission_rate']);
+            
+            // Map payouts for the current month
+            $payouts = \App\Models\CommissionPayout::where('month', $monthStr)->get()->keyBy('sales_id');
+
+            $mappedSales = $salesList->map(function ($s) use ($payouts) {
+                $payout = $payouts->get($s->id);
+                return [
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'email' => $s->email,
+                    'commission_rate' => $s->commission_rate,
+                    'payout_status' => $payout ? 'PAID' : 'UNPAID',
+                    'payout_proof_path' => $payout ? $payout->payment_proof_path : null,
+                    'payout_date' => $payout ? $payout->created_at->toISOString() : null,
+                ];
+            });
+
+            return response()->json(['success' => true, 'data' => $mappedSales]);
         }
         if ($role === 'sales') {
             $query->where('created_by', $user->id);
@@ -33,6 +51,11 @@ class CommissionController extends Controller
         $monthlyTotalCommission = 0;
         $orderHistory = [];
 
+        // Check if there is a payout recorded for this sales and month
+        $isPayoutPaid = \App\Models\CommissionPayout::where('sales_id', $user->id)
+            ->where('month', $monthStr)
+            ->exists();
+
         foreach ($orders as $order) {
             $plantTotal = 0;
 
@@ -41,7 +64,7 @@ class CommissionController extends Controller
                 $plantTotal += (float) $item->price;
             }
 
-            // Commission is 5% of Total Harga Tanaman (plantTotal).
+            // Commission is calculated based on commission_rate.
             // It ONLY accrues when Admin has verified payment (status !== WAITING_PROCESS and status !== CANCELLED).
             $orderStatus = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
             $isVerified = !in_array($orderStatus, ['WAITING_PROCESS', 'CANCELLED'], true);
@@ -76,6 +99,11 @@ class CommissionController extends Controller
             return $item['month_key'] === $monthStr;
         });
 
+        // Get details of payout if exists
+        $payoutDetail = \App\Models\CommissionPayout::where('sales_id', $user->id)
+            ->where('month', $monthStr)
+            ->first();
+
         return response()->json([
             'success' => true,
             'data'    => [
@@ -83,6 +111,8 @@ class CommissionController extends Controller
                 'month_label'        => Carbon::parse($monthStr . '-01')->locale('id')->translatedFormat('F Y'),
                 'monthly_commission' => $monthlyTotalCommission,
                 'total_orders'       => count($filteredHistory),
+                'payout_status'      => $isPayoutPaid ? 'PAID' : 'UNPAID',
+                'payout_proof_path'  => $payoutDetail ? $payoutDetail->payment_proof_path : null,
                 'history'            => array_values($filteredHistory),
                 'all_history'        => array_values($orderHistory),
             ],
@@ -105,5 +135,62 @@ class CommissionController extends Controller
         $data = $request->validate(['commission_rate' => ['required', 'numeric', 'min:0', 'max:100']]);
         $sales = \App\Models\User::where('id', $salesId)->where('role', 'sales')->firstOrFail(); $sales->update($data);
         return response()->json(['success' => true, 'data' => $sales->only(['id', 'name', 'email', 'commission_rate'])]);
+    }
+
+    public function getPayouts(Request $request): JsonResponse
+    {
+        $role = $request->user()->role instanceof \BackedEnum ? $request->user()->role->value : (string) $request->user()->role;
+        if ($role !== 'owner') abort(403);
+
+        $payouts = \App\Models\CommissionPayout::with('sales')->orderBy('created_at', 'desc')->get();
+        return response()->json([
+            'success' => true,
+            'data' => $payouts
+        ]);
+    }
+
+    public function recordPayout(Request $request): JsonResponse
+    {
+        $role = $request->user()->role instanceof \BackedEnum ? $request->user()->role->value : (string) $request->user()->role;
+        if ($role !== 'owner') abort(403);
+
+        $validated = $request->validate([
+            'sales_id' => ['required', 'exists:users,id'],
+            'month' => ['required', 'string', 'regex:/^\d{4}-\d{2}$/'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'payment_proof' => ['required', 'file', 'image', 'max:5120'], // Max 5MB image
+            'notes' => ['nullable', 'string'],
+        ]);
+
+        // Prevent duplicate payout
+        $exists = \App\Models\CommissionPayout::where('sales_id', $validated['sales_id'])
+            ->where('month', $validated['month'])
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Komisi untuk sales ini pada bulan tersebut sudah pernah dibayarkan.',
+            ], 422);
+        }
+
+        $proofPath = null;
+        if ($request->hasFile('payment_proof')) {
+            $proofPath = $request->file('payment_proof')->store('commission_proofs', 'public');
+        }
+
+        $payout = \App\Models\CommissionPayout::create([
+            'sales_id' => $validated['sales_id'],
+            'month' => $validated['month'],
+            'amount' => $validated['amount'],
+            'payment_proof_path' => $proofPath,
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pembayaran komisi sales berhasil dicatat.',
+            'data' => $payout
+        ]);
     }
 }

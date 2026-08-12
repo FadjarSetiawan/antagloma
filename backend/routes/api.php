@@ -79,10 +79,12 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::get('/export-csv', [ReportController::class, 'exportCsv']);
     });
 
-    // Commission Calculator API (Sales Staff Only)
+    // Commission Calculator API (Sales Staff & Owner)
     Route::get('/commission/my-commission', [CommissionController::class, 'index']);
     Route::get('/sales/commission', [CommissionController::class, 'index']);
     Route::get('/commissions', [CommissionController::class, 'index']);
+    Route::get('/commissions/payouts', [CommissionController::class, 'getPayouts']);
+    Route::post('/commissions/payouts', [CommissionController::class, 'recordPayout']);
     Route::get('/commissions/{salesId}', [CommissionController::class, 'show']);
     Route::put('/commissions/{salesId}', [CommissionController::class, 'update']);
     Route::apiResource('discounts', DiscountController::class)->only(['index', 'store', 'update', 'destroy']);
