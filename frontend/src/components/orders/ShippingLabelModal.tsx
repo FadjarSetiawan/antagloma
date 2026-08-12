@@ -120,39 +120,39 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
           `}</style>
 
           {/* Shipping Sticker Box */}
-          <div className="border border-slate-200 rounded-xl p-3.5 space-y-3 bg-white flex flex-col justify-between">
+          <div className="border border-slate-300 rounded-xl p-4.5 space-y-3.5 bg-white flex flex-col justify-between shadow-xs">
             {/* Header Store & Package Barcode */}
-            <div className="border-b border-slate-200 pb-3 flex items-start justify-between gap-3">
+            <div className="border-b border-slate-300 pb-3.5 flex items-start justify-between gap-3">
               <div>
-                <div className="flex items-center gap-1.5">
-                  <Sprout className="w-4 h-4 text-[#04593f]" />
-                  <span className="font-semibold text-[11px] uppercase tracking-wide text-slate-900 block leading-none">
+                <div className="flex items-center gap-2">
+                  <Sprout className="w-5.5 h-5.5 text-[#04593f]" />
+                  <span className="font-bold text-[12px] uppercase tracking-wide text-slate-900 block leading-none">
                     ANTAGLOMA FLORIST
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-500 font-medium block mt-1">Pengirim: Antagloma Florist</span>
-                <div className="text-[9px] text-slate-500 leading-normal mt-0.5">
-                  <p className="flex items-center gap-1"><Phone className="w-3 h-3 text-slate-400" /> 0858-9450-3333 / 0857-3333-1889</p>
+                <span className="text-[10px] text-slate-500 font-medium block mt-1.5">Pengirim: Antagloma Florist</span>
+                <div className="text-[9.5px] text-slate-500 leading-normal mt-0.5">
+                  <p className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-slate-400" /> 0858-9450-3333 / 0857-3333-1889</p>
                 </div>
               </div>
 
               <div className="text-right flex-shrink-0">
-                <span className="inline-block px-1.5 py-0.5 bg-emerald-50 border border-emerald-200 text-[#04593f] font-medium text-[8px] rounded uppercase tracking-wider">
+                <span className="inline-block px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-[#04593f] font-semibold text-[8.5px] rounded uppercase tracking-wider">
                   {pkgType}
                 </span>
-                <p className="font-medium text-[11px] text-slate-900 block mt-1.5 break-words">{subOrderNum}</p>
+                <p className="font-semibold text-[11px] text-slate-900 block mt-1.5 break-words">{subOrderNum}</p>
               </div>
             </div>
 
             {/* Receiver Name & Address Large Box */}
-            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2 flex-1 flex flex-col justify-center text-xs">
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2 flex-1 flex flex-col justify-center text-xs">
               <span className="text-[9px] font-bold uppercase text-slate-400 block tracking-wider">
                 PENERIMA / ALAMAT PENGIRIMAN:
               </span>
 
               <div className="space-y-0.5">
                 <h2 className="text-sm font-bold text-slate-900 block leading-tight">{order.customer_name}</h2>
-                <p className="text-[11px] font-medium text-slate-600 flex items-center gap-1 mt-0.5">
+                <p className="text-[11px] font-medium text-slate-600 flex items-center gap-1.5 mt-0.5">
                   <Phone className="w-3.5 h-3.5 text-slate-400" /> {order.phone}
                 </p>
               </div>
@@ -168,7 +168,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
             </div>
 
             {/* Footer Note */}
-            <div className="border-t border-slate-200 pt-1.5 flex items-center justify-between text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+            <div className="border-t border-slate-300 pt-2 flex items-center justify-between text-[8px] font-bold text-slate-400 uppercase tracking-widest">
               <span>Antagloma Florist</span>
               <span>Stiker Alamat Thermal 10x10 cm</span>
             </div>
