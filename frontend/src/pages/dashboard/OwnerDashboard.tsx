@@ -29,7 +29,7 @@ export const OwnerDashboard: React.FC = () => {
       hasNotification: todayOrders > 0,
       buttonText: 'Lihat Order',
       icon: ShoppingBag,
-      link: '/orders',
+      link: `/orders?order_date=${todayStr}`,
     },
     {
       title: 'Menunggu Verifikasi Pembayaran',
