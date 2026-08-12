@@ -201,7 +201,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                Harga Jual Keseluruhan (Rp) *
+                Total Harga Jual *
               </label>
               <input
                 type="number"
@@ -228,15 +228,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
             </div>
           </div>
 
-          {/* Subtotal Item Summary Box */}
-          {selectedGrade && (
-            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex justify-between items-center text-emerald-950 font-black text-xs sm:text-sm">
-              <span>Subtotal Item:</span>
-              <span className="text-emerald-900 text-base font-black">
-                Rp {(numQty * numPrice).toLocaleString('id-ID')}
-              </span>
-            </div>
-          )}
+
 
           <div className="pt-2 flex items-center justify-end gap-3">
             <button
