@@ -57,7 +57,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
+              className="min-h-9 px-2.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[11px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Cetak Label</span>
@@ -72,7 +72,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
         </div>
 
         {/* Printable Shipping Label Body Container */}
-        <div className="p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs">
+        <div className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs">
           {/* Print specific style overrides */}
           <style>{`
             @media print {
@@ -101,18 +101,18 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
           `}</style>
 
           {/* Shipping Sticker Box */}
-          <div className="border-2 border-slate-900 rounded-2xl p-4 space-y-3 bg-white">
+          <div className="border-2 border-slate-900 rounded-xl p-3 sm:p-4 space-y-2.5 bg-white">
             {/* Header Store & Package Barcode */}
-            <div className="border-b-2 border-slate-900 pb-2.5 flex items-center justify-between">
+            <div className="border-b-2 border-slate-900 pb-2.5 flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-1.5">
                   <Sprout className="w-4 h-4 text-[#04593f]" />
-                  <span className="font-black text-base uppercase tracking-wider text-slate-900 block leading-none">
+                  <span className="font-black text-sm sm:text-base uppercase tracking-wide text-slate-900 block leading-none">
                     ANTAGLOMA FLORIST
                   </span>
                 </div>
-                <span className="text-xs text-slate-700 font-bold block mt-1">Pengirim: Antagloma Florist</span>
-                <div className="text-[11px] text-slate-700 font-bold leading-relaxed mt-0.5">
+                <span className="text-[11px] text-slate-700 font-semibold block mt-1">Pengirim: Antagloma Florist</span>
+                <div className="text-[10px] text-slate-700 font-medium leading-relaxed mt-0.5">
                   <p className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-[#04593f]" />0858-9450-3333</p>
                   <p className="pl-[18px]">0857-3333-1889</p>
                 </div>
@@ -122,19 +122,19 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
                 <span className="inline-block px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-[#04593f] font-bold text-[10px] rounded uppercase tracking-wider">
                   {pkgType}
                 </span>
-                <p className="font-black text-sm text-slate-900 block mt-0.5">{subOrderNum}</p>
+                <p className="font-black text-xs sm:text-sm text-slate-900 block mt-1 break-words">{subOrderNum}</p>
               </div>
             </div>
 
             {/* Receiver Name & Address Large Box */}
-            <div className="p-3 bg-slate-50 border border-slate-300 rounded-xl space-y-2">
+            <div className="p-2.5 sm:p-3 bg-slate-50 border border-slate-300 rounded-lg space-y-1.5">
               <span className="text-[9px] font-bold uppercase text-slate-400 block tracking-wider">
                 PENERIMA / ALAMAT PENGIRIMAN:
               </span>
 
               <div>
-                <h2 className="text-base font-bold text-slate-900 block leading-tight">{order.customer_name}</h2>
-                <p className="text-xs font-bold text-slate-800 flex items-center gap-1 mt-0.5">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 block leading-tight">{order.customer_name}</h2>
+                <p className="text-[11px] font-semibold text-slate-800 flex items-center gap-1 mt-0.5">
                   <Phone className="w-3.5 h-3.5 text-[#04593f]" /> {order.phone}
                 </p>
               </div>

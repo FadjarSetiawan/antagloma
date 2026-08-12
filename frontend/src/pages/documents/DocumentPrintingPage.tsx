@@ -443,7 +443,7 @@ export const DocumentPrintingPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
-                      className="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="min-h-10 py-2 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
                       <Printer className="w-4 h-4 text-[#04593f]" />
                       <span>Cetak Ulang Nota</span>
@@ -452,7 +452,7 @@ export const DocumentPrintingPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="min-h-10 py-2 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
                       <Tag className="w-4 h-4 text-[#04593f]" />
                       <span>Cetak Ulang Label</span>
