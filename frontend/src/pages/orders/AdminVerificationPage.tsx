@@ -34,7 +34,7 @@ export const AdminVerificationPage: React.FC = () => {
   const [isVerifyChecked, setIsVerifyChecked] = useState(false);
 
   const [rejectingOrder, setRejectingOrder] = useState<Order | null>(null);
-  const [isRejectChecked, setIsRejectChecked] = useState(false);
+  const [selectedRejectReason, setSelectedRejectReason] = useState<string>('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['orders-verification', search],
@@ -65,7 +65,7 @@ export const AdminVerificationPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       setRejectedSuccessNum(`Pesanan telah berhasil ditolak`);
       setRejectingOrder(null);
-      setIsRejectChecked(false);
+      setSelectedRejectReason('');
       setTimeout(() => setRejectedSuccessNum(null), 4000);
     },
   });
@@ -249,7 +249,7 @@ export const AdminVerificationPage: React.FC = () => {
                     <button
                       onClick={() => {
                         setRejectingOrder(order);
-                        setIsRejectChecked(false);
+                        setSelectedRejectReason('');
                       }}
                       className="py-3 px-3 bg-white border-2 border-rose-200 hover:bg-rose-50 text-rose-800 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
@@ -331,50 +331,97 @@ export const AdminVerificationPage: React.FC = () => {
 
       {/* POPUP MODAL 2: TOLAK PEMBAYARAN */}
       {rejectingOrder && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 sm:p-6 w-full h-full overflow-y-auto">
-          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl w-[95%] max-w-md my-auto p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-rose-800 text-white flex items-center justify-center">
-                  <XCircle className="w-5 h-5" />
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 sm:p-6 w-full h-full overflow-y-auto font-sans">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-[95%] max-w-md my-auto p-6 space-y-5">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0">
+                  <XCircle className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-black text-slate-900">Tolak Pembayaran</h3>
+                <h3 className="text-lg font-extrabold text-slate-900">Tolak Pembayaran</h3>
               </div>
-              <button onClick={() => setRejectingOrder(null)} className="p-1.5 text-slate-400 hover:text-slate-700 cursor-pointer">
+              <button
+                onClick={() => {
+                  setRejectingOrder(null);
+                  setSelectedRejectReason('');
+                }}
+                className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-600 font-semibold leading-relaxed">
-              Apakah Anda yakin ingin menolak pembayaran pesanan <span className="font-extrabold text-slate-900">{rejectingOrder.order_number}</span> atas nama <span className="font-extrabold text-slate-900">{rejectingOrder.customer_name}</span>?
-            </p>
+            <p className="text-xs font-semibold text-slate-600">Pilih alasan penolakan pembayaran.</p>
 
-            {/* Checkbox Confirmation */}
-            <label className="flex items-start gap-3 p-3 bg-rose-50 border border-rose-200 rounded-2xl cursor-pointer text-xs font-extrabold text-rose-950">
-              <input
-                type="checkbox"
-                checked={isRejectChecked}
-                onChange={(e) => setIsRejectChecked(e.target.checked)}
-                className="w-4 h-4 text-rose-800 rounded focus:ring-rose-700 mt-0.5 cursor-pointer"
-              />
-              <span>Saya yakin bukti pembayaran ini tidak valid / belum masuk.</span>
-            </label>
+            {/* Radio Options List */}
+            <div className="space-y-2.5">
+              {[
+                'Nominal transfer tidak sesuai',
+                'Belum ada pembayaran masuk',
+                'Bukti transfer mencurigakan / diduga palsu',
+                'Data pesanan tidak lengkap',
+              ].map((reason) => {
+                const isSelected = selectedRejectReason === reason;
+                return (
+                  <div
+                    key={reason}
+                    onClick={() => setSelectedRejectReason(reason)}
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 ${
+                      isSelected
+                        ? 'border-emerald-800 bg-white ring-1 ring-emerald-800'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
+                        isSelected ? 'border-emerald-800 bg-emerald-800' : 'border-slate-300'
+                      }`}
+                    >
+                      {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">{reason}</span>
+                  </div>
+                );
+              })}
+            </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
+            {/* Warning Alert Box */}
+            <div className="p-4 bg-rose-50/80 border border-rose-100 rounded-2xl flex items-start gap-3">
+              <div className="w-6 h-6 rounded-lg bg-rose-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold">
+                !
+              </div>
+              <div className="text-xs space-y-2 text-rose-950 font-medium">
+                <p className="font-extrabold text-rose-900">Konfirmasi</p>
+                <p className="leading-relaxed">
+                  Setelah pembayaran ditolak, pesanan akan otomatis <span className="font-bold text-rose-900">dibatalkan secara permanen</span> dan tidak dapat diproses kembali.
+                </p>
+                <p className="leading-relaxed">
+                  Pembeli harus membuat <span className="font-bold text-rose-900">pesanan baru dari awal</span> jika ingin melanjutkan pembelian.
+                </p>
+              </div>
+            </div>
+
+            {/* Buttons Row */}
+            <div className="grid grid-cols-2 gap-3 pt-1">
               <button
                 type="button"
-                onClick={() => setRejectingOrder(null)}
-                className="py-3 px-4 bg-white border-2 border-slate-300 text-slate-800 rounded-2xl text-xs font-black cursor-pointer"
+                onClick={() => {
+                  setRejectingOrder(null);
+                  setSelectedRejectReason('');
+                }}
+                className="py-3 px-4 bg-white border border-emerald-800 text-emerald-800 hover:bg-emerald-50 rounded-2xl text-xs font-bold transition-all cursor-pointer text-center"
               >
                 Batal
               </button>
               <button
                 type="button"
-                disabled={!isRejectChecked || rejectMutation.isPending}
+                disabled={!selectedRejectReason || rejectMutation.isPending}
                 onClick={() => rejectMutation.mutate(rejectingOrder.id)}
-                className="py-3 px-4 bg-rose-800 hover:bg-rose-900 disabled:opacity-40 text-white rounded-2xl text-xs font-black shadow-md cursor-pointer"
+                className="py-3 px-4 bg-[#d92d20] hover:bg-rose-700 disabled:opacity-40 text-white rounded-2xl text-xs font-bold shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
-                {rejectMutation.isPending ? 'Menolak...' : 'Ya, Tolak Pembayaran'}
+                <X className="w-4 h-4" />
+                <span>{rejectMutation.isPending ? 'Menolak...' : 'Tolak Pembayaran'}</span>
               </button>
             </div>
           </div>
