@@ -415,12 +415,66 @@ export const ReportsPage: React.FC = () => {
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div><h2 className="text-sm font-bold text-[#04593f]">ID Tanaman Paling Laku</h2><p className="text-[10px] text-slate-400 mt-0.5">{soldPlants.length} ID terjual pada periode ini</p></div>
           </div>
-          {soldPlants.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">Belum ada ID tanaman terjual.</p> : <div className="overflow-x-auto"><table className="w-full table-fixed text-left text-[10px] sm:text-xs"><thead className="bg-emerald-50 text-[#04593f] font-bold"><tr><th className="px-3 py-2.5">Rank</th><th className="px-3 py-2.5">ID</th><th className="px-2 sm:px-3 py-2.5">Nama Tanaman</th><th className="px-2 sm:px-3 py-2.5">Terjual (Pohon)</th><th className="px-3 py-2.5 text-right">Omzet</th></tr></thead><tbody className="divide-y divide-slate-100">{soldPlants.slice(0, 5).map((plant, index) => <tr key={plant.code}><td className="px-3 py-3 font-bold text-slate-900">{index + 1}</td><td className="px-3 py-3 font-bold">{plant.code}</td><td className="px-3 py-3">{plant.name}</td><td className="px-3 py-3 font-bold text-[#04593f]">{plant.quantity} Pohon</td><td className="px-3 py-3 text-right font-bold">Rp {plant.omzet.toLocaleString('id-ID')}</td></tr>)}</tbody></table></div>}
-          {soldPlants.length > 5 && <p className="text-center text-xs font-bold text-[#04593f]">Lihat {soldPlants.length} ID Terjual</p>}
+          {soldPlants.length === 0 ? (
+            <p className="py-5 text-center text-xs text-slate-400">Belum ada ID tanaman terjual.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[11px] sm:text-xs">
+                <thead className="bg-emerald-50 text-[#04593f] font-bold">
+                  <tr>
+                    <th className="px-2 py-2 w-12 text-center">Rank</th>
+                    <th className="px-2 py-2 w-16">ID</th>
+                    <th className="px-2 py-2">Nama Tanaman</th>
+                    <th className="px-2 py-2 text-right">Terjual</th>
+                    <th className="px-2 py-2 text-right w-24">Omzet</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {soldPlants.slice(0, 5).map((plant, index) => (
+                    <tr key={plant.code} className="hover:bg-slate-50/50">
+                      <td className="px-2 py-2.5 text-center font-extrabold text-slate-900">
+                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
+                      </td>
+                      <td className="px-2 py-2.5 font-bold text-slate-900 break-words">{plant.code}</td>
+                      <td className="px-2 py-2.5 text-slate-600 font-medium break-words leading-tight">{plant.name}</td>
+                      <td className="px-2 py-2.5 text-right font-bold text-[#04593f] whitespace-nowrap">{plant.quantity} Phn</td>
+                      <td className="px-2 py-2.5 text-right font-bold text-slate-900 whitespace-nowrap">Rp {plant.omzet.toLocaleString('id-ID')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {soldPlants.length > 5 && (
+            <p className="text-center text-xs font-bold text-[#04593f] hover:underline cursor-pointer mt-2">
+              Lihat {soldPlants.length} ID Terjual
+            </p>
+          )}
         </div>
         <div className="bg-white border border-orange-200/80 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-2xs">
-          <div className="flex items-center justify-between"><div><h2 className="text-sm font-bold text-orange-700">ID Belum Terjual</h2><p className="text-[10px] text-slate-400 mt-0.5">ID tanaman yang belum ada penjualan pada periode ini.</p></div><span className="px-2.5 py-1 rounded-xl bg-orange-50 text-orange-700 text-xs font-bold">{unsoldPlants.length} ID</span></div>
-          {unsoldPlants.length === 0 ? <p className="text-xs text-slate-400">Semua ID sudah memiliki penjualan.</p> : <div className="flex flex-wrap gap-2">{unsoldPlants.slice(0, 8).map((tree) => <span key={tree.id} className="px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-100 text-[10px] font-bold text-orange-700">{tree.code}</span>)}{unsoldPlants.length > 8 && <span className="px-3 py-1.5 text-[10px] font-bold text-orange-700">...</span>}</div>}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-orange-700">ID Belum Terjual</h2>
+              <p className="text-[10px] text-slate-400 mt-0.5">ID tanaman yang belum ada penjualan pada periode ini.</p>
+            </div>
+            <span className="px-2.5 py-1 rounded-xl bg-orange-50 text-orange-700 text-xs font-bold flex-shrink-0">
+              {unsoldPlants.length} ID
+            </span>
+          </div>
+          {unsoldPlants.length === 0 ? (
+            <p className="text-xs text-slate-400">Semua ID sudah memiliki penjualan.</p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {unsoldPlants.slice(0, 15).map((tree) => (
+                <span key={tree.id} className="px-2.5 py-1 rounded-xl bg-orange-50 border border-orange-100 text-[10px] font-bold text-orange-700">
+                  {tree.code}
+                </span>
+              ))}
+              {unsoldPlants.length > 15 && (
+                <span className="px-2.5 py-1 text-[10px] font-bold text-orange-500">...</span>
+              )}
+            </div>
+          )}
         </div>
       </div>}
 
@@ -454,34 +508,31 @@ export const ReportsPage: React.FC = () => {
           <div className="py-6 text-center text-xs text-slate-400">Belum ada tanaman terjual pada periode ini.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full table-fixed text-left text-[10px] sm:text-xs">
+            <table className="w-full text-left text-[11px] sm:text-xs">
               <thead className="bg-emerald-50 text-[#04593f] font-bold">
                 <tr>
-                  <th className="px-3 py-2.5 rounded-l-xl">Grade</th>
-                  <th className="px-3 py-2.5">Jumlah Terjual</th>
-                  <th className="px-3 py-2.5">Harga Jual Satuan</th>
-                  <th className="px-3 py-2.5 text-right">Total Omzet</th>
-                  <th className="px-2 py-2.5 rounded-r-xl text-right" aria-label="Detail"></th>
+                  <th className="px-2 py-2 rounded-l-xl">Grade</th>
+                  <th className="px-2 py-2 text-right">Terjual</th>
+                  <th className="px-2 py-2 text-right">Harga Satuan</th>
+                  <th className="px-2 py-2 text-right rounded-r-xl w-24">Omzet</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {gradeSummary.map((row) => (
-                  <tr key={row.grade} className="text-slate-700">
-                    <td className="px-3 py-3 font-bold text-slate-900">Grade {row.grade}</td>
-                    <td className="px-3 py-3">{row.quantity.toLocaleString('id-ID')} Pohon</td>
-                    <td className="px-3 py-3">Rp {(row.quantity > 0 ? row.omzet / row.quantity : 0).toLocaleString('id-ID')}</td>
-                    <td className="px-3 py-3 text-right font-bold text-slate-900">Rp {row.omzet.toLocaleString('id-ID')}</td>
-                    <td className="px-2 py-3 text-right text-xl text-slate-400" aria-hidden="true">›</td>
+                  <tr key={row.grade} className="text-slate-700 hover:bg-slate-50/50">
+                    <td className="px-2 py-2.5 font-bold text-slate-900">Grade {row.grade}</td>
+                    <td className="px-2 py-2.5 text-right font-semibold text-slate-700">{row.quantity} Phn</td>
+                    <td className="px-2 py-2.5 text-right font-medium text-slate-500">Rp {Math.round(row.quantity > 0 ? row.omzet / row.quantity : 0).toLocaleString('id-ID')}</td>
+                    <td className="px-2 py-2.5 text-right font-bold text-slate-900">Rp {row.omzet.toLocaleString('id-ID')}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot className="bg-emerald-50 font-bold text-[#04593f]">
                 <tr>
-                  <td className="px-3 py-3 rounded-l-xl">Total</td>
-                  <td className="px-3 py-3">{gradeSummary.reduce((sum, row) => sum + row.quantity, 0).toLocaleString('id-ID')} Pohon</td>
-                  <td className="px-3 py-3">-</td>
-                  <td className="px-3 py-3 text-right">Rp {gradeSummary.reduce((sum, row) => sum + row.omzet, 0).toLocaleString('id-ID')}</td>
-                  <td className="px-2 py-3 rounded-r-xl"></td>
+                  <td className="px-2 py-2 rounded-l-xl">Total</td>
+                  <td className="px-2 py-2 text-right">{gradeSummary.reduce((sum, row) => sum + row.quantity, 0)} Phn</td>
+                  <td className="px-2 py-2 text-right">-</td>
+                  <td className="px-2 py-2 text-right rounded-r-xl">Rp {gradeSummary.reduce((sum, row) => sum + row.omzet, 0).toLocaleString('id-ID')}</td>
                 </tr>
               </tfoot>
             </table>
