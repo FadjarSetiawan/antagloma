@@ -43,9 +43,9 @@ export const OrderListPage: React.FC = () => {
   const [orderDateFilter, setOrderDateFilter] = useState(paramOrderDate);
 
   useEffect(() => {
-    if (paramSearch) setSearch(paramSearch);
-    if (paramStatus) setStatusFilter(paramStatus);
-    if (paramOrderDate) setOrderDateFilter(paramOrderDate);
+    setSearch(paramSearch);
+    setStatusFilter(paramStatus);
+    setOrderDateFilter(paramOrderDate);
   }, [paramSearch, paramStatus, paramOrderDate]);
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
