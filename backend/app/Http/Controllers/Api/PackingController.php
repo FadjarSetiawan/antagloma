@@ -24,10 +24,17 @@ class PackingController extends Controller
     {
         Gate::authorize('managePackingQueue', Order::class);
 
-        // Initial configuration queue: only WAITING_PACKING orders without packages.
+        // Configuration queue: WAITING_PACKING orders without packages OR orders with partial packages (unallocated plants remaining).
         $orders = Order::with(['creator', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item'])
             ->where('status', 'WAITING_PACKING')
-            ->whereDoesntHave('packages')
+            ->where(function ($query) {
+                $query->whereDoesntHave('packages')
+                    ->orWhere(function ($q) {
+                        // Order has packages, but total allocated quantity across all package items is less than total required items
+                        $q->whereHas('packages')
+                          ->whereRaw('(SELECT COALESCE(SUM(quantity), 0) FROM order_items WHERE order_items.order_id = orders.id) > (SELECT COALESCE(SUM(opi.quantity), 0) FROM order_packages op JOIN order_package_items opi ON opi.order_package_id = op.id WHERE op.order_id = orders.id)');
+                    });
+            })
             ->orderBy('created_at')
             ->paginate(50);
 
