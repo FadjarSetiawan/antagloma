@@ -14,7 +14,7 @@ class CommissionController extends Controller
     {
         $user = $request->user();
         $monthStr = $request->query('month', now()->format('Y-m')); // e.g. 2026-08
-        $role = $user?->role instanceof \BackedEnum ? $user->role->value : (string) ($user?->role ?? '');
+        $role = $user??->role instanceof \BackedEnum ? $user->role->value : (string) ($user?->role ?? '');
         abort_unless(in_array($role, ['owner', 'sales'], true), 403);
 
         $query = Order::with(['items', 'creator']);
@@ -49,12 +49,22 @@ class CommissionController extends Controller
 
         // Calculate commissions per order and monthly totals
         $monthlyTotalCommission = 0;
+        $monthlyTotalPlantPrice = 0;
+        $monthlyOrderCount = 0;
+
+        $todayTotalCommission = 0;
+        $todayTotalPlantPrice = 0;
+        $todayOrderCount = 0;
+
         $orderHistory = [];
 
         // Check if there is a payout recorded for this sales and month
         $isPayoutPaid = \App\Models\CommissionPayout::where('sales_id', $user->id)
             ->where('month', $monthStr)
             ->exists();
+
+        $todayDateStr = now()->format('Y-m-d');
+        $rate = (float) ($user->commission_rate ?? 5);
 
         foreach ($orders as $order) {
             $plantTotal = 0;
@@ -68,12 +78,25 @@ class CommissionController extends Controller
             // It ONLY accrues when Admin has verified payment (status !== WAITING_PROCESS and status !== CANCELLED).
             $orderStatus = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
             $isVerified = !in_array($orderStatus, ['WAITING_PROCESS', 'CANCELLED'], true);
-            $rate = (float) ($order->creator?->commission_rate ?? 5);
             $commission = $isVerified ? round($plantTotal * $rate / 100) : 0;
 
             $orderMonth = Carbon::parse($order->order_date)->format('Y-m');
-            if ($orderMonth === $monthStr && $isVerified) {
-                $monthlyTotalCommission += $commission;
+            $orderDate = Carbon::parse($order->order_date)->format('Y-m-d');
+
+            if ($isVerified) {
+                // Monthly accumulates
+                if ($orderMonth === $monthStr) {
+                    $monthlyTotalCommission += $commission;
+                    $monthlyTotalPlantPrice += $plantTotal;
+                    $monthlyOrderCount++;
+                }
+
+                // Today accumulates
+                if ($orderDate === $todayDateStr) {
+                    $todayTotalCommission += $commission;
+                    $todayTotalPlantPrice += $plantTotal;
+                    $todayOrderCount++;
+                }
             }
 
             $formattedDate = Carbon::parse($order->order_date)->locale('id')->translatedFormat('d F Y');
@@ -85,6 +108,7 @@ class CommissionController extends Controller
                 'date'               => $formattedDate,
                 'raw_date'           => $order->order_date,
                 'month_key'          => $orderMonth,
+                'date_key'           => $orderDate,
                 'item_count'         => count($order->items),
                 'plant_total'        => $plantTotal,
                 'commission'         => $commission,
@@ -94,11 +118,6 @@ class CommissionController extends Controller
             ];
         }
 
-        // Filter history list for requested month
-        $filteredHistory = array_filter($orderHistory, function ($item) use ($monthStr) {
-            return $item['month_key'] === $monthStr;
-        });
-
         // Get details of payout if exists
         $payoutDetail = \App\Models\CommissionPayout::where('sales_id', $user->id)
             ->where('month', $monthStr)
@@ -107,14 +126,18 @@ class CommissionController extends Controller
         return response()->json([
             'success' => true,
             'data'    => [
-                'month'              => $monthStr,
-                'month_label'        => Carbon::parse($monthStr . '-01')->locale('id')->translatedFormat('F Y'),
-                'monthly_commission' => $monthlyTotalCommission,
-                'total_orders'       => count($filteredHistory),
-                'payout_status'      => $isPayoutPaid ? 'PAID' : 'UNPAID',
-                'payout_proof_path'  => $payoutDetail ? $payoutDetail->payment_proof_path : null,
-                'history'            => array_values($filteredHistory),
-                'all_history'        => array_values($orderHistory),
+                'month'                  => $monthStr,
+                'month_label'            => Carbon::parse($monthStr . '-01')->locale('id')->translatedFormat('F Y'),
+                'commission_rate'        => $rate,
+                'monthly_commission'     => $monthlyTotalCommission,
+                'monthly_plant_total'    => $monthlyTotalPlantPrice,
+                'monthly_total_orders'   => $monthlyOrderCount,
+                'today_commission'       => $todayTotalCommission,
+                'today_plant_total'      => $todayTotalPlantPrice,
+                'today_total_orders'     => $todayOrderCount,
+                'payout_status'          => $isPayoutPaid ? 'PAID' : 'UNPAID',
+                'payout_proof_path'      => $payoutDetail ? $payoutDetail->payment_proof_path : null,
+                'all_history'            => array_values($orderHistory),
             ],
         ]);
     }
