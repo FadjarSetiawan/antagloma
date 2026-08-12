@@ -14,7 +14,7 @@ class CommissionController extends Controller
     {
         $user = $request->user();
         $monthStr = $request->query('month', now()->format('Y-m')); // e.g. 2026-08
-        $role = $user??->role instanceof \BackedEnum ? $user->role->value : (string) ($user?->role ?? '');
+        $role = $user?->role instanceof \BackedEnum ? $user->role->value : (string) ($user?->role ?? '');
         abort_unless(in_array($role, ['owner', 'sales'], true), 403);
 
         $query = Order::with(['items', 'creator']);
