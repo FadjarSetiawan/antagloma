@@ -84,6 +84,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     Route::get('/sales/commission', [CommissionController::class, 'index']);
     Route::get('/commissions', [CommissionController::class, 'index']);
     Route::get('/commissions/payouts', [CommissionController::class, 'getPayouts']);
+    Route::get('/commissions/preview-orders', [CommissionController::class, 'previewOrders']); // must be before /{salesId}
     Route::post('/commissions/payouts', [CommissionController::class, 'recordPayout']);
     Route::get('/commissions/{salesId}', [CommissionController::class, 'show']);
     Route::put('/commissions/{salesId}', [CommissionController::class, 'update']);
