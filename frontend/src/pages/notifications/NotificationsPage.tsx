@@ -176,64 +176,74 @@ export const NotificationsPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100/85">
             {filteredNotifications.map((notif) => (
               <div
                 key={notif.id}
-                className={`py-3 sm:py-3.5 flex items-start gap-3 transition-colors ${
-                  !notif.is_read ? 'bg-amber-50/40 -mx-3 px-3 sm:-mx-4 sm:px-4 rounded-xl' : ''
+                className={`py-3.5 flex gap-3 sm:gap-4 transition-all relative ${
+                  !notif.is_read ? 'bg-emerald-50/20 -mx-3 px-3 sm:-mx-4 sm:px-4 rounded-2xl' : ''
                 }`}
               >
-                {/* Left Icon Badge */}
-                <div className={`w-8 h-8 rounded-xl border flex items-center justify-center flex-shrink-0 mt-0.5 shadow-2xs ${getNotifIconBg(notif.type)}`}>
-                  {getNotifIcon(notif.type)}
+                {/* Left Minimalist Dot & Icon Indicator */}
+                <div className="flex flex-col items-center flex-shrink-0 mt-1 relative">
+                  {!notif.is_read && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                    </span>
+                  )}
+                  <div className={`w-9 h-9 rounded-2xl border flex items-center justify-center shadow-3xs transition-transform group-hover:scale-105 ${getNotifIconBg(notif.type)}`}>
+                    {getNotifIcon(notif.type)}
+                  </div>
                 </div>
 
-                {/* Body Text Content */}
-                <div className="flex-1 space-y-0.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                {/* Body Content */}
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-xs sm:text-[13px] font-bold text-slate-800 leading-snug">
                       {notif.title}
                     </h3>
-                    <span className="text-[10px] text-slate-400 font-normal whitespace-nowrap">
+                    <span className="text-[9.5px] text-slate-400 font-normal whitespace-nowrap pt-0.5">
                       {notif.time_ago}
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-slate-600 font-medium leading-snug">
+                  <p className="text-[11px] text-slate-500 font-normal leading-relaxed break-words">
                     {notif.message}
                   </p>
-                </div>
 
-                {/* Right Action Buttons */}
-                <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
-                  {notif.link && (
+                  {/* Actions Inline Footer Row - Premium Minimalist Buttons */}
+                  <div className="pt-2 flex items-center gap-3">
+                    {notif.link && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!notif.is_read) markReadMutation.mutate(notif.id);
+                          navigate(notif.link!);
+                        }}
+                        className="text-[10.5px] font-bold text-[#04593f] hover:text-emerald-900 flex items-center gap-0.5 cursor-pointer active:scale-95 transition-all"
+                      >
+                        <span>Lihat Detail</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+
+                    <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+
                     <button
                       type="button"
                       onClick={() => {
-                        if (!notif.is_read) markReadMutation.mutate(notif.id);
-                        navigate(notif.link!);
+                        if (confirm('Hapus notifikasi ini?')) {
+                          deleteNotifMutation.mutate(notif.id);
+                        }
                       }}
-                      className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      disabled={deleteNotifMutation.isPending}
+                      className="text-[10.5px] font-medium text-slate-400 hover:text-rose-600 flex items-center gap-1 cursor-pointer active:scale-95 transition-all"
                     >
-                      <span>Buka</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3 h-3" />
+                      <span>Hapus</span>
                     </button>
-                  )}
-                  
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (confirm('Hapus notifikasi ini?')) {
-                        deleteNotifMutation.mutate(notif.id);
-                      }
-                    }}
-                    disabled={deleteNotifMutation.isPending}
-                    className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl flex items-center justify-center cursor-pointer transition-colors"
-                    title="Hapus Notifikasi"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  </div>
                 </div>
               </div>
             ))}
