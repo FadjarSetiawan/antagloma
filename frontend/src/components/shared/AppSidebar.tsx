@@ -67,7 +67,7 @@ export const AppSidebar: React.FC = () => {
     { label: 'Discount', to: '/management/discount', icon: Wallet, show: role === 'owner' },
     {
       label: 'Riwayat Pesanan',
-      to: '/dashboard#riwayat-pesanan',
+      to: '/orders?status=COMPLETED',
       icon: History,
       show: role === 'sales' || role === 'admin',
     },

@@ -25,11 +25,11 @@ export const MobileBottomNav: React.FC = () => {
   const role = user?.role;
 
   // Active slots for Sales, Admin, Owner
-  let rightTab3 = { label: 'Riwayat Pesanan', to: '/dashboard#riwayat-pesanan', icon: History };
+  let rightTab3 = { label: 'Riwayat Pesanan', to: '/orders?status=COMPLETED', icon: History };
   let centerTab = { label: 'Buat Order', to: '/orders/create', icon: Plus };
 
   if (role === 'admin') {
-    rightTab3 = { label: 'Riwayat Pesanan', to: '/dashboard#riwayat-pesanan', icon: History };
+    rightTab3 = { label: 'Riwayat Pesanan', to: '/orders?status=COMPLETED', icon: History };
     centerTab = { label: 'Buat Order', to: '/orders/create', icon: Plus };
   } else if (role === 'owner') {
     rightTab3 = { label: 'Laporan', to: '/reports', icon: FileText };
@@ -47,8 +47,7 @@ export const MobileBottomNav: React.FC = () => {
     activeIndex = 2;
   } else if (
     (role === 'owner' && location.pathname.startsWith('/reports')) ||
-    (role === 'admin' && location.pathname === '/dashboard') ||
-    (role === 'sales' && location.pathname === '/dashboard' && location.hash === '#riwayat-pesanan')
+    ((role === 'sales' || role === 'admin') && location.pathname.startsWith('/orders') && location.search.includes('status=COMPLETED'))
   ) {
     activeIndex = 3;
   } else if (location.pathname.startsWith('/orders')) {
