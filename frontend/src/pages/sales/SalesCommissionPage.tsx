@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { commissionService, CommissionItem } from '../../services/commissionService';
-import { Wallet, Calendar, ArrowLeft, CheckCircle2, ChevronDown, Award, TrendingUp } from 'lucide-react';
+import { Wallet, Calendar, ArrowLeft, CheckCircle2, ChevronDown, Award, TrendingUp, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const SalesCommissionPage: React.FC = () => {
@@ -100,40 +100,48 @@ export const SalesCommissionPage: React.FC = () => {
         <h2 className="text-base font-black text-slate-900">Riwayat Komisi</h2>
 
         {isLoading ? (
-          <div className="bg-white border-2 border-slate-200 rounded-3xl p-8 text-center text-xs font-bold text-slate-500">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-8 text-center text-xs font-bold text-slate-500 shadow-2xs">
             Memuat data riwayat komisi...
           </div>
         ) : historyList.length === 0 ? (
-          <div className="bg-white border-2 border-slate-200 rounded-3xl p-8 text-center space-y-2 shadow-xs">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-8 text-center space-y-2 shadow-2xs">
             <TrendingUp className="w-8 h-8 text-slate-300 mx-auto" />
             <p className="text-xs font-bold text-slate-600">Belum ada riwayat komisi pada bulan ini.</p>
-            <p className="text-[11px] text-slate-400">Buat pesanan baru untuk mendapatkan komisi penjualan 5%.</p>
+            <p className="text-[11px] text-slate-400">Buat pesanan baru untuk mendapatkan komisi penjualan.</p>
           </div>
         ) : (
-          <div className="bg-white border-2 border-slate-200 rounded-3xl p-4 sm:p-5 shadow-xs space-y-3 divide-y divide-slate-100">
+          <div className="space-y-2.5">
             {historyList.map((item, idx) => (
-              <div key={item.id || idx} className={`${idx > 0 ? 'pt-4' : ''} flex items-center justify-between gap-3`}>
+              <div key={item.id || idx} className="bg-white border border-slate-200/90 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-2xs">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center flex-shrink-0">
-                    <Wallet className="w-6 h-6" />
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center flex-shrink-0">
+                    <Wallet className="w-5 h-5 text-[#04593f]" />
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-black text-slate-900">Komisi Penjualan</h3>
-                    <p className="text-xs font-extrabold text-slate-600 mt-0.5">{item.date}</p>
-                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">
+                    <h3 className="text-[12px] font-black text-slate-800 leading-tight">Komisi Penjualan</h3>
+                    <p className="text-[10px] font-semibold text-slate-400 mt-0.5">{item.date}</p>
+                    <p className="text-[10.5px] text-slate-500 font-medium mt-0.5">
                       {item.order_number} • {item.customer_name} ({item.item_count} pesanan)
                     </p>
                   </div>
                 </div>
 
-                <div className="text-right flex flex-col items-end space-y-1">
-                  <span className="text-sm sm:text-base font-black text-emerald-800">
+                <div className="text-right flex flex-col items-end space-y-1.5">
+                  <span className="text-[13px] font-black text-[#04593f]">
                     Rp {item.commission.toLocaleString('id-ID')}
                   </span>
-                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg text-[9px] font-normal leading-tight flex items-center gap-1 shadow-xs">
-                    <CheckCircle2 className="w-2.5 h-2.5 text-emerald-700" />
-                    <span>Sudah Dibayarkan</span>
-                  </span>
+                  
+                  {item.commission > 0 ? (
+                    <span className="px-2 py-0.5 bg-emerald-50 text-[#04593f] border border-emerald-200 rounded-md text-[9px] font-medium leading-none flex items-center gap-0.5">
+                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-700" />
+                      <span>Sudah Dibayarkan</span>
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-md text-[9px] font-medium leading-none flex items-center gap-0.5">
+                      <Clock className="w-2.5 h-2.5 text-slate-500" />
+                      <span>Menunggu Verifikasi</span>
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
