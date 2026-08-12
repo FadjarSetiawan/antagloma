@@ -16,7 +16,13 @@ const packageType = (order: Order, pkg: OrderPackage) => {
 };
 
 const hasPackagePhoto = (pkg: OrderPackage) => Boolean(pkg.photo_uploaded && pkg.packing_images?.length);
-const packageLabel = (order: Order, pkg: OrderPackage) => `Paket ${pkg.letter} — ${packageType(order, pkg)}`;
+const packageLabel = (order: Order, pkg: OrderPackage) => {
+  const typeStr = packageType(order, pkg);
+  const itemsList = pkg.items?.map(i => i.product_name || 'Tanaman').join(', ');
+  return itemsList 
+    ? `Paket ${pkg.letter} — ${typeStr} — ${itemsList}`
+    : `Paket ${pkg.letter} — ${typeStr}`;
+};
 
 export const SalesDashboard: React.FC = () => {
   const location = useLocation();
