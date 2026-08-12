@@ -53,7 +53,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           <div className="flex items-center gap-1.5">
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
+              className="min-h-9 px-2.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[11px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Cetak Nota</span>
@@ -68,44 +68,60 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
         </div>
 
         {/* Printable Nota Body Container */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 print-area text-slate-900 font-sans text-xs">
+        <div className="p-3 sm:p-4 overflow-y-auto space-y-2.5 print-area text-slate-900 font-sans text-xs">
           {/* Print specific style overrides */}
           <style>{`
             @media print {
+              html, body {
+                width: 80mm !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+              }
               body * {
                 visibility: hidden;
               }
               .print-area, .print-area * {
-                visibility: visible;
+                visibility: visible !important;
               }
               .print-area {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                padding: 5mm !important;
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
+                height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                padding: 3mm !important;
                 margin: 0 !important;
+              }
+              .print-area table,
+              .print-area tr {
+                break-inside: avoid;
               }
               .no-print {
                 display: none !important;
               }
               @page {
-                size: portrait;
-                margin: 5mm;
+                size: 80mm auto;
+                margin: 0;
               }
             }
           `}</style>
 
           {/* Header Store & Order Info Block */}
-          <div className="border-b border-slate-300 pb-2.5 flex justify-between items-start gap-2">
+          <div className="border-b border-slate-300 pb-2 flex justify-between items-start gap-2">
             <div className="space-y-0.5">
               <div className="flex items-center gap-1.5">
                 <Sprout className="w-4 h-4 text-[#04593f] flex-shrink-0" />
-                <span className="font-extrabold text-xs uppercase tracking-wide text-slate-900 block leading-none">
+                <span className="font-semibold text-[11px] uppercase tracking-wide text-slate-900 block leading-none">
                   ANTAGLOMA FLORIST
                 </span>
               </div>
-              <p className="text-[10px] font-bold text-slate-700">
+              <p className="text-[9px] font-medium text-slate-700">
                 Spesialis Adenium Bunga Tumpuk
               </p>
               <p className="text-[9px] text-slate-500 leading-tight">
@@ -114,27 +130,27 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
             </div>
 
             <div className="text-right flex-shrink-0">
-              <span className="inline-block px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-[#04593f] font-bold text-[9px] rounded uppercase tracking-wider mb-0.5">
+              <span className="inline-block px-1.5 py-0.5 bg-emerald-50 border border-emerald-200 text-[#04593f] font-medium text-[8px] rounded uppercase tracking-wider mb-0.5">
                 NOTA PACKING
               </span>
-              <p className="font-bold text-xs text-slate-900 block">{order.order_number}</p>
+              <p className="font-medium text-[11px] text-slate-900 block">{order.order_number}</p>
               <p className="text-[10px] text-slate-400 font-medium">Tgl: {formattedDate}</p>
-              {packageInfo && <p className="text-[10px] text-[#04593f] font-bold">Paket {packageInfo.letter}</p>}
+              {packageInfo && <p className="text-[9px] text-[#04593f] font-medium">Paket {packageInfo.letter}</p>}
             </div>
           </div>
 
           {/* Receiver & Address Box */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 text-xs">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-2.5 space-y-1.5 text-xs">
             <div>
               <span className="text-[9px] font-bold uppercase text-slate-400 block mb-0.5">
                 PENERIMA / CUSTOMER
               </span>
-              <span className="font-bold text-slate-900 block text-xs">{order.customer_name}</span>
+              <span className="font-medium text-slate-900 block text-[11px]">{order.customer_name}</span>
               <span className="font-medium text-slate-600 text-[11px] block">{order.phone}</span>
-              <span className="inline-block mt-1 px-2 py-0.5 bg-[#04593f] text-white font-bold text-[10px] rounded">
+              <span className="inline-block mt-1 px-1.5 py-0.5 bg-[#04593f] text-white font-medium text-[9px] rounded">
                 Metode Kirim: {packageType}
               </span>
-              {packageInfo && <span className="inline-block mt-1 ml-1 px-2 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 font-bold text-[10px] rounded">Berat: {packageWeight}</span>}
+              {packageInfo && <span className="inline-block mt-1 ml-1 px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 font-medium text-[9px] rounded">Berat: {packageWeight}</span>}
             </div>
 
             <div className="pt-1.5 border-t border-slate-200/80">
@@ -155,7 +171,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
             <span className="text-[10px] font-bold uppercase text-slate-400 block">
               ITEM TANAMAN & BONSAI POT
             </span>
-            <div className="border border-slate-200 rounded-xl overflow-hidden">
+            <div className="border border-slate-200 rounded-lg overflow-hidden">
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-bold text-[10px]">
                   <tr>
@@ -165,7 +181,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                     <th className="py-1.5 px-2 text-center w-10">Qty</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-semibold text-slate-800 text-[11px]">
+                <tbody className="divide-y divide-slate-100 font-normal text-slate-800 text-[10px]">
                 {packageItems.length > 0 ? (
                   packageItems.map((item, idx) => {
                     const itemName = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name);
@@ -173,17 +189,17 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                     <tr key={idx} className="hover:bg-slate-50">
                         <td className="py-1.5 px-2 text-center">{idx + 1}</td>
                         <td className="py-1.5 px-2">
-                          <span className="font-bold text-slate-900 block">{itemName}</span>
+                          <span className="font-medium text-slate-900 block">{itemName}</span>
                           {'tree_code' in item && item.tree_code && (
                             <span className="text-[9px] text-slate-400 font-normal">Code: {item.tree_code}</span>
                           )}
                         </td>
                         <td className="py-1.5 px-2">
-                          <span className="px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-[9px] font-bold">
+                          <span className="px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-[8px] font-normal">
                             {'grade' in item ? `Grade ${item.grade || 'A'}` : 'Package'}
                           </span>
                         </td>
-                        <td className="py-1.5 px-2 text-center font-bold">{item.quantity}</td>
+                        <td className="py-1.5 px-2 text-center font-medium">{item.quantity}</td>
                       </tr>
                     );
                   })
