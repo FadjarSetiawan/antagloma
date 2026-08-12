@@ -56,23 +56,31 @@ export const OrderListPage: React.FC = () => {
   const [shipmentPackage, setShipmentPackage] = useState<OrderPackage | null>(null);
   const [verifyingOrder, setVerifyingOrder] = useState<Order | null>(null);
   const [isVerifyChecked, setIsVerifyChecked] = useState(false);
+  const role = user?.role;
 
   const { data, isLoading } = useQuery({
-    queryKey: ['orders-list', search, statusFilter, orderDateFilter],
+    queryKey: ['orders-list', search, statusFilter, orderDateFilter, role],
     queryFn: async () => {
       // Fetch orders
       const res = await orderService.getOrders({ search, status: statusFilter === 'COMPLETED' ? undefined : statusFilter, order_date: orderDateFilter || undefined, per_page: 200 });
       if (statusFilter === 'COMPLETED') {
-        // Filter orders that are fully shipped/completed on client-side to reflect both COMPLETED status and PACKING_COMPLETED with tracked packages
         res.data = res.data.filter((order) => {
-          if (order.status === 'COMPLETED') return true;
-          if (order.status === 'PACKING_COMPLETED') {
-            if (order.packages && order.packages.length > 0) {
-              return order.packages.every(pkg => pkg.tracking_number);
+          if (role === 'admin') {
+            // Admin: pesanan yang sudah diinput Resinya (baik status COMPLETED maupun PACKING_COMPLETED yang semua resinya terisi)
+            if (order.status === 'COMPLETED') return true;
+            if (order.status === 'PACKING_COMPLETED') {
+              if (order.packages && order.packages.length > 0) {
+                return order.packages.every(pkg => pkg.tracking_number && pkg.tracking_number.trim() !== '');
+              }
+              return !!order.tracking_number && order.tracking_number.trim() !== '';
             }
-            return !!order.tracking_number;
+            return false;
+          } else if (role === 'sales') {
+            // Sales: pesanan yang sudah diklik "Sudah di infokan" (memiliki sales_informed_at)
+            return !!order.sales_informed_at;
           }
-          return false;
+          // Default for owner or other roles: completed status
+          return order.status === 'COMPLETED' || !!order.sales_informed_at;
         });
       }
       return res;
@@ -119,8 +127,6 @@ export const OrderListPage: React.FC = () => {
   const handleConfirmShipment = async (orderId: number, payload: { shipping_cost: number; tracking_number: string }) => {
     await shipmentMutation.mutateAsync({ id: orderId, payload });
   };
-
-  const role = user?.role;
 
   const statusOptions = [
     { value: '', label: 'Semua Status' },
