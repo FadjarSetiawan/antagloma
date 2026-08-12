@@ -44,11 +44,14 @@ export const SalesDashboard: React.FC = () => {
   const waitingPackingOrders = orders.filter(o => o.status === 'WAITING_PACKING' && !!o.packages?.length);
   const waitingPackingPackageCount = waitingPackingOrders.reduce((sum, order) => sum + (order.packages?.length || 0), 0);
   const completedPackageCount = completed.reduce((sum, order) => sum + (order.packages?.length || 0), 0);
+  const [showWaitingPacking, setShowWaitingPacking] = useState(false);
+  const [showPackingSelesai, setShowPackingSelesai] = useState(false);
+
   const summaryCards = [
     { title: 'Menunggu Verifikasi', count: waitingVerification.length, detail: 'Semua verifikasi', icon: <Clock className="w-5 h-5" />, action: 'Lihat Order', onClick: () => window.location.assign('/orders?status=WAITING_PROCESS') },
     { title: 'Menunggu Atur Paket', count: waitingConfigure.length, detail: `${waitingConfigure.length} paket siap diatur`, icon: <Package className="w-5 h-5" />, action: 'Cek Status', onClick: () => window.location.assign('/orders?status=WAITING_PACKING') },
-    { title: 'Menunggu Packing', count: waitingPackingPackageCount, detail: `${waitingPackingPackageCount} sedang dikemas`, icon: <Package className="w-5 h-5" />, action: 'Cek Antrian', onClick: () => document.getElementById('waiting-packing')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) },
-    { title: 'Packing Selesai', count: completedPackageCount, detail: `${completedPackageCount} foto paket dikirim`, icon: <CheckCircle2 className="w-5 h-5" />, action: 'Lihat Selesai', onClick: () => document.getElementById('packing-selesai')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) },
+    { title: 'Menunggu Packing', count: waitingPackingPackageCount, detail: `${waitingPackingPackageCount} sedang dikemas`, icon: <Package className="w-5 h-5" />, action: showWaitingPacking ? 'Tutup Antrian' : 'Cek Antrian', onClick: () => setShowWaitingPacking(v => !v) },
+    { title: 'Packing Selesai', count: completedPackageCount, detail: `${completedPackageCount} foto paket dikirim`, icon: <CheckCircle2 className="w-5 h-5" />, action: showPackingSelesai ? 'Tutup Daftar' : 'Lihat Selesai', onClick: () => setShowPackingSelesai(v => !v) },
   ];  const plants = (o: Order) => o.items?.map(i => `${i.product_name} ×${i.quantity}`) || [];
 
   // ── Grade & Plant Performance Report ──
@@ -56,8 +59,7 @@ export const SalesDashboard: React.FC = () => {
   const [showPlantPerf, setShowPlantPerf] = useState(false);
   const [showAllSold, setShowAllSold] = useState(false);
   const [reportPeriod, setReportPeriod] = useState<'all' | 'month' | 'today'>('today');
-  const [showWaitingPacking, setShowWaitingPacking] = useState(false);
-  const [showPackingSelesai, setShowPackingSelesai] = useState(false);
+
 
   const { data: masterTrees = [] } = useQuery({
     queryKey: ['master-trees-sales'],
@@ -113,65 +115,35 @@ export const SalesDashboard: React.FC = () => {
     <section aria-label="Ringkasan status pesanan" className="grid grid-cols-2 gap-2.5 sm:gap-3.5">{summaryCards.map(card => <article key={card.title} className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all group"><div className="flex items-start justify-between gap-2"><span className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">{card.icon}</span><strong className="text-xl sm:text-2xl leading-none text-slate-950">{card.count}</strong></div><div><h2 className="text-xs font-bold text-slate-800 leading-tight block">{card.title}</h2><p className="mt-1 flex items-center text-[10px] text-slate-400 leading-none truncate">{card.detail}</p></div><button onClick={card.onClick} className="w-full py-1.5 px-2 bg-emerald-50 group-hover:bg-[#04593f] text-[#04593f] group-hover:text-white rounded-xl text-[10px] sm:text-xs font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"><span>{card.action}</span><span aria-hidden="true">›</span></button></article>)}</section>
 
 
-    {/* ── MENUNGGU PACKING (collapsible) ── */}
-    <button type="button" id="waiting-packing"
-      onClick={() => setShowWaitingPacking(v => !v)}
-      className="w-full bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center justify-between text-left shadow-2xs hover:border-amber-400 transition-colors cursor-pointer">
-      <span className="flex items-center gap-3">
-        <span className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-          <Package className="w-4 h-4" />
-        </span>
-        <span>
-          <span className="block text-sm font-bold text-slate-900 flex items-center gap-2">
-            Menunggu Packing
-            {waiting.length > 0 && (
-              <span className="ml-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full">{waiting.length} Order</span>
-            )}
-          </span>
-          <span className="block text-[10px] text-slate-400 mt-0.5">
-            {waiting.length === 0 ? 'Tidak ada order menunggu packing' : `${waiting.length} order sedang menunggu dikemas`}
-          </span>
-        </span>
-      </span>
-      {showWaitingPacking ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-    </button>
+
+    {/* ── CONDITIONAL LISTS RENDERED DIRECTLY BELOW THE 2x2 CARD GRID ── */}
     {showWaitingPacking && (
-      <div className="grid grid-cols-2 auto-rows-fr gap-2.5 sm:gap-3">
-        {waiting.length === 0
-          ? <Empty text="Belum ada order menunggu packing." />
-          : waiting.map(o => <article key={o.id} className="h-full bg-white border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5 shadow-2xs"><div className="flex flex-col gap-1.5"><div><b className="text-[11px] break-words">{o.order_number}</b><p className="font-bold text-sm mt-1">{o.customer_name}</p></div><span className="h-fit rounded-full bg-amber-50 border border-amber-200 px-2 py-1 text-[10px] font-bold text-amber-800">Menunggu Packing</span></div><div><p className="text-[10px] font-bold uppercase text-slate-400">Pesanan</p><ul className="mt-1 text-xs text-slate-600 space-y-0.5">{plants(o).map(p => <li key={p}>• {p}</li>)}</ul></div>{o.packages?.length ? <div className="text-xs"><p className="font-bold text-slate-400 mb-1">Jenis Paket</p><div className="space-y-0.5">{o.packages.map(p => <p key={p.id} className="text-slate-700">{packageLabel(o, p)}</p>)}</div></div> : null}<button onClick={() => setDetail(o)} className="self-start min-h-9 px-4 py-1.5 bg-emerald-50 text-[#04593f] rounded-xl text-[10px] font-extrabold inline-flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"><Eye className="inline w-4 h-4 mr-1" />Lihat Detail</button></article>)
-        }
+      <div className="space-y-3 mt-2 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+        <h3 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse inline-block" />
+          Daftar Antrean Menunggu Packing ({waiting.length} Order)
+        </h3>
+        <div className="grid grid-cols-2 auto-rows-fr gap-2.5 sm:gap-3">
+          {waiting.length === 0
+            ? <Empty text="Belum ada order menunggu packing." />
+            : waiting.map(o => <article key={o.id} className="h-full bg-white border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5 shadow-2xs"><div className="flex flex-col gap-1.5"><div><b className="text-[11px] break-words">{o.order_number}</b><p className="font-bold text-sm mt-1">{o.customer_name}</p></div><span className="h-fit rounded-full bg-amber-50 border border-amber-200 px-2 py-1 text-[10px] font-bold text-amber-800">Menunggu Packing</span></div><div><p className="text-[10px] font-bold uppercase text-slate-400">Pesanan</p><ul className="mt-1 text-xs text-slate-600 space-y-0.5">{plants(o).map(p => <li key={p}>• {p}</li>)}</ul></div>{o.packages?.length ? <div className="text-xs"><p className="font-bold text-slate-400 mb-1">Jenis Paket</p><div className="space-y-0.5">{o.packages.map(p => <p key={p.id} className="text-slate-700">{packageLabel(o, p)}</p>)}</div></div> : null}<button onClick={() => setDetail(o)} className="self-start min-h-9 px-4 py-1.5 bg-emerald-50 text-[#04593f] rounded-xl text-[10px] font-extrabold inline-flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"><Eye className="inline w-4 h-4 mr-1" />Lihat Detail</button></article>)
+          }
+        </div>
       </div>
     )}
 
-    {/* ── PACKING SELESAI (collapsible) ── */}
-    <button type="button" id="packing-selesai"
-      onClick={() => setShowPackingSelesai(v => !v)}
-      className="w-full bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center justify-between text-left shadow-2xs hover:border-emerald-400 transition-colors cursor-pointer">
-      <span className="flex items-center gap-3">
-        <span className="w-9 h-9 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center">
-          <CheckCircle2 className="w-4 h-4" />
-        </span>
-        <span>
-          <span className="block text-sm font-bold text-slate-900 flex items-center gap-2">
-            Packing Selesai
-            {completed.length > 0 && (
-              <span className="ml-1 px-2 py-0.5 bg-emerald-100 text-[#04593f] text-[10px] font-bold rounded-full">{completedPackageCount} Paket</span>
-            )}
-          </span>
-          <span className="block text-[10px] text-slate-400 mt-0.5">
-            {completed.length === 0 ? 'Belum ada paket dengan foto' : `${completedPackageCount} paket sudah ada foto, menunggu resi`}
-          </span>
-        </span>
-      </span>
-      {showPackingSelesai ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-    </button>
     {showPackingSelesai && (
-      <div className="grid grid-cols-2 auto-rows-fr gap-2.5 sm:gap-3">
-        {completed.length === 0
-          ? <Empty text="Belum ada package dengan foto." />
-          : completed.map(o => <OrderPackageCard key={o.id} order={o} onPhoto={setPhotos} />)
-        }
+      <div className="space-y-3 mt-2 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+        <h3 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#04593f] inline-block" />
+          Daftar Paket Selesai Packing ({completedPackageCount} Paket)
+        </h3>
+        <div className="grid grid-cols-2 auto-rows-fr gap-2.5 sm:gap-3">
+          {completed.length === 0
+            ? <Empty text="Belum ada package dengan foto." />
+            : completed.map(o => <OrderPackageCard key={o.id} order={o} onPhoto={setPhotos} />)
+          }
+        </div>
       </div>
     )}
 
