@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { commissionService } from '../../services/commissionService';
+import { commissionService, CommissionItem } from '../../services/commissionService';
 import { Wallet, Calendar, ArrowLeft, CheckCircle2, ChevronDown, Award, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,7 +16,7 @@ export const SalesCommissionPage: React.FC = () => {
   });
 
   const payload = commissionData?.data;
-  const historyList = payload?.history || [];
+  const historyList: CommissionItem[] = payload?.history || [];
   const monthlyCommission = payload?.monthly_commission || 0;
 
   // Month choices for dropdown
