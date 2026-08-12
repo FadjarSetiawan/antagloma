@@ -96,9 +96,24 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
             {/* Customer & Shipping Info Box */}
             <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 space-y-2">
-              <span className="text-[10px] font-bold uppercase text-slate-400 block border-b border-slate-200/80 pb-1.5 tracking-wider">
-                INFORMASI PEMESAN & PENGIRIMAN
-              </span>
+              <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5">
+                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                  INFORMASI PEMESAN & PENGIRIMAN
+                </span>
+                {isOwnerOrAdmin && onEdit && (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onEdit(order);
+                    }}
+                    className="flex items-center gap-1 text-[11px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-100/60 hover:bg-emerald-200/60 px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
+                    title="Edit Informasi Pemesan"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 text-emerald-800" />
+                    <span>Edit Info</span>
+                  </button>
+                )}
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5 text-xs">
                 <div className="space-y-1">

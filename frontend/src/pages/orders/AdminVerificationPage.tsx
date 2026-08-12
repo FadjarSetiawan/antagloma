@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
+import { OrderEditModal } from '../../components/orders/OrderEditModal';
 import { Order } from '../../types/order';
+import { UpdateOrderPayload } from '../../services/orderService';
 import {
   ArrowLeft,
   Search,
@@ -16,7 +18,8 @@ import {
   Check,
   Building2,
   Wallet,
-  Truck,} from 'lucide-react';
+  Truck,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const AdminVerificationPage: React.FC = () => {
@@ -25,6 +28,7 @@ export const AdminVerificationPage: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [zoomProofUrl, setZoomProofUrl] = useState<string | null>(null);
   const [verifiedSuccessNum, setVerifiedSuccessNum] = useState<string | null>(null);
   const [rejectedSuccessNum, setRejectedSuccessNum] = useState<string | null>(null);
@@ -39,6 +43,16 @@ export const AdminVerificationPage: React.FC = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['orders-verification', search],
     queryFn: () => orderService.getOrders({ status: 'WAITING_PROCESS', search }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: UpdateOrderPayload }) =>
+      orderService.updateOrder(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders-verification'] });
+      queryClient.invalidateQueries({ queryKey: ['orders-list'] });
+      setEditingOrder(null);
+    },
   });
 
   const approveMutation = useMutation({
@@ -455,12 +469,22 @@ export const AdminVerificationPage: React.FC = () => {
           setVerifyingOrder(order);
           setIsVerifyChecked(false);
         }}
+        onEdit={(ord) => setEditingOrder(ord)}
         onDelete={(id) => {
           const order = orders.find((item) => item.id === id) ?? selectedOrder;
           if (!order) return;
           setSelectedOrder(null);
           setRejectingOrder(order);
           setSelectedRejectReason('');
+        }}
+      />
+
+      {/* Order Edit Modal for Admin */}
+      <OrderEditModal
+        order={editingOrder}
+        onClose={() => setEditingOrder(null)}
+        onSubmit={async (id, payload) => {
+          await updateMutation.mutateAsync({ id, payload });
         }}
       />
     </div>
