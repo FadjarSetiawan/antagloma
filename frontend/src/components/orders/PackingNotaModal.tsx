@@ -9,15 +9,6 @@ interface PackingNotaModalProps {
 }
 
 export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packageInfo, onClose }) => {
-  React.useEffect(() => {
-    if (order) {
-      const timer = setTimeout(() => {
-        window.print();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [order, packageInfo]);
-
   if (!order) return null;
 
   const handlePrint = () => {

@@ -18,15 +18,6 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
   packageInfo,
   onClose,
 }) => {
-  React.useEffect(() => {
-    if (order) {
-      const timer = setTimeout(() => {
-        window.print();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [order, packageInfo]);
-
   if (!order) return null;
 
   const handlePrint = () => {
@@ -122,55 +113,55 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
           `}</style>
 
           {/* Shipping Sticker Box */}
-          <div className="border-[3px] border-slate-900 rounded-xl p-3.5 space-y-3 bg-white h-full flex flex-col justify-between">
+          <div className="border border-slate-200 rounded-xl p-3.5 space-y-3 bg-white flex flex-col justify-between">
             {/* Header Store & Package Barcode */}
-            <div className="border-b-[3px] border-slate-900 pb-3 flex items-start justify-between gap-3">
+            <div className="border-b border-slate-200 pb-3 flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-1.5">
-                  <Sprout className="w-5 h-5 text-emerald-800" />
-                  <span className="font-black text-sm uppercase tracking-wider text-slate-900 block leading-none">
+                  <Sprout className="w-4 h-4 text-[#04593f]" />
+                  <span className="font-semibold text-[11px] uppercase tracking-wide text-slate-900 block leading-none">
                     ANTAGLOMA FLORIST
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-700 font-bold block mt-1">Pengirim: Antagloma Florist</span>
-                <div className="text-[9px] text-slate-700 font-bold leading-normal mt-0.5">
-                  <p className="flex items-center gap-1"><Phone className="w-3 h-3 text-[#04593f]" /> 0858-9450-3333 / 0857-3333-1889</p>
+                <span className="text-[10px] text-slate-500 font-medium block mt-1">Pengirim: Antagloma Florist</span>
+                <div className="text-[9px] text-slate-500 leading-normal mt-0.5">
+                  <p className="flex items-center gap-1"><Phone className="w-3 h-3 text-slate-400" /> 0858-9450-3333 / 0857-3333-1889</p>
                 </div>
               </div>
 
               <div className="text-right flex-shrink-0">
-                <span className="inline-block px-2.5 py-1 bg-slate-900 text-white font-black text-[11px] rounded uppercase tracking-wider">
+                <span className="inline-block px-1.5 py-0.5 bg-emerald-50 border border-emerald-200 text-[#04593f] font-medium text-[8px] rounded uppercase tracking-wider">
                   {pkgType}
                 </span>
-                <p className="font-black text-xs text-slate-900 block mt-1.5 break-words">{subOrderNum}</p>
+                <p className="font-medium text-[11px] text-slate-900 block mt-1.5 break-words">{subOrderNum}</p>
               </div>
             </div>
 
             {/* Receiver Name & Address Large Box */}
-            <div className="p-3 bg-slate-50 border-2 border-slate-900 rounded-lg space-y-2 flex-1 flex flex-col justify-center">
-              <span className="text-[9px] font-black uppercase text-slate-500 block tracking-widest border-b border-slate-300 pb-1">
+            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2 flex-1 flex flex-col justify-center text-xs">
+              <span className="text-[9px] font-bold uppercase text-slate-400 block tracking-wider">
                 PENERIMA / ALAMAT PENGIRIMAN:
               </span>
 
               <div className="space-y-0.5">
-                <h2 className="text-base font-black text-slate-900 block leading-tight">{order.customer_name}</h2>
-                <p className="text-xs font-bold text-slate-800 flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-[#04593f]" /> {order.phone}
+                <h2 className="text-sm font-bold text-slate-900 block leading-tight">{order.customer_name}</h2>
+                <p className="text-[11px] font-medium text-slate-600 flex items-center gap-1 mt-0.5">
+                  <Phone className="w-3.5 h-3.5 text-slate-400" /> {order.phone}
                 </p>
               </div>
 
-              <div className="text-xs font-bold text-slate-950 leading-snug">
-                <p className="font-extrabold uppercase text-[#04593f] text-xs">
+              <div className="pt-1.5 border-t border-slate-200 text-xs font-semibold text-slate-800 leading-snug">
+                <p className="font-bold text-slate-900">
                   Kec. {order.district_name || '-'}, {order.regency_name || '-'}
                 </p>
-                <p className="text-slate-800 font-semibold text-[11px] mt-1 bg-white p-1.5 border border-slate-300 rounded leading-relaxed">
+                <p className="text-slate-700 font-medium text-[11px] mt-0.5 leading-relaxed">
                   {order.full_address}
                 </p>
               </div>
             </div>
 
             {/* Footer Note */}
-            <div className="border-t-[3px] border-slate-900 pt-1.5 flex items-center justify-between text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+            <div className="border-t border-slate-200 pt-1.5 flex items-center justify-between text-[8px] font-bold text-slate-400 uppercase tracking-widest">
               <span>Antagloma Florist</span>
               <span>Stiker Alamat Thermal 10x10 cm</span>
             </div>
