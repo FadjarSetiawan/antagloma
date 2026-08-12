@@ -126,21 +126,71 @@ class CommissionController extends Controller
         $paidOrderIds = CommissionPayoutOrder::whereHas('payout', fn($q) => $q->where('sales_id', $user->id))
             ->pluck('order_id')->toArray();
 
-        // Pending orders (not yet paid)
-        $pendingOrders = Order::with('items')
+        // Fetch all orders of this sales user
+        $allOrders = Order::with('items')
             ->where('created_by', $user->id)
-            ->whereNotIn('id', $paidOrderIds ?: [0])
             ->orderBy('order_date', 'desc')
             ->get();
 
-        $pendingCalc = self::calcOrders($pendingOrders, $rate);
+        $summary = [
+            'waiting_verification' => 0, // WAITING_PROCESS
+            'verified'             => 0, // WAITING_PACKING, PACKING_COMPLETED, COMPLETED (not yet paid)
+            'paid'                 => 0, // Paid via payout
+            'rejected'             => 0, // CANCELLED
+        ];
 
-        // Today's pending commission
-        $todayStr = now()->format('Y-m-d');
-        $todayOrders = $pendingOrders->filter(function ($o) use ($todayStr) {
-            return Carbon::parse($o->order_date)->format('Y-m-d') === $todayStr;
-        });
-        $todayCalc = self::calcOrders($todayOrders, $rate);
+        $orderHistory = [];
+
+        foreach ($allOrders as $order) {
+            $plantTotal = 0;
+            foreach ($order->items as $item) {
+                $plantTotal += (float) $item->price;
+            }
+
+            $statusVal = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
+            $isPaid = in_array($order->id, $paidOrderIds, true);
+
+            $orderCommission = 0;
+            $statusLabel = '';
+            $statusKey = '';
+
+            if ($statusVal === 'CANCELLED') {
+                $statusKey = 'rejected';
+                $statusLabel = 'Pembayaran ditolak';
+            } elseif ($isPaid) {
+                $statusKey = 'paid';
+                $statusLabel = 'Sudah dibayarkan';
+                $orderCommission = round($plantTotal * $rate / 100);
+            } elseif ($statusVal === 'WAITING_PROCESS') {
+                $statusKey = 'waiting_verification';
+                $statusLabel = 'Menunggu Verifikasi';
+            } else {
+                // WAITING_PACKING, PACKING_COMPLETED, COMPLETED (unpaid)
+                $statusKey = 'verified';
+                $statusLabel = 'Terverifikasi';
+                $orderCommission = round($plantTotal * $rate / 100);
+            }
+
+            $summary[$statusKey] += $orderCommission;
+
+            $deliveryMethodVal = $order->delivery_method instanceof \BackedEnum
+                ? $order->delivery_method->value
+                : (string) ($order->delivery_method ?? '');
+
+            $orderHistory[] = [
+                'id'              => $order->id,
+                'order_number'    => $order->order_number,
+                'customer_name'   => $order->customer_name,
+                'delivery_method' => $deliveryMethodVal,
+                'date'            => Carbon::parse($order->order_date)->locale('id')->translatedFormat('d M Y'),
+                'raw_date'        => $order->order_date,
+                'plant_total'     => $plantTotal,
+                'commission'      => $orderCommission,
+                'status_key'      => $statusKey,
+                'status_label'    => $statusLabel,
+                'is_paid'         => $isPaid,
+            ];
+        }
 
         // Payout history — all payouts for this sales, ordered newest first
         $payouts = CommissionPayout::with(['orders.items'])
@@ -176,18 +226,10 @@ class CommissionController extends Controller
         return response()->json([
             'success' => true,
             'data'    => [
-                'commission_rate'       => $rate,
-                // Pending
-                'pending_commission'    => $pendingCalc['commission'],
-                'pending_plant_total'   => $pendingCalc['plantTotal'],
-                'pending_order_count'   => $pendingCalc['orderCount'],
-                'pending_orders'        => $pendingCalc['items'],
-                // Today subset of pending
-                'today_commission'      => $todayCalc['commission'],
-                'today_plant_total'     => $todayCalc['plantTotal'],
-                'today_order_count'     => $todayCalc['orderCount'],
-                // Payout history
-                'payout_history'        => $payoutHistory->values()->all(),
+                'commission_rate' => $rate,
+                'summary'         => $summary,
+                'history'         => $orderHistory,
+                'payout_history'  => $payoutHistory->values()->all(),
             ],
         ]);
     }

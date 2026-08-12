@@ -50,15 +50,31 @@ export interface PayoutHistory {
   orders: PreviewOrder[];
 }
 
+export interface SalesCommissionHistoryItem {
+  id: number;
+  order_number: string;
+  customer_name: string;
+  delivery_method: string;
+  date: string;
+  raw_date: string;
+  plant_total: number;
+  commission: number;
+  status_key: 'waiting_verification' | 'verified' | 'paid' | 'rejected';
+  status_label: string;
+  is_paid: boolean;
+}
+
+export interface SalesCommissionSummary {
+  waiting_verification: number;
+  verified: number;
+  paid: number;
+  rejected: number;
+}
+
 export interface SalesCommissionData {
   commission_rate: number;
-  pending_commission: number;
-  pending_plant_total: number;
-  pending_order_count: number;
-  pending_orders: PreviewOrder[];
-  today_commission: number;
-  today_plant_total: number;
-  today_order_count: number;
+  summary: SalesCommissionSummary;
+  history: SalesCommissionHistoryItem[];
   payout_history: PayoutHistory[];
 }
 
