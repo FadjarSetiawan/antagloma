@@ -21,8 +21,20 @@ class NotificationController extends Controller
             $dbNotifications = collect();
             try {
                 $dbNotifications = AppNotification::where(function ($query) use ($user, $role) {
-                    $query->where('user_id', $user->id)
-                          ->orWhere('target_role', $role);
+                    // Personal notifications: addressed directly to this user (user_id matches)
+                    // Only shown if no target_role set (broadcast to user) OR target_role matches current user's role
+                    $query->where(function ($q) use ($user, $role) {
+                        $q->where('user_id', $user->id)
+                          ->where(function ($qq) use ($role) {
+                              $qq->whereNull('target_role')
+                                 ->orWhere('target_role', $role);
+                          });
+                    })
+                    // Role-broadcast notifications: sent to this role with no specific user
+                    ->orWhere(function ($q) use ($role) {
+                        $q->where('target_role', $role)
+                          ->whereNull('user_id');
+                    });
                 })
                 ->orderBy('created_at', 'desc')
                 ->limit(50)
@@ -65,10 +77,18 @@ class NotificationController extends Controller
         $user = $request->user();
 
         try {
+            $role = $user->role instanceof \BackedEnum ? $user->role->value : (string) $user->role;
             $notification = AppNotification::where('id', $id)
-                ->where(function ($query) use ($user) {
-                    $query->where('user_id', $user->id)
-                          ->orWhere('target_role', $user->role);
+                ->where(function ($query) use ($user, $role) {
+                    $query->where(function ($q) use ($user, $role) {
+                        $q->where('user_id', $user->id)
+                          ->where(function ($qq) use ($role) {
+                              $qq->whereNull('target_role')->orWhere('target_role', $role);
+                          });
+                    })
+                    ->orWhere(function ($q) use ($role) {
+                        $q->where('target_role', $role)->whereNull('user_id');
+                    });
                 })
                 ->first();
 
@@ -90,9 +110,17 @@ class NotificationController extends Controller
         $user = $request->user();
 
         try {
-            AppNotification::where(function ($query) use ($user) {
-                $query->where('user_id', $user->id)
-                      ->orWhere('target_role', $user->role);
+            $role = $user->role instanceof \BackedEnum ? $user->role->value : (string) $user->role;
+            AppNotification::where(function ($query) use ($user, $role) {
+                $query->where(function ($q) use ($user, $role) {
+                    $q->where('user_id', $user->id)
+                      ->where(function ($qq) use ($role) {
+                          $qq->whereNull('target_role')->orWhere('target_role', $role);
+                      });
+                })
+                ->orWhere(function ($q) use ($role) {
+                    $q->where('target_role', $role)->whereNull('user_id');
+                });
             })
             ->where('is_read', false)
             ->update(['is_read' => true]);
@@ -111,10 +139,18 @@ class NotificationController extends Controller
         $user = $request->user();
 
         try {
+            $role = $user->role instanceof \BackedEnum ? $user->role->value : (string) $user->role;
             $notification = AppNotification::where('id', $id)
-                ->where(function ($query) use ($user) {
-                    $query->where('user_id', $user->id)
-                          ->orWhere('target_role', $user->role);
+                ->where(function ($query) use ($user, $role) {
+                    $query->where(function ($q) use ($user, $role) {
+                        $q->where('user_id', $user->id)
+                          ->where(function ($qq) use ($role) {
+                              $qq->whereNull('target_role')->orWhere('target_role', $role);
+                          });
+                    })
+                    ->orWhere(function ($q) use ($role) {
+                        $q->where('target_role', $role)->whereNull('user_id');
+                    });
                 })
                 ->first();
 
