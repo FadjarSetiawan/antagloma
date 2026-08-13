@@ -246,7 +246,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
               className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold rounded-2xl text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>+ Tambahkan</span>
+              <span>Tambahkan</span>
             </button>
           </div>
         </form>

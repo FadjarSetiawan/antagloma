@@ -537,7 +537,7 @@ export const OrderCreatePage: React.FC = () => {
                 className="w-full sm:w-auto px-5 py-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4 text-white" />
-                <span>+ Tambah Tanaman</span>
+                <span>Tambah Tanaman</span>
               </button>
             </div>
 

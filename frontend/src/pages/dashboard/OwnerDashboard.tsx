@@ -74,7 +74,7 @@ export const OwnerDashboard: React.FC = () => {
           onClick={() => navigate('/orders/create')}
           className="hidden sm:flex px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold items-center gap-1.5 shadow-xs cursor-pointer"
         >
-          <Plus className="w-4 h-4" /> + Buat Order
+          <Plus className="w-4 h-4" /> Buat Order
         </button>
       </div>
 
