@@ -10,10 +10,11 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'    => $this->id,
-            'name'  => $this->name,
-            'email' => $this->email,
-            'role'  => $this->role instanceof \BackedEnum ? $this->role->value : $this->role,
+            'id'              => $this->id,
+            'name'            => $this->name,
+            'email'           => $this->email,
+            'role'            => $this->role instanceof \BackedEnum ? $this->role->value : $this->role,
+            'commission_rate' => (float) ($this->commission_rate ?? 5),
         ];
     }
 }
