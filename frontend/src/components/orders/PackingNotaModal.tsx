@@ -135,41 +135,59 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 margin: 0;
               }
 
-              /* Hide non-printable elements */
-              body * {
-                visibility: hidden !important;
+              html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                width: 80mm !important;
+                height: auto !important;
+                overflow: hidden !important;
               }
 
-              .no-print,
-              .no-print * {
+              /* Hide non-printable elements completely from document flow */
+              body > *:not(#packing-nota-modal-container),
+              .no-print {
                 display: none !important;
               }
 
-              /* Make printable area visible and positioned at top left */
-              #packing-nota-printable,
-              #packing-nota-printable * {
-                visibility: visible !important;
+              #packing-nota-modal-container {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 80mm !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: #ffffff !important;
+                box-shadow: none !important;
+                border: none !important;
+              }
+
+              #packing-nota-modal-container > div {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
               }
 
               #packing-nota-printable {
-                position: fixed !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                top: 0 !important;
+                position: relative !important;
                 width: 78mm !important;
                 max-width: 78mm !important;
                 margin: 0 auto !important;
                 padding: 1.5mm 1mm !important;
                 box-sizing: border-box !important;
                 background: #ffffff !important;
-                overflow: visible !important;
+                overflow: hidden !important;
               }
 
-              /* Disable page breaks */
-              * {
+              /* Disable multi-page overflow breaks */
+              *, *::before, *::after {
                 page-break-inside: avoid !important;
                 page-break-after: avoid !important;
                 page-break-before: avoid !important;
+                break-inside: avoid !important;
               }
             }
           `}</style>

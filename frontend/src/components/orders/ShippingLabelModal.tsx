@@ -127,40 +127,60 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
                 margin: 0;
               }
 
-              /* Hide non-printable elements */
-              body * {
-                visibility: hidden !important;
+              html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                width: 100mm !important;
+                height: 100mm !important;
+                overflow: hidden !important;
               }
 
-              .no-print,
-              .no-print * {
+              /* Hide non-printable elements completely from document flow */
+              body > *:not(#shipping-label-modal-container),
+              .no-print {
                 display: none !important;
               }
 
-              /* Position printable container fixed at 100x100mm */
-              #shipping-label-printable,
-              #shipping-label-printable * {
-                visibility: visible !important;
+              #shipping-label-modal-container {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100mm !important;
+                height: 100mm !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: #ffffff !important;
+                box-shadow: none !important;
+                border: none !important;
+              }
+
+              #shipping-label-modal-container > div {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100mm !important;
+                height: 100mm !important;
               }
 
               #shipping-label-printable {
-                position: fixed !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                top: 0 !important;
+                position: relative !important;
                 width: 98mm !important;
                 height: 98mm !important;
                 margin: 0 auto !important;
                 padding: 1.5mm !important;
                 box-sizing: border-box !important;
                 background: #ffffff !important;
+                overflow: hidden !important;
               }
 
-              /* Disable page breaks */
-              * {
+              /* Disable multi-page overflow breaks */
+              *, *::before, *::after {
                 page-break-inside: avoid !important;
                 page-break-after: avoid !important;
                 page-break-before: avoid !important;
+                break-inside: avoid !important;
               }
             }
           `}</style>
