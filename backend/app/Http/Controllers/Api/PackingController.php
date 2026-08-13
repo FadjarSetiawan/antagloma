@@ -24,7 +24,7 @@ class PackingController extends Controller
     {
         Gate::authorize('managePackingQueue', Order::class);
 
-        // Configuration queue: WAITING_PACKING orders without packages OR orders with partial packages (unallocated plants remaining).
+        // Configuration queue: WAITING_PACKING orders without packages OR orders where total allocated quantity < total required items.
         $orders = Order::with(['creator', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item'])
             ->where('status', 'WAITING_PACKING')
             ->where(function ($query) {
