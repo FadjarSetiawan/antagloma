@@ -295,61 +295,60 @@ export const ReportsPage: React.FC = () => {
         </div>
 
         {/* Sub-Metrics 2x2 Grid */}
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 text-xs relative z-10">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs relative z-10">
           {/* Total Pesanan */}
-          <div className="bg-white/10 backdrop-blur-xs p-3 rounded-xl sm:rounded-2xl border border-white/15 flex items-center gap-3 shadow-2xs">
-            <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-              <FileText className="w-4 h-4 text-emerald-200" />
+          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
+            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
+              <FileText className="w-3.5 h-3.5 text-emerald-200" />
             </div>
-            <div>
-              <span className="text-[10px] text-emerald-200/80 font-medium block">Total Pesanan</span>
-              <span className="text-xs sm:text-sm font-extrabold text-white block mt-0.5">{totalOrdersCount} Pesanan</span>
+            <div className="min-w-0">
+              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Total Pesanan</span>
+              <span className="text-xs font-bold text-white block mt-0.5 truncate">{totalOrdersCount} Pesanan</span>
             </div>
           </div>
 
           {/* Total Tanaman Terjual */}
-          <div className="bg-white/10 backdrop-blur-xs p-3 rounded-xl sm:rounded-2xl border border-white/15 flex items-center gap-3 shadow-2xs">
-            <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-4 h-4 text-emerald-200" />
+          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
+            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-200" />
             </div>
-            <div>
-              <span className="text-[10px] text-emerald-200/80 font-medium block">Total Tanaman Terjual</span>
-              <span className="text-xs sm:text-sm font-extrabold text-white block mt-0.5">{totalPlantsCount} Pohon</span>
+            <div className="min-w-0">
+              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Tanaman Terjual</span>
+              <span className="text-xs font-bold text-white block mt-0.5 truncate">{totalPlantsCount} Pohon</span>
             </div>
           </div>
 
           {/* Total Paket Dikirim */}
-          <div className="bg-white/10 backdrop-blur-xs p-3 rounded-xl sm:rounded-2xl border border-white/15 flex items-center gap-3 shadow-2xs">
-            <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-              <Package className="w-4 h-4 text-emerald-200" />
+          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
+            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
+              <Package className="w-3.5 h-3.5 text-emerald-200" />
             </div>
-            <div>
-              <span className="text-[10px] text-emerald-200/80 font-medium block">Total Paket Dikirim</span>
-              <span className="text-xs sm:text-sm font-extrabold text-white block mt-0.5">{totalPackagesSent} Paket</span>
+            <div className="min-w-0">
+              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Paket Dikirim</span>
+              <span className="text-xs font-bold text-white block mt-0.5 truncate">{totalPackagesSent} Paket</span>
             </div>
           </div>
 
           {/* Ongkir Dibayar Pembeli */}
-          <div className="bg-white/10 backdrop-blur-xs p-3 rounded-xl sm:rounded-2xl border border-white/15 flex items-center gap-3 shadow-2xs">
-            <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-              <Truck className="w-4 h-4 text-emerald-200" />
+          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
+            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
+              <Truck className="w-3.5 h-3.5 text-emerald-200" />
             </div>
-            <div>
-              <span className="text-[10px] text-emerald-200/80 font-medium block">Ongkir Dibayar Pembeli</span>
-              <span className="text-xs sm:text-sm font-extrabold text-white block mt-0.5">Rp {totalShippingCost.toLocaleString('id-ID')}</span>
+            <div className="min-w-0">
+              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Ongkir Pembeli</span>
+              <span className="text-xs font-bold text-white block mt-0.5 truncate">Rp {totalShippingCost.toLocaleString('id-ID')}</span>
             </div>
           </div>
-
           {/* Selisih Ongkir — full width */}
-          <div className="col-span-2 bg-white/10 backdrop-blur-xs p-3 rounded-xl sm:rounded-2xl border border-white/15 flex items-center gap-3 shadow-2xs">
-            <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-              <RpIcon className="w-4 h-4 text-emerald-200" />
+          <div className="col-span-2 bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2.5 shadow-2xs">
+            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
+              <RpIcon className="w-3.5 h-3.5 text-emerald-200" />
             </div>
-            <div>
-              <span className="text-[10px] text-emerald-200/80 font-medium block">Selisih Ongkir
-                <span className="ml-1.5 text-emerald-200 font-normal">(Ongkir Pembeli − Ongkir Ekspedisi)</span>
+            <div className="min-w-0">
+              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Selisih Ongkir
+                <span className="ml-1 text-emerald-200 font-normal">(Pembeli − Ekspedisi)</span>
               </span>
-              <span className={`text-xs sm:text-sm font-extrabold block mt-0.5 ${
+              <span className={`text-xs font-bold block mt-0.5 truncate ${
                 totalShippingDifference >= 0 ? 'text-white' : 'text-rose-200'
               }`}>
                 {totalShippingDifference >= 0 ? '+' : '-'}Rp {Math.abs(totalShippingDifference).toLocaleString('id-ID')}

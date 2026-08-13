@@ -122,32 +122,32 @@ Packing: ( Staff Packing )
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {thermalPrinterService.isSupported() && (
               <button
                 type="button"
                 disabled={isBluetoothPrinting}
                 onClick={handleDirectBluetoothPrint}
-                className="min-h-9 px-2.5 py-1.5 bg-emerald-900 hover:bg-emerald-950 text-white rounded-lg text-[10.5px] font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                className="py-1.5 px-2 bg-emerald-900 hover:bg-emerald-950 text-white rounded-lg text-[10px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shrink-0 leading-tight"
                 title="Cetak langsung via Bluetooth Printer"
               >
-                <Bluetooth className="w-3.5 h-3.5 text-emerald-300" />
-                <span>{isBluetoothPrinting ? 'Proses...' : 'Cetak Bluetooth'}</span>
+                <Bluetooth className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                <span className="whitespace-nowrap">{isBluetoothPrinting ? '...' : 'Bluetooth'}</span>
               </button>
             )}
 
             <button
               onClick={handlePrint}
-              className="min-h-9 px-2.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[10.5px] font-normal flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
+              className="py-1.5 px-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[10px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0 leading-tight"
             >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Cetak Browser</span>
+              <Printer className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap">Browser</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-xl transition-colors cursor-pointer"
+              className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg transition-colors cursor-pointer shrink-0"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
