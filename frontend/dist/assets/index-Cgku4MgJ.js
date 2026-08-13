@@ -483,8 +483,10 @@ Packing: ( Staff Packing )
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
-                width: 76mm !important;
-                max-width: 76mm !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
+                height: auto !important;
+                overflow: hidden !important;
               }
 
               /* Position printable container */
@@ -492,21 +494,23 @@ Packing: ( Staff Packing )
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
-                width: 76mm !important;
-                max-width: 76mm !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
                 height: auto !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
                 display: block !important;
                 visibility: visible !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
               }
 
               #packing-nota-modal-container > div {
                 border: none !important;
                 box-shadow: none !important;
-                width: 76mm !important;
-                max-width: 76mm !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
@@ -515,10 +519,11 @@ Packing: ( Staff Packing )
               #packing-nota-printable {
                 display: block !important;
                 visibility: visible !important;
-                width: 76mm !important;
-                max-width: 76mm !important;
-                padding: 2mm !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
+                padding: 3mm !important;
                 box-sizing: border-box !important;
+                page-break-after: avoid !important;
               }
 
               #packing-nota-printable * {
