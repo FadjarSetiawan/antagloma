@@ -172,6 +172,7 @@ class CommissionController extends Controller
             if ($statusVal === 'CANCELLED') {
                 $statusKey = 'rejected';
                 $statusLabel = 'Pembayaran ditolak';
+                $orderCommission = round($plantTotal * $rate / 100);
             } elseif ($isPaid) {
                 $statusKey = 'paid';
                 $statusLabel = 'Sudah dibayarkan';
@@ -186,7 +187,11 @@ class CommissionController extends Controller
                 $orderCommission = round($plantTotal * $rate / 100);
             }
 
-            $summary[$statusKey] += $orderCommission;
+            if ($statusKey !== 'rejected') {
+                $summary[$statusKey] += $orderCommission;
+            } else {
+                $summary['rejected'] += $orderCommission;
+            }
 
             $deliveryMethodVal = $order->delivery_method instanceof \BackedEnum
                 ? $order->delivery_method->value
