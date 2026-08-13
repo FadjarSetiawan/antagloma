@@ -183,7 +183,7 @@ export const DocumentPrintingPage: React.FC = () => {
         <button
           disabled={bulkPrintQueue !== null || unprintedCards.every((card) => card.printedNota)}
           onClick={() => startBulkPrint('nota', unprintedCards.filter((card) => !card.printedNota))}
-          className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="py-2.5 px-3 bg-gradient-to-r from-[#04593f] via-emerald-800 to-emerald-950 hover:from-emerald-800 hover:to-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
         >
           <Printer className="w-4 h-4 text-white" />
           <span>{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Nota'}</span>
@@ -192,28 +192,28 @@ export const DocumentPrintingPage: React.FC = () => {
         <button
           disabled={bulkPrintQueue !== null || unprintedCards.every((card) => card.printedLabel)}
           onClick={() => startBulkPrint('label', unprintedCards.filter((card) => !card.printedLabel))}
-          className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="py-2.5 px-3 bg-gradient-to-r from-[#04593f] via-emerald-800 to-emerald-950 hover:from-emerald-800 hover:to-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
         >
           <Tag className="w-4 h-4 text-white" />
           <span>{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Label'}</span>
         </button>
       </div>
 
-      {/* Top Navigation Tabs: Belum Dicetak vs Sudah Dicetak (Dual Button Box Layout) */}
+      {/* Top Navigation Tabs: Belum Dicetak vs Sudah Dicetak (Dual Button Box Layout with Rich Green Gradients) */}
       <div className="grid grid-cols-2 gap-2.5 font-bold text-xs">
         <button
           type="button"
           onClick={() => setActiveTab('unprinted')}
           className={`py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
             activeTab === 'unprinted'
-              ? 'bg-emerald-50 text-[#04593f] border-2 border-emerald-300 shadow-xs font-black scale-[1.01]'
-              : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+              ? 'bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 text-white shadow-md font-black scale-[1.01] border border-emerald-700/50'
+              : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-emerald-600/40 hover:bg-slate-50'
           }`}
         >
-          <FileText className={`w-4 h-4 ${activeTab === 'unprinted' ? 'text-[#04593f]' : 'text-slate-500'}`} />
+          <FileText className={`w-4 h-4 ${activeTab === 'unprinted' ? 'text-white' : 'text-slate-500'}`} />
           <span>Belum Dicetak</span>
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-            activeTab === 'unprinted' ? 'bg-[#04593f] text-white' : 'bg-slate-200 text-slate-700'
+            activeTab === 'unprinted' ? 'bg-white/20 text-white border border-white/30' : 'bg-slate-200 text-slate-700'
           }`}>
             {unprintedCards.length}
           </span>
@@ -224,14 +224,14 @@ export const DocumentPrintingPage: React.FC = () => {
           onClick={() => setActiveTab('printed')}
           className={`py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
             activeTab === 'printed'
-              ? 'bg-emerald-50 text-[#04593f] border-2 border-emerald-300 shadow-xs font-black scale-[1.01]'
-              : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+              ? 'bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 text-white shadow-md font-black scale-[1.01] border border-emerald-700/50'
+              : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-emerald-600/40 hover:bg-slate-50'
           }`}
         >
-          <Printer className={`w-4 h-4 ${activeTab === 'printed' ? 'text-[#04593f]' : 'text-slate-500'}`} />
+          <Printer className={`w-4 h-4 ${activeTab === 'printed' ? 'text-white' : 'text-slate-500'}`} />
           <span>Sudah Dicetak</span>
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-            activeTab === 'printed' ? 'bg-[#04593f] text-white' : 'bg-slate-200 text-slate-700'
+            activeTab === 'printed' ? 'bg-white/20 text-white border border-white/30' : 'bg-slate-200 text-slate-700'
           }`}>
             {printedCards.length}
           </span>
@@ -269,7 +269,7 @@ export const DocumentPrintingPage: React.FC = () => {
       ) : activeTab === 'unprinted' ? (
         unprintedCards.length === 0 ? (
           <div className="py-12 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-            <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#04593f]">
+            <div className="w-12 h-12 bg-emerald-100/80 rounded-2xl flex items-center justify-center text-[#04593f]">
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
@@ -319,7 +319,7 @@ export const DocumentPrintingPage: React.FC = () => {
                   </div>
 
                   {/* Info Callout Box (Belum Dicetak) */}
-                  <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl space-y-1 text-xs">
+                  <div className="p-3 bg-gradient-to-r from-emerald-900/10 via-emerald-800/10 to-teal-900/10 border border-emerald-500/30 rounded-xl space-y-1 text-xs">
                     <div className="flex items-center justify-between font-bold text-[#04593f]">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-[#04593f]" />
@@ -343,18 +343,26 @@ export const DocumentPrintingPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
-                      className={`min-h-[38px] py-1.5 px-2 rounded-xl text-[10.5px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${printedStatus.printedNota ? 'bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300' : 'bg-[#04593f] hover:bg-emerald-900 text-white'}`}
+                      className={`min-h-[38px] py-1.5 px-2 rounded-xl text-[10.5px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${
+                        printedStatus.printedNota
+                          ? 'bg-gradient-to-r from-emerald-700 via-emerald-800 to-emerald-900 text-white shadow-xs'
+                          : 'bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 hover:from-emerald-800 hover:to-slate-900 text-white'
+                      }`}
                     >
-                      {printedStatus.printedNota ? <CheckCircle2 className="w-3.5 h-3.5 text-[#04593f]" /> : <Printer className="w-3.5 h-3.5 text-white" />}
+                      {printedStatus.printedNota ? <CheckCircle2 className="w-3.5 h-3.5 text-white" /> : <Printer className="w-3.5 h-3.5 text-white" />}
                       <span>{printedStatus.printedNota ? 'Cetak Ulang Nota' : 'Cetak Nota'}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className={`min-h-[38px] py-1.5 px-2 rounded-xl text-[10.5px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${printedStatus.printedLabel ? 'bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300' : 'bg-[#04593f] hover:bg-emerald-900 text-white'}`}
+                      className={`min-h-[38px] py-1.5 px-2 rounded-xl text-[10.5px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${
+                        printedStatus.printedLabel
+                          ? 'bg-gradient-to-r from-emerald-700 via-emerald-800 to-emerald-900 text-white shadow-xs'
+                          : 'bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 hover:from-emerald-800 hover:to-slate-900 text-white'
+                      }`}
                     >
-                      {printedStatus.printedLabel ? <CheckCircle2 className="w-3.5 h-3.5 text-[#04593f]" /> : <Tag className="w-3.5 h-3.5 text-white" />}
+                      {printedStatus.printedLabel ? <CheckCircle2 className="w-3.5 h-3.5 text-white" /> : <Tag className="w-3.5 h-3.5 text-white" />}
                       <span>{printedStatus.printedLabel ? 'Cetak Ulang Label' : 'Cetak Label'}</span>
                     </button>
                   </div>
@@ -414,7 +422,7 @@ export const DocumentPrintingPage: React.FC = () => {
                   </div>
 
                   {/* Info Callout Box (Sudah Dicetak) */}
-                  <div className="p-3 bg-emerald-50/80 border border-emerald-200/90 rounded-xl space-y-2 text-xs">
+                  <div className="p-3 bg-gradient-to-r from-emerald-900/10 via-emerald-800/10 to-teal-900/10 border border-emerald-500/30 rounded-xl space-y-2 text-xs">
                     <div className="flex items-center gap-2 font-bold text-[#04593f]">
                       <CheckCircle2 className="w-4 h-4 text-[#04593f]" />
                       <span>Nota & Label sudah lengkap dicetak</span>
@@ -424,7 +432,7 @@ export const DocumentPrintingPage: React.FC = () => {
                     </p>
 
                     {/* Resi & Courier Sub-box */}
-                    <div className="p-2.5 bg-white border border-slate-200/80 rounded-lg flex items-center justify-between font-bold text-xs">
+                    <div className="p-2.5 bg-white border border-slate-200/80 rounded-lg flex items-center justify-between font-bold text-xs shadow-2xs">
                       <div className="flex items-center gap-2 text-slate-800">
                         <Printer className="w-4 h-4 text-[#04593f]" />
                         <span>{pkgCard.order.delivery_method || 'Kirim Paket'}</span>
@@ -438,23 +446,23 @@ export const DocumentPrintingPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Action Buttons Row - Soft Light Green Mint Buttons Matching Screenshot */}
+                  {/* Action Buttons Row - Rich Green Gradient Buttons */}
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
-                      className="min-h-[38px] py-1.5 px-2 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-xl text-[10.5px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="min-h-[38px] py-1.5 px-2 bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 hover:from-emerald-800 hover:to-slate-900 text-white rounded-xl text-[10.5px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
-                      <Printer className="w-3.5 h-3.5 text-[#04593f]" />
+                      <Printer className="w-3.5 h-3.5 text-white" />
                       <span>Cetak Ulang Nota</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className="min-h-[38px] py-1.5 px-2 bg-emerald-50 hover:bg-emerald-100 text-[#04593f] border border-emerald-300 rounded-xl text-[10.5px] font-medium flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="min-h-[38px] py-1.5 px-2 bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 hover:from-emerald-800 hover:to-slate-900 text-white rounded-xl text-[10.5px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
-                      <Tag className="w-3.5 h-3.5 text-[#04593f]" />
+                      <Tag className="w-3.5 h-3.5 text-white" />
                       <span>Cetak Ulang Label</span>
                     </button>
                   </div>
