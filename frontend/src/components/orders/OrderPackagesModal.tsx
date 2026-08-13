@@ -37,8 +37,62 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
     return upper.startsWith('D') || upper.startsWith('E') || upper.startsWith('F') || upper.startsWith('J');
   };
 
-  // Initial packages state: Package A with first plant selected
+  // Initial packages state: Load existing saved packages if present, otherwise start Package A
   const [packages, setPackages] = useState<PackageAssignment[]>(() => {
+    if (order.packages && order.packages.length > 0) {
+      const existingAssignments: PackageAssignment[] = order.packages.map((savedPkg, idx) => {
+        const allocations: Record<number, number> = {};
+        if (savedPkg.items) {
+          savedPkg.items.forEach((pi) => {
+            const itemIdx = totalOrderItems.findIndex((item, i) => (item.id ? item.id === pi.order_item_id : i === idx));
+            if (itemIdx !== -1) {
+              allocations[itemIdx] = pi.quantity;
+            }
+          });
+        }
+
+        const letter = savedPkg.letter || getLetter(idx);
+        return {
+          id: `saved-pkg-${savedPkg.id || idx}`,
+          letter,
+          subOrderNumber: `${order.order_number}-${letter}`,
+          packageType: (savedPkg.package_type as 'Fullset' | 'Non-fullset') || (isWoodPacking ? 'Non-fullset' : 'Fullset'),
+          allocations,
+          customWeight: savedPkg.weight,
+        };
+      });
+
+      const usedPerItemIdx = (itemIdx: number) => {
+        return existingAssignments.reduce((sum, pkg) => sum + (pkg.allocations[itemIdx] || 0), 0);
+      };
+
+      const hasUnallocatedItems = totalOrderItems.some((item, idx) => item.quantity > usedPerItemIdx(idx));
+
+      if (hasUnallocatedItems) {
+        const nextIndex = existingAssignments.length;
+        const letter = getLetter(nextIndex);
+        const newAllocations: Record<number, number> = {};
+
+        for (let idx = 0; idx < totalOrderItems.length; idx++) {
+          const remaining = totalOrderItems[idx].quantity - usedPerItemIdx(idx);
+          if (remaining > 0) {
+            newAllocations[idx] = remaining;
+            break;
+          }
+        }
+
+        existingAssignments.push({
+          id: `pkg-${Date.now()}`,
+          letter,
+          subOrderNumber: `${order.order_number}-${letter}`,
+          packageType: isWoodPacking ? 'Non-fullset' : 'Fullset',
+          allocations: newAllocations,
+        });
+      }
+
+      return existingAssignments;
+    }
+
     const initialAllocations: Record<number, number> = {};
     if (totalOrderItems.length > 0) {
       initialAllocations[0] = Math.min(1, totalOrderItems[0].quantity);
@@ -457,7 +511,11 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                               <span className="px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded text-[10px] font-bold">
                                 Grade {item.grade || 'A'}
                               </span>
-                              {pkg.packageType === 'Fullset' && (
+                              {isDisabled ? (
+                                <span className="w-full text-[10px] text-amber-800 font-semibold italic">
+                                  ✓ Sudah dikemas / dialokasikan di paket lain
+                                </span>
+                              ) : pkg.packageType === 'Fullset' && (
                                 <span className="w-full text-[10px] text-slate-500 font-medium">
                                   Tersedia {item.quantity} pohon · {allocatedQty > 0 ? `${allocatedQty} pohon di Paket ${pkg.letter}` : 'belum dialokasikan ke paket ini'}
                                 </span>
