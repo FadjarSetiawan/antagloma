@@ -84,10 +84,12 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
           {/* Print specific style overrides */}
           <style>{`
             @media print {
-              body {
+              html, body {
+                width: 100mm !important;
+                height: 100mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
-                background: white !important;
+                background: #ffffff !important;
               }
               body * {
                 visibility: hidden !important;
@@ -97,15 +99,19 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
                 visibility: visible !important;
               }
               #shipping-label-printable {
-                position: fixed !important;
+                position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
                 width: 100mm !important;
                 height: 100mm !important;
+                min-width: 100mm !important;
+                max-width: 100mm !important;
                 margin: 0 !important;
                 padding: 4mm !important;
                 box-sizing: border-box !important;
-                background: white !important;
+                background: #ffffff !important;
+                display: block !important;
+                overflow: visible !important;
                 z-index: 999999 !important;
               }
               .no-print {
