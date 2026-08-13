@@ -132,24 +132,28 @@ export const OwnerDashboard: React.FC = () => {
       {/* Sleek Sales Report Banner */}
       <div
         onClick={() => navigate('/reports')}
-        className="bg-[#04593f] text-white rounded-2xl p-4 flex items-center justify-between shadow-xs cursor-pointer hover:bg-emerald-900 transition-colors"
+        className="bg-gradient-to-br from-[#04593f] via-[#04593f] to-emerald-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex items-center justify-between shadow-lg relative overflow-hidden border border-emerald-950 cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all group font-sans"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white/10 text-white flex items-center justify-center flex-shrink-0">
-            <TrendingUp className="w-5 h-5 text-emerald-300" />
+        <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform" />
+        <div className="flex items-center gap-3 relative z-10">
+          <div className="w-10 h-10 rounded-2xl bg-white/15 text-white flex items-center justify-center flex-shrink-0 shadow-inner">
+            <TrendingUp className="w-5 h-5 text-emerald-200" />
           </div>
           <div>
-            <h3 className="text-xs sm:text-sm font-bold text-white leading-tight">Ringkasan Penjualan</h3>
-            <p className="text-[11px] text-emerald-100/80 font-normal mt-0.5">
+            <h2 className="text-xs sm:text-sm font-extrabold text-white">Ringkasan Penjualan</h2>
+            <p className="text-[10px] sm:text-xs text-emerald-200/90 font-medium mt-0.5">
               Pantau laporan omset harian hingga bulanan toko.
             </p>
           </div>
         </div>
 
-        <div className="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-xl text-xs font-bold text-white flex items-center gap-1 flex-shrink-0">
+        <button
+          type="button"
+          className="px-3 py-1.5 bg-white/15 group-hover:bg-white/25 text-white rounded-xl text-xs font-bold flex items-center gap-1 transition-colors relative z-10 shrink-0"
+        >
           <span>Laporan</span>
           <ChevronRight className="w-3.5 h-3.5" />
-        </div>
+        </button>
       </div>
 
       {/* Recent Activity List */}
