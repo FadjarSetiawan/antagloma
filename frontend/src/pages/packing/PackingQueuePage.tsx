@@ -146,41 +146,54 @@ export const PackingQueuePage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Item Status Cards: Belum Dikemas vs Dikemas (Matching Mockup) */}
+                    {/* Item Status Cards: Belum Dikemas vs Sebagian Dikemas vs Dikemas (Matching Mockup) */}
                     <div className="space-y-2">
                       {order.items?.map((item: OrderItem) => {
                         const itemId = item.id;
                         const allocated = itemId ? (allocatedQtyMap[itemId] || 0) : 0;
-                        const isAllocated = allocated >= (item.quantity || 1);
+                        const totalQty = item.quantity || 1;
+                        const isFullyAllocated = allocated >= totalQty;
+                        const isPartiallyAllocated = allocated > 0 && allocated < totalQty;
 
                         return (
                           <div
                             key={item.id || item.product_name}
                             className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
-                              isAllocated
+                              isFullyAllocated
                                 ? 'bg-emerald-50/50 border-emerald-200/80'
+                                : isPartiallyAllocated
+                                ? 'bg-amber-50/70 border-amber-300/90 shadow-2xs'
                                 : 'bg-amber-50/40 border-amber-200/80'
                             }`}
                           >
                             <div className="flex items-center gap-2.5">
                               <div
                                 className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
-                                  isAllocated
+                                  isFullyAllocated
                                     ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
                                     : 'bg-amber-100 text-amber-600 border-amber-300'
                                 }`}
                               >
-                                {isAllocated ? <CheckCircle2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                                {isFullyAllocated ? <CheckCircle2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                               </div>
                               <div>
                                 <p className="text-xs font-bold text-slate-900 leading-tight">
                                   {item.tree_name || item.product_name} (Grade {item.grade || 'A'})
                                 </p>
                                 <div className="mt-1">
-                                  {isAllocated ? (
+                                  {isFullyAllocated ? (
                                     <span className="text-[10px] font-semibold text-slate-500">
                                       Dikemas: {order.order_date ? new Date(order.order_date).toLocaleDateString('id-ID') : '-'}
                                     </span>
+                                  ) : isPartiallyAllocated ? (
+                                    <div className="space-y-0.5">
+                                      <span className="px-2 py-0.5 rounded-md bg-amber-100/90 text-amber-900 border border-amber-300 text-[9px] font-bold inline-block">
+                                        Sebagian Dikemas
+                                      </span>
+                                      <span className="text-[10px] font-bold text-amber-800 block mt-0.5">
+                                        {allocated} / {totalQty} Qty sudah masuk paket
+                                      </span>
+                                    </div>
                                   ) : (
                                     <span className="px-2 py-0.5 rounded-md bg-amber-100/80 text-amber-800 border border-amber-200 text-[9px] font-bold">
                                       Belum Dikemas
