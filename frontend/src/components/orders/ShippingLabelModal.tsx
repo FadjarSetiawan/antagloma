@@ -39,9 +39,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
     setBtError(null);
 
     try {
-      if (!thermalPrinterService.getConnectedDeviceName()) {
-        await thermalPrinterService.connect();
-      }
+      await thermalPrinterService.ensureConnected();
 
       const printText = `
 ================================

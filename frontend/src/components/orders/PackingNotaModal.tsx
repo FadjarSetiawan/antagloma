@@ -42,9 +42,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     setBtError(null);
 
     try {
-      if (!thermalPrinterService.getConnectedDeviceName()) {
-        await thermalPrinterService.connect();
-      }
+      await thermalPrinterService.ensureConnected();
 
       const itemsList = packageItems.map((item, idx) => {
         const itemName = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name);

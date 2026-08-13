@@ -35,42 +35,7 @@ class ThermalPrinterService {
         ],
       });
 
-      const server = await device.gatt.connect();
-
-      // Find writable characteristic
-      let characteristic: any = null;
-      const services = await server.getPrimaryServices();
-
-      for (const service of services) {
-        const characteristics = await service.getCharacteristics();
-        for (const char of characteristics) {
-          if (char.properties.write || char.properties.writeWithoutResponse) {
-            characteristic = char;
-            break;
-          }
-        }
-        if (characteristic) break;
-      }
-
-      if (!characteristic) {
-        throw new Error('Tidak dapat menemukan jalur kirim data (Characteristic Write) pada printer Bluetooth ini.');
-      }
-
-      this.deviceConfig = {
-        device,
-        server,
-        characteristic,
-        connected: true,
-        name: device.name || 'Printer Thermal Bluetooth',
-      };
-
-      device.addEventListener('gattserverdisconnected', () => {
-        if (this.deviceConfig) {
-          this.deviceConfig.connected = false;
-        }
-      });
-
-      return this.deviceConfig.name;
+      return await this.setupDevice(device);
     } catch (err: any) {
       if (err.name === 'NotFoundError') {
         throw new Error('Pencarian printer dibatalkan oleh pengguna.');
@@ -79,8 +44,61 @@ class ThermalPrinterService {
     }
   }
 
+  private async setupDevice(device: any): Promise<string> {
+    const server = await device.gatt.connect();
+
+    // Find writable characteristic
+    let characteristic: any = null;
+    const services = await server.getPrimaryServices();
+
+    for (const service of services) {
+      const characteristics = await service.getCharacteristics();
+      for (const char of characteristics) {
+        if (char.properties.write || char.properties.writeWithoutResponse) {
+          characteristic = char;
+          break;
+        }
+      }
+      if (characteristic) break;
+    }
+
+    if (!characteristic) {
+      throw new Error('Tidak dapat menemukan jalur kirim data (Characteristic Write) pada printer Bluetooth ini.');
+    }
+
+    this.deviceConfig = {
+      device,
+      server,
+      characteristic,
+      connected: true,
+      name: device.name || 'Printer Thermal Bluetooth',
+    };
+
+    device.addEventListener('gattserverdisconnected', () => {
+      if (this.deviceConfig) {
+        this.deviceConfig.connected = false;
+      }
+    });
+
+    return this.deviceConfig.name;
+  }
+
+  public async ensureConnected(): Promise<void> {
+    if (!this.deviceConfig || !this.deviceConfig.device) {
+      await this.connect();
+      return;
+    }
+
+    // Check if GATT server is still connected, if not, reconnect silently to known paired device
+    if (!this.deviceConfig.device.gatt.connected) {
+      await this.setupDevice(this.deviceConfig.device);
+    }
+  }
+
   public async printRaw(data: Uint8Array): Promise<void> {
-    if (!this.deviceConfig || !this.deviceConfig.connected || !this.deviceConfig.characteristic) {
+    await this.ensureConnected();
+
+    if (!this.deviceConfig || !this.deviceConfig.characteristic) {
       throw new Error('Printer Bluetooth belum terhubung.');
     }
 
@@ -100,8 +118,6 @@ class ThermalPrinterService {
   public async printEscPosText(text: string): Promise<void> {
     const encoder = new TextEncoder();
     const initCmd = new Uint8Array([0x1b, 0x40]); // ESC @ (Initialize printer)
-    const alignCenter = new Uint8Array([0x1b, 0x61, 0x01]); // ESC a 1
-    const alignLeft = new Uint8Array([0x1b, 0x61, 0x00]); // ESC a 0
     const feedCut = new Uint8Array([0x1d, 0x56, 0x42, 0x00]); // GS V B 0 (Feed and Cut)
 
     const bytesText = encoder.encode(text + '\n\n\n');
