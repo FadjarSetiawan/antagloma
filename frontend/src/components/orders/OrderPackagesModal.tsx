@@ -233,9 +233,19 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
     };
   };
 
-  // Weight visibility check rule
+  // Weight visibility check rule:
+  // - Non-fullset: ALWAYS VISIBLE for any grade
+  // - Fullset: ONLY VISIBLE if allocated plant grade is Grade D or higher (D, D+, J, J+)
   const shouldShowWeightBox = (pkg: PackageAssignment) => {
-    return true; // Always visible for editing and verification
+    if (pkg.packageType === 'Non-fullset') return true;
+
+    // For Fullset: check allocated item grade
+    const itemsAllocated = Object.entries(pkg.allocations).filter(([_, qty]) => qty > 0);
+    if (itemsAllocated.length === 0) return false;
+
+    const firstItemIdx = Number(itemsAllocated[0][0]);
+    const selectedItem = totalOrderItems[firstItemIdx];
+    return isGradeDOrHigher(selectedItem?.grade);
   };
 
   // Handle Save Submit
