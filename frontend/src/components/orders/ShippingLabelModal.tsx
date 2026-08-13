@@ -41,28 +41,10 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
     try {
       await thermalPrinterService.ensureConnected();
 
-      const printText = `
-================================
-       ANTAGLOMA FLORIST
-     LABEL STIKER PENGIRIMAN
- WA: 0858-9450-3333/0857-3333-1889
-================================
-RESI/ORDER: ${subOrderNum}
-METODE: [ ${pkgType} ]
---------------------------------
-PENERIMA:
-${order.customer_name}
-TELP: ${order.phone}
+      const printableEl = document.getElementById('shipping-label-printable');
+      if (!printableEl) throw new Error('Elemen pratinjau label tidak ditemukan.');
 
-ALAMAT PENGIRIMAN:
-Kec. ${order.district_name || '-'}, ${order.regency_name || '-'}
-${order.full_address}
---------------------------------
-PENGIRIM: ANTAGLOMA FLORIST
-================================
-`.trim();
-
-      await thermalPrinterService.printEscPosText(printText);
+      await thermalPrinterService.printElementAsBitmap(printableEl, 576);
     } catch (err: any) {
       setBtError(err.message || 'Gagal cetak label via Bluetooth.');
     } finally {

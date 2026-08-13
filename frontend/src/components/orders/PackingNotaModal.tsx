@@ -44,42 +44,10 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     try {
       await thermalPrinterService.ensureConnected();
 
-      const itemsList = packageItems.map((item, idx) => {
-        const itemName = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name);
-        const gradeStr = 'grade' in item ? `Grade ${item.grade || 'A'}` : 'Package';
-        return `${idx + 1}. ${itemName}\n   [${gradeStr}] x${item.quantity}`;
-      }).join('\n');
+      const printableEl = document.getElementById('packing-nota-printable');
+      if (!printableEl) throw new Error('Elemen pratinjau nota tidak ditemukan.');
 
-      const printText = `
-================================
-       ANTAGLOMA FLORIST
- Spesialis Adenium Bunga Tumpuk
- WA: 0858-9450-3333/0857-3333-1889
-================================
-NOTA PACKING: ${order.order_number} ${packageInfo ? `(Paket ${packageInfo.letter})` : ''}
-TGL: ${formattedDate}
---------------------------------
-PENERIMA:
-${order.customer_name} (${order.phone})
-[ ${packageType} ] ${packageWeight}
-
-ALAMAT:
-${[order.district_name, order.regency_name, order.province_name].filter(Boolean).join(', ')}
-${order.full_address}
---------------------------------
-ITEM TANAMAN:
-${itemsList || 'Tidak ada detail item'}
---------------------------------
-CATATAN PACKING:
-${customNotes.trim() ? customNotes : '-'}
---------------------------------
-Sales: ${order.creator?.name || 'Sales Staff'}
-Admin: ${order.verifier?.name || 'Admin'}
-Packing: ( Staff Packing )
-================================
-`.trim();
-
-      await thermalPrinterService.printEscPosText(printText);
+      await thermalPrinterService.printElementAsBitmap(printableEl, 576);
     } catch (err: any) {
       setBtError(err.message || 'Gagal cetak via Bluetooth.');
     } finally {
