@@ -153,12 +153,13 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
 
               #packing-nota-printable {
                 position: fixed !important;
-                left: 0 !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
                 top: 0 !important;
-                width: 76mm !important;
-                max-width: 76mm !important;
-                margin: 0 !important;
-                padding: 2mm 3mm !important;
+                width: 78mm !important;
+                max-width: 78mm !important;
+                margin: 0 auto !important;
+                padding: 1.5mm 1mm !important;
                 box-sizing: border-box !important;
                 background: #ffffff !important;
                 overflow: visible !important;

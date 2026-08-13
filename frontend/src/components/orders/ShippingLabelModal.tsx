@@ -145,12 +145,13 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
 
               #shipping-label-printable {
                 position: fixed !important;
-                left: 0 !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
                 top: 0 !important;
-                width: 96mm !important;
-                height: 96mm !important;
-                margin: 0 !important;
-                padding: 2mm !important;
+                width: 98mm !important;
+                height: 98mm !important;
+                margin: 0 auto !important;
+                padding: 1.5mm !important;
                 box-sizing: border-box !important;
                 background: #ffffff !important;
               }
