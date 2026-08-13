@@ -63,4 +63,9 @@
   body {
     background-color: white !important;
   }
+  #no-print-wrapper,
+  .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
 }
