@@ -198,40 +198,40 @@ export const DocumentPrintingPage: React.FC = () => {
       </div>
 
       {/* Top Batch Action Buttons */}
-      <div className="grid grid-cols-2 gap-3 pt-1">
+      <div className="grid grid-cols-2 gap-2.5 pt-1">
         <button
           disabled={bulkPrintQueue !== null || unprintedCards.every((card) => card.printedNota)}
           onClick={() => startBulkPrint('nota', unprintedCards.filter((card) => !card.printedNota))}
-          className="py-2.5 px-3 bg-gradient-to-r from-[#04593f] via-emerald-800 to-emerald-950 hover:from-emerald-800 hover:to-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+          className="py-2 px-2.5 bg-gradient-to-r from-[#04593f] via-emerald-800 to-emerald-950 text-white rounded-xl text-[11px] font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50 active:scale-95 leading-normal"
         >
-          <Printer className="w-4 h-4 text-white" />
-          <span>{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Nota'}</span>
+          <Printer className="w-3.5 h-3.5 text-white shrink-0" />
+          <span className="truncate">{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Nota'}</span>
         </button>
 
         <button
           disabled={bulkPrintQueue !== null || unprintedCards.every((card) => card.printedLabel)}
           onClick={() => startBulkPrint('label', unprintedCards.filter((card) => !card.printedLabel))}
-          className="py-2.5 px-3 bg-gradient-to-r from-[#04593f] via-emerald-800 to-emerald-950 hover:from-emerald-800 hover:to-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+          className="py-2 px-2.5 bg-gradient-to-r from-[#04593f] via-emerald-800 to-emerald-950 text-white rounded-xl text-[11px] font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50 active:scale-95 leading-normal"
         >
-          <Tag className="w-4 h-4 text-white" />
-          <span>{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Label'}</span>
+          <Tag className="w-3.5 h-3.5 text-white shrink-0" />
+          <span className="truncate">{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Label'}</span>
         </button>
       </div>
 
-      {/* Top Navigation Tabs: Belum Dicetak vs Sudah Dicetak (Dual Button Box Layout with Rich Green Gradients) */}
-      <div className="grid grid-cols-2 gap-2.5 font-bold text-xs">
+      {/* Top Navigation Tabs: Belum Dicetak vs Sudah Dicetak */}
+      <div className="grid grid-cols-2 gap-2.5 text-xs">
         <button
           type="button"
           onClick={() => setActiveTab('unprinted')}
-          className={`py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`py-2.5 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             activeTab === 'unprinted'
-              ? 'bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 text-white shadow-md font-black scale-[1.01] border border-emerald-700/50'
-              : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-emerald-600/40 hover:bg-slate-50'
+              ? 'bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 text-white shadow-xs font-bold'
+              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium'
           }`}
         >
-          <FileText className={`w-4 h-4 ${activeTab === 'unprinted' ? 'text-white' : 'text-slate-500'}`} />
-          <span>Belum Dicetak</span>
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+          <FileText className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'unprinted' ? 'text-white' : 'text-slate-500'}`} />
+          <span className="text-[11.5px]">Belum Dicetak</span>
+          <span className={`px-1.5 py-0.2 rounded-full text-[9.5px] font-bold ${
             activeTab === 'unprinted' ? 'bg-white/20 text-white border border-white/30' : 'bg-slate-200 text-slate-700'
           }`}>
             {unprintedCards.length}
@@ -241,15 +241,15 @@ export const DocumentPrintingPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('printed')}
-          className={`py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`py-2.5 px-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             activeTab === 'printed'
-              ? 'bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 text-white shadow-md font-black scale-[1.01] border border-emerald-700/50'
-              : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-emerald-600/40 hover:bg-slate-50'
+              ? 'bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 text-white shadow-xs font-bold'
+              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium'
           }`}
         >
-          <Printer className={`w-4 h-4 ${activeTab === 'printed' ? 'text-white' : 'text-slate-500'}`} />
-          <span>Sudah Dicetak</span>
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+          <Printer className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'printed' ? 'text-white' : 'text-slate-500'}`} />
+          <span className="text-[11.5px]">Sudah Dicetak</span>
+          <span className={`px-1.5 py-0.2 rounded-full text-[9.5px] font-bold ${
             activeTab === 'printed' ? 'bg-white/20 text-white border border-white/30' : 'bg-slate-200 text-slate-700'
           }`}>
             {printedCards.length}
@@ -258,22 +258,22 @@ export const DocumentPrintingPage: React.FC = () => {
       </div>
 
       {/* Tab Content Section Header */}
-      <div className="pt-1">
+      <div className="pt-0.5">
         {activeTab === 'unprinted' ? (
           <div>
-            <h2 className="text-xs font-bold uppercase text-[#04593f] tracking-wider">
+            <h2 className="text-[11px] font-bold uppercase text-[#04593f] tracking-wider">
               BELUM DICETAK ({unprintedCards.length})
             </h2>
-            <p className="text-[11px] text-slate-400 font-normal">
+            <p className="text-[10.5px] text-slate-500 font-normal">
               Pesanan yang belum lengkap cetak nota & label resinya
             </p>
           </div>
         ) : (
           <div>
-            <h2 className="text-xs font-bold uppercase text-[#04593f] tracking-wider">
+            <h2 className="text-[11px] font-bold uppercase text-[#04593f] tracking-wider">
               SUDAH DICETAK ({printedCards.length})
             </h2>
-            <p className="text-[11px] text-slate-400 font-normal">
+            <p className="text-[10.5px] text-slate-500 font-normal">
               Pesanan yang telah lengkap dicetak nota & resinya
             </p>
           </div>
@@ -299,52 +299,52 @@ export const DocumentPrintingPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-3.5">
+          <div className="space-y-3">
             {unprintedCards.map((pkgCard) => {
               const printedStatus = getCardPrintStatus(pkgCard);
 
               return (
                 <div
                   key={pkgCard.id}
-                  className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 shadow-2xs hover:border-[#04593f] transition-all"
+                  className="bg-white border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5 shadow-2xs hover:border-[#04593f] transition-all"
                 >
                   {/* Header Package Card */}
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold flex-shrink-0">
-                        <PackageIcon className="w-4 h-4 text-amber-700" />
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center font-bold flex-shrink-0">
+                        <PackageIcon className="w-3.5 h-3.5 text-amber-700" />
                       </div>
                       <div>
-                        <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                        <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
                           {pkgCard.subOrderNumber}
                         </h3>
-                        <p className="text-[11px] text-slate-400 font-medium">
+                        <p className="text-[10px] text-slate-400 font-medium">
                           dari {pkgCard.order.order_number}
                         </p>
                       </div>
                     </div>
 
-                    <span className="px-2.5 py-0.5 font-bold text-[11px] rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                    <span className="px-2 py-0.5 font-semibold text-[10px] rounded-md bg-blue-50 text-blue-700 border border-blue-200">
                       {pkgCard.packageType}
                     </span>
                   </div>
 
                   {/* Customer Info & Plant Count */}
-                  <div className="space-y-0.5 pt-0.5 text-xs">
-                    <h4 className="text-sm font-bold text-slate-900">{pkgCard.order.customer_name}</h4>
-                    <p className="text-[11px] text-slate-500 font-medium">
+                  <div className="space-y-0.5 text-xs">
+                    <h4 className="text-xs font-bold text-slate-900">{pkgCard.order.customer_name}</h4>
+                    <p className="text-[10.5px] text-slate-500 font-normal">
                       {pkgCard.plantCount} tanaman • {pkgCard.weightInfo}
                     </p>
                   </div>
 
                   {/* Info Callout Box (Belum Dicetak) */}
-                  <div className="p-3 bg-gradient-to-r from-emerald-900/10 via-emerald-800/10 to-teal-900/10 border border-emerald-500/30 rounded-xl space-y-1 text-xs">
-                    <div className="flex items-center justify-between font-bold text-[#04593f]">
-                      <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-[#04593f]" />
-                        <span>Status Cetak:</span>
+                  <div className="p-2.5 bg-gradient-to-r from-emerald-900/5 via-emerald-800/5 to-teal-900/5 border border-emerald-500/20 rounded-xl space-y-1 text-xs">
+                    <div className="flex items-center justify-between font-semibold text-[#04593f]">
+                      <div className="flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-[#04593f]" />
+                        <span className="text-[11px]">Status Cetak:</span>
                       </div>
-                      <span className="text-[10px] px-2 py-0.5 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 font-bold">
+                      <span className="text-[9.5px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-900 border border-amber-200 font-semibold">
                         {printedStatus.printedNota
                           ? '✓ Nota (Belum Label)'
                           : printedStatus.printedLabel
@@ -352,37 +352,37 @@ export const DocumentPrintingPage: React.FC = () => {
                           : 'Belum Nota & Label'}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-600 font-medium pl-6">
+                    <p className="text-[10.5px] text-slate-500 font-normal pl-5">
                       Cetak kedua dokumen (Nota & Label) agar berpindah ke tab Sudah Dicetak.
                     </p>
                   </div>
 
                   {/* Action Buttons Row */}
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className="grid grid-cols-2 gap-2 pt-0.5">
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
-                      className={`min-h-[38px] py-1.5 px-2 rounded-xl text-[10.5px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${
+                      className={`min-h-[34px] py-1 px-2 rounded-xl text-[10px] font-semibold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${
                         printedStatus.printedNota
-                          ? 'bg-gradient-to-r from-emerald-700 via-emerald-800 to-emerald-900 text-white shadow-xs'
-                          : 'bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 hover:from-emerald-800 hover:to-slate-900 text-white'
+                          ? 'bg-emerald-800 text-white shadow-xs'
+                          : 'bg-gradient-to-r from-[#04593f] to-emerald-900 text-white'
                       }`}
                     >
-                      {printedStatus.printedNota ? <CheckCircle2 className="w-3.5 h-3.5 text-white" /> : <Printer className="w-3.5 h-3.5 text-white" />}
-                      <span>{printedStatus.printedNota ? 'Cetak Ulang Nota' : 'Cetak Nota'}</span>
+                      {printedStatus.printedNota ? <CheckCircle2 className="w-3.5 h-3.5 text-white shrink-0" /> : <Printer className="w-3.5 h-3.5 text-white shrink-0" />}
+                      <span className="truncate">{printedStatus.printedNota ? 'Cetak Ulang Nota' : 'Cetak Nota'}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className={`min-h-[38px] py-1.5 px-2 rounded-xl text-[10.5px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${
+                      className={`min-h-[34px] py-1 px-2 rounded-xl text-[10px] font-semibold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${
                         printedStatus.printedLabel
-                          ? 'bg-gradient-to-r from-emerald-700 via-emerald-800 to-emerald-900 text-white shadow-xs'
-                          : 'bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 hover:from-emerald-800 hover:to-slate-900 text-white'
+                          ? 'bg-emerald-800 text-white shadow-xs'
+                          : 'bg-gradient-to-r from-[#04593f] to-emerald-900 text-white'
                       }`}
                     >
-                      {printedStatus.printedLabel ? <CheckCircle2 className="w-3.5 h-3.5 text-white" /> : <Tag className="w-3.5 h-3.5 text-white" />}
-                      <span>{printedStatus.printedLabel ? 'Cetak Ulang Label' : 'Cetak Label'}</span>
+                      {printedStatus.printedLabel ? <CheckCircle2 className="w-3.5 h-3.5 text-white shrink-0" /> : <Tag className="w-3.5 h-3.5 text-white shrink-0" />}
+                      <span className="truncate">{printedStatus.printedLabel ? 'Cetak Ulang Label' : 'Cetak Label'}</span>
                     </button>
                   </div>
                 </div>
@@ -404,85 +404,85 @@ export const DocumentPrintingPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-3.5">
+          <div className="space-y-3">
             {printedCards.map((pkgCard) => {
               return (
                 <div
                   key={pkgCard.id}
-                  className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 shadow-2xs hover:border-[#04593f] transition-all"
+                  className="bg-white border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5 shadow-2xs hover:border-[#04593f] transition-all"
                 >
                   {/* Header Package Card */}
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold flex-shrink-0">
-                        <PackageIcon className="w-4 h-4 text-amber-700" />
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center font-bold flex-shrink-0">
+                        <PackageIcon className="w-3.5 h-3.5 text-amber-700" />
                       </div>
                       <div>
-                        <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                        <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
                           {pkgCard.subOrderNumber}
                         </h3>
-                        <p className="text-[11px] text-slate-400 font-medium">
+                        <p className="text-[10px] text-slate-400 font-medium">
                           dari {pkgCard.order.order_number}
                         </p>
                       </div>
                     </div>
 
-                    <span className="px-2.5 py-0.5 font-bold text-[11px] rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                    <span className="px-2 py-0.5 font-semibold text-[10px] rounded-md bg-blue-50 text-blue-700 border border-blue-200">
                       {pkgCard.packageType}
                     </span>
                   </div>
 
                   {/* Customer Info & Plant Count */}
-                  <div className="space-y-0.5 pt-0.5 text-xs">
-                    <h4 className="text-sm font-bold text-slate-900">{pkgCard.order.customer_name}</h4>
-                    <p className="text-[11px] text-slate-500 font-medium">
+                  <div className="space-y-0.5 text-xs">
+                    <h4 className="text-xs font-bold text-slate-900">{pkgCard.order.customer_name}</h4>
+                    <p className="text-[10.5px] text-slate-500 font-normal">
                       {pkgCard.plantCount} tanaman • {pkgCard.weightInfo}
                     </p>
                   </div>
 
                   {/* Info Callout Box (Sudah Dicetak) */}
-                  <div className="p-3 bg-gradient-to-r from-emerald-900/10 via-emerald-800/10 to-teal-900/10 border border-emerald-500/30 rounded-xl space-y-2 text-xs">
-                    <div className="flex items-center gap-2 font-bold text-[#04593f]">
-                      <CheckCircle2 className="w-4 h-4 text-[#04593f]" />
-                      <span>Nota & Label sudah lengkap dicetak</span>
+                  <div className="p-2.5 bg-gradient-to-r from-emerald-900/5 via-emerald-800/5 to-teal-900/5 border border-emerald-500/20 rounded-xl space-y-1.5 text-xs">
+                    <div className="flex items-center gap-1.5 font-semibold text-[#04593f]">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#04593f] shrink-0" />
+                      <span className="text-[11px]">Nota & Label sudah lengkap dicetak</span>
                     </div>
-                    <p className="text-[11px] text-slate-600 font-medium pl-6">
+                    <p className="text-[10.5px] text-slate-500 font-normal pl-5">
                       Dicetak pada status tersimpan di server
                     </p>
 
                     {/* Resi & Courier Sub-box */}
-                    <div className="p-2.5 bg-white border border-slate-200/80 rounded-lg flex items-center justify-between font-bold text-xs shadow-2xs">
-                      <div className="flex items-center gap-2 text-slate-800">
-                        <Printer className="w-4 h-4 text-[#04593f]" />
+                    <div className="p-2 bg-white border border-slate-200/80 rounded-lg flex items-center justify-between text-xs shadow-2xs">
+                      <div className="flex items-center gap-1.5 text-slate-800 font-semibold text-[11px]">
+                        <Printer className="w-3.5 h-3.5 text-[#04593f] shrink-0" />
                         <span>{pkgCard.order.delivery_method || 'Kirim Paket'}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-400 font-medium block">Status Foto</span>
-                        <span className="text-[#04593f] font-extrabold text-xs">
+                        <span className="text-[9.5px] text-slate-400 font-normal block">Status Foto</span>
+                        <span className="text-[#04593f] font-bold text-[10.5px]">
                           Menunggu Foto Kebun
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Action Buttons Row - Rich Green Gradient Buttons */}
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                  {/* Action Buttons Row */}
+                  <div className="grid grid-cols-2 gap-2 pt-0.5">
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
-                      className="min-h-[38px] py-1.5 px-2 bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 hover:from-emerald-800 hover:to-slate-900 text-white rounded-xl text-[10.5px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="min-h-[34px] py-1 px-2 bg-gradient-to-r from-[#04593f] to-emerald-900 text-white rounded-xl text-[10px] font-semibold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
-                      <Printer className="w-3.5 h-3.5 text-white" />
-                      <span>Cetak Ulang Nota</span>
+                      <Printer className="w-3.5 h-3.5 text-white shrink-0" />
+                      <span className="truncate">Cetak Ulang Nota</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className="min-h-[38px] py-1.5 px-2 bg-gradient-to-r from-[#04593f] via-[#04593f] to-emerald-900 hover:from-emerald-800 hover:to-slate-900 text-white rounded-xl text-[10.5px] font-bold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="min-h-[34px] py-1 px-2 bg-gradient-to-r from-[#04593f] to-emerald-900 text-white rounded-xl text-[10px] font-semibold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
-                      <Tag className="w-3.5 h-3.5 text-white" />
-                      <span>Cetak Ulang Label</span>
+                      <Tag className="w-3.5 h-3.5 text-white shrink-0" />
+                      <span className="truncate">Cetak Ulang Label</span>
                     </button>
                   </div>
                 </div>
