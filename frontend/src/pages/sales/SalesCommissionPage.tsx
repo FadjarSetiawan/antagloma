@@ -32,122 +32,122 @@ export const SalesCommissionPage: React.FC = () => {
   });
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-28 text-slate-800 font-sans">
+    <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-28 text-slate-800 font-sans px-1 sm:px-0 overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         <button
           onClick={() => navigate(-1)}
-          className="p-2.5 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs"
+          className="p-2 sm:p-2.5 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs shrink-0"
           aria-label="Kembali"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">Komisi Saya</h1>
-          <p className="text-xs text-slate-400 font-bold mt-0.5">Ringkasan status komisi & riwayat pesanan Anda</p>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg sm:text-2xl font-black text-slate-900 leading-tight truncate">Komisi Saya</h1>
+          <p className="text-[11px] sm:text-xs text-slate-400 font-bold mt-0.5 truncate">Ringkasan status komisi & riwayat pesanan Anda</p>
         </div>
       </div>
+
       {/* Month & Filter Bar */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-3 py-2 text-xs font-bold text-slate-800 shadow-2xs">
+        <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-800 shadow-2xs">
           <span>Agustus 2026</span>
-          <ChevronRight className="w-3.5 h-3.5 rotate-90 text-slate-400" />
+          <ChevronRight className="w-3.5 h-3.5 rotate-90 text-slate-400 shrink-0" />
         </div>
 
         <button
           onClick={() => setFilterStatus(filterStatus === 'ALL' ? 'verified' : 'ALL')}
-          className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-2xl px-3 py-2 text-xs font-bold text-slate-800 shadow-2xs hover:bg-slate-50 cursor-pointer shrink-0"
+          className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-800 shadow-2xs hover:bg-slate-50 cursor-pointer shrink-0"
         >
           <span>Filter Status</span>
-          <Filter className="w-3.5 h-3.5 text-slate-500" />
+          <Filter className="w-3 h-3 text-slate-500" />
         </button>
       </div>
 
-      {/* ── GREEN BANNER CARD: TOTAL KOMISI BULAN INI (FULLY MOBILE FRIENDLY) ── */}
-      <div className="bg-gradient-to-br from-[#04593f] via-[#04593f] to-emerald-950 text-white rounded-3xl p-5 sm:p-7 shadow-lg relative overflow-hidden border border-emerald-950 font-sans space-y-4">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-600/20 rounded-full blur-3xl pointer-events-none" />
+      {/* ── GREEN BANNER CARD: TOTAL KOMISI BULAN INI (PERFECT MOBILE FIT) ── */}
+      <div className="bg-gradient-to-br from-[#04593f] via-[#04593f] to-emerald-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg relative overflow-hidden border border-emerald-950 font-sans space-y-3">
+        <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-600/20 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="flex flex-col sm:grid sm:grid-cols-12 gap-5 relative z-10">
-          {/* Top/Left Section */}
-          <div className="space-y-3 sm:col-span-7 sm:border-r sm:border-white/15 sm:pr-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-white/15 text-emerald-100 flex items-center justify-center shrink-0 shadow-inner">
-                <Wallet className="w-4 h-4" />
-              </div>
-              <span className="text-[10px] font-extrabold text-emerald-200 uppercase tracking-wider">
-                TOTAL KOMISI BULAN INI
-              </span>
+        <div className="space-y-3 relative z-10">
+          {/* Header Row */}
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-white/15 text-emerald-100 flex items-center justify-center shrink-0 shadow-inner">
+              <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
-
-            <div className="space-y-1">
-              <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
-                {isLoading ? '...' : formatRp(payload?.total_commission_this_month ?? (summary.verified + summary.paid))}
-              </h2>
-              <p className="text-[11px] text-emerald-100/90 font-medium leading-normal">
-                Total komisi yang Anda dapatkan pada Agustus 2026
-              </p>
-            </div>
+            <span className="text-[9.5px] sm:text-[10px] font-extrabold text-emerald-200 uppercase tracking-wider">
+              TOTAL KOMISI BULAN INI
+            </span>
           </div>
 
-          {/* Bottom/Right Section - Narrower gap on mobile */}
-          <div className="grid grid-cols-3 sm:flex sm:flex-col sm:col-span-5 gap-1.5 sm:gap-2.5 pt-2.5 sm:pt-0 border-t border-white/15 sm:border-t-0 text-xs">
-            <div className="space-y-0.5">
-              <span className="text-emerald-200/80 text-[9.5px] sm:text-[11px] font-medium block truncate">Total Tanaman</span>
-              <span className="font-extrabold text-white text-[11px] sm:text-sm block truncate leading-tight">
+          {/* Big Amount */}
+          <div className="space-y-0.5">
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
+              {isLoading ? '...' : formatRp(payload?.total_commission_this_month ?? (summary.verified + summary.paid))}
+            </h2>
+            <p className="text-[10px] sm:text-[11px] text-emerald-100/90 font-medium">
+              Total komisi yang Anda dapatkan pada Agustus 2026
+            </p>
+          </div>
+
+          {/* 3 Stats Row (Responsive Flex Wrap) */}
+          <div className="pt-2 border-t border-white/15 flex flex-wrap items-center justify-between gap-y-2 gap-x-1 text-xs">
+            <div className="pr-1">
+              <span className="text-emerald-200/80 text-[9px] sm:text-[10px] font-medium block">Total Tanaman</span>
+              <span className="font-extrabold text-white text-[11px] sm:text-xs block">
                 {formatRp(payload?.total_plant_total ?? 0)}
               </span>
             </div>
 
-            <div className="space-y-0.5">
-              <span className="text-emerald-200/80 text-[9.5px] sm:text-[11px] font-medium block truncate">Persentase</span>
-              <span className="font-extrabold text-white text-[11px] sm:text-sm block leading-tight">{payload?.commission_rate ?? 5}%</span>
+            <div className="px-1 border-x border-white/10 sm:border-none">
+              <span className="text-emerald-200/80 text-[9px] sm:text-[10px] font-medium block">Persentase</span>
+              <span className="font-extrabold text-white text-[11px] sm:text-xs block">{payload?.commission_rate ?? 5}%</span>
             </div>
 
-            <div className="space-y-0.5">
-              <span className="text-emerald-200/80 text-[9.5px] sm:text-[11px] font-medium block truncate">Pesanan</span>
-              <span className="font-extrabold text-white text-[11px] sm:text-sm block leading-tight">{payload?.total_orders_count ?? 0} pesanan</span>
+            <div className="pl-1">
+              <span className="text-emerald-200/80 text-[9px] sm:text-[10px] font-medium block">Pesanan</span>
+              <span className="font-extrabold text-white text-[11px] sm:text-xs block">{payload?.total_orders_count ?? 0} order</span>
             </div>
           </div>
         </div>
 
         {/* Footer Note inside Green Banner */}
-        <div className="relative z-10 pt-2.5 border-t border-emerald-800/80 flex items-start gap-2 text-[10px] sm:text-[10.5px] text-emerald-100/90 font-medium leading-tight">
-          <div className="w-4 h-4 rounded-full bg-white/15 flex items-center justify-center shrink-0 mt-0.5">
-            <span className="text-[9px] font-bold">i</span>
+        <div className="relative z-10 pt-2 border-t border-emerald-800/80 flex items-start gap-1.5 text-[9.5px] sm:text-[10.5px] text-emerald-100/90 font-medium leading-tight">
+          <div className="w-3.5 h-3.5 rounded-full bg-white/15 flex items-center justify-center shrink-0 mt-0.5">
+            <span className="text-[8px] font-bold">i</span>
           </div>
           <span>Komisi {payload?.commission_rate ?? 5}% dihitung otomatis dari Total Harga Tanaman setelah diverifikasi Admin.</span>
         </div>
       </div>
 
-      {/* ── RINGKASAN KOMISI (2x2 GRID ON MOBILE, 4 GRID ON DESKTOP) ───────── */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-5 shadow-2xs space-y-3.5">
+      {/* ── RINGKASAN KOMISI (2x2 GRID RESPONSIVE) ───────────────── */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm sm:text-base font-extrabold text-slate-900">Ringkasan Komisi</h2>
+          <h2 className="text-xs sm:text-base font-extrabold text-slate-900">Ringkasan Komisi</h2>
           <button
             onClick={() => navigate('/orders')}
-            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-0.5 cursor-pointer"
+            className="text-[11px] sm:text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-0.5 cursor-pointer"
           >
             <span>Selengkapnya</span>
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {/* 2x2 Grid on Mobile, 4-column Grid on Desktop */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {/* Card 1: Menunggu Verifikasi */}
           <div
             onClick={() => setFilterStatus(filterStatus === 'waiting_verification' ? 'ALL' : 'waiting_verification')}
-            className={`p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+            className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
               filterStatus === 'waiting_verification'
                 ? 'bg-amber-50/90 border-amber-300 ring-2 ring-amber-400/50'
                 : 'bg-amber-50/50 border-amber-200/70 hover:bg-amber-50'
             }`}
           >
-            <div className="w-7 h-7 rounded-full bg-amber-100/80 text-amber-600 flex items-center justify-center mb-2">
-              <Clock className="w-3.5 h-3.5" />
+            <div className="w-6 h-6 rounded-full bg-amber-100/80 text-amber-600 flex items-center justify-center mb-1.5">
+              <Clock className="w-3 h-3" />
             </div>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-600 leading-tight">Menunggu Verifikasi</p>
-            <p className="text-sm sm:text-lg font-black text-amber-700 mt-1 truncate">
+            <p className="text-[9.5px] sm:text-[11px] font-bold text-slate-600 leading-tight truncate">Menunggu Verifikasi</p>
+            <p className="text-xs sm:text-lg font-black text-amber-700 mt-0.5 truncate">
               {isLoading ? '...' : formatRp(summary.waiting_verification)}
             </p>
           </div>
@@ -155,17 +155,17 @@ export const SalesCommissionPage: React.FC = () => {
           {/* Card 2: Terverifikasi */}
           <div
             onClick={() => setFilterStatus(filterStatus === 'verified' ? 'ALL' : 'verified')}
-            className={`p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+            className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
               filterStatus === 'verified'
                 ? 'bg-emerald-50/90 border-emerald-300 ring-2 ring-emerald-400/50'
                 : 'bg-emerald-50/50 border-emerald-200/70 hover:bg-emerald-50'
             }`}
           >
-            <div className="w-7 h-7 rounded-full bg-emerald-100/80 text-emerald-700 flex items-center justify-center mb-2">
-              <ShieldCheck className="w-3.5 h-3.5" />
+            <div className="w-6 h-6 rounded-full bg-emerald-100/80 text-emerald-700 flex items-center justify-center mb-1.5">
+              <ShieldCheck className="w-3 h-3" />
             </div>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-600 leading-tight">Terverifikasi</p>
-            <p className="text-sm sm:text-lg font-black text-emerald-800 mt-1 truncate">
+            <p className="text-[9.5px] sm:text-[11px] font-bold text-slate-600 leading-tight truncate">Terverifikasi</p>
+            <p className="text-xs sm:text-lg font-black text-emerald-800 mt-0.5 truncate">
               {isLoading ? '...' : formatRp(summary.verified)}
             </p>
           </div>
@@ -173,17 +173,17 @@ export const SalesCommissionPage: React.FC = () => {
           {/* Card 3: Sudah dibayarkan */}
           <div
             onClick={() => setFilterStatus(filterStatus === 'paid' ? 'ALL' : 'paid')}
-            className={`p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+            className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
               filterStatus === 'paid'
                 ? 'bg-blue-50/90 border-blue-300 ring-2 ring-blue-400/50'
                 : 'bg-blue-50/50 border-blue-200/70 hover:bg-blue-50'
             }`}
           >
-            <div className="w-7 h-7 rounded-full bg-blue-100/80 text-blue-700 flex items-center justify-center mb-2">
-              <Wallet className="w-3.5 h-3.5" />
+            <div className="w-6 h-6 rounded-full bg-blue-100/80 text-blue-700 flex items-center justify-center mb-1.5">
+              <Wallet className="w-3 h-3" />
             </div>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-600 leading-tight">Sudah dibayarkan</p>
-            <p className="text-sm sm:text-lg font-black text-blue-800 mt-1 truncate">
+            <p className="text-[9.5px] sm:text-[11px] font-bold text-slate-600 leading-tight truncate">Sudah dibayarkan</p>
+            <p className="text-xs sm:text-lg font-black text-blue-800 mt-0.5 truncate">
               {isLoading ? '...' : formatRp(summary.paid)}
             </p>
           </div>
@@ -191,33 +191,33 @@ export const SalesCommissionPage: React.FC = () => {
           {/* Card 4: Pembayaran ditolak */}
           <div
             onClick={() => setFilterStatus(filterStatus === 'rejected' ? 'ALL' : 'rejected')}
-            className={`p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+            className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
               filterStatus === 'rejected'
                 ? 'bg-rose-50/90 border-rose-300 ring-2 ring-rose-400/50'
                 : 'bg-rose-50/50 border-rose-200/70 hover:bg-rose-50'
             }`}
           >
-            <div className="w-7 h-7 rounded-full bg-rose-100/80 text-rose-600 flex items-center justify-center mb-2">
-              <XCircle className="w-3.5 h-3.5" />
+            <div className="w-6 h-6 rounded-full bg-rose-100/80 text-rose-600 flex items-center justify-center mb-1.5">
+              <XCircle className="w-3 h-3" />
             </div>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-600 leading-tight">Pembayaran ditolak</p>
-            <p className="text-sm sm:text-lg font-black text-rose-700 mt-1 truncate">
+            <p className="text-[9.5px] sm:text-[11px] font-bold text-slate-600 leading-tight truncate">Pembayaran ditolak</p>
+            <p className="text-xs sm:text-lg font-black text-rose-700 mt-0.5 truncate">
               {isLoading ? '...' : formatRp(summary.rejected)}
             </p>
           </div>
         </div>
       </div>
 
-      {/* ── RIWAYAT KOMISI LIST (COMPACT MOBILE FRIENDLY) ───────────────── */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-5 shadow-2xs space-y-3.5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm sm:text-base font-extrabold text-slate-900">Riwayat Komisi</h2>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
-            <Filter className="w-3.5 h-3.5" />
+      {/* ── RIWAYAT KOMISI LIST (COMPACT & FULLY FITTED) ───────────────── */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-xs sm:text-base font-extrabold text-slate-900 truncate">Riwayat Komisi</h2>
+          <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 shrink-0">
+            <Filter className="w-3 h-3 shrink-0" />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="bg-transparent border-none font-bold text-xs focus:outline-none cursor-pointer"
+              className="bg-transparent border-none font-bold text-[11px] focus:outline-none cursor-pointer"
             >
               <option value="ALL">Semua Status</option>
               <option value="waiting_verification">Menunggu Verifikasi</option>
@@ -229,9 +229,9 @@ export const SalesCommissionPage: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="py-8 text-center text-xs font-bold text-slate-400">Memuat riwayat komisi...</div>
+          <div className="py-6 text-center text-xs font-bold text-slate-400">Memuat riwayat komisi...</div>
         ) : filteredHistory.length === 0 ? (
-          <div className="py-8 text-center text-xs font-bold text-slate-400">
+          <div className="py-6 text-center text-xs font-bold text-slate-400">
             Belum ada data riwayat komisi untuk status ini.
           </div>
         ) : (
@@ -240,49 +240,48 @@ export const SalesCommissionPage: React.FC = () => {
               <div
                 key={item.id}
                 onClick={() => navigate(`/orders/${item.id}`)}
-                className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-2 hover:bg-slate-50/80 rounded-xl px-1 transition-colors cursor-pointer"
+                className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-1.5 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
               >
-                {/* Left info - Order number & customer */}
-                <div className="min-w-0 flex-1 pr-1">
-                  <p className="text-xs sm:text-sm font-black text-slate-900 truncate">{item.order_number}</p>
-                  <p className="text-[10.5px] font-medium text-slate-400 truncate mt-0.5">
+                {/* Left info */}
+                <div className="min-w-0 flex-1 pr-0.5">
+                  <p className="text-[11px] sm:text-sm font-black text-slate-900 truncate leading-tight">{item.order_number}</p>
+                  <p className="text-[9.5px] sm:text-[11px] font-medium text-slate-400 truncate mt-0.5">
                     {item.customer_name} • {item.delivery_method || 'Kirim Paket'}
                   </p>
                 </div>
 
-                {/* Right status badge, date & amount (compact fit) */}
-                <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-                  <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">
+                {/* Right info: date, badge & commission */}
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0 text-right">
+                  <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 shrink-0">
                     {item.date}
                   </span>
 
-                  {/* Badges */}
                   {item.status_key === 'waiting_verification' && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[9.5px] sm:text-[10px] font-bold whitespace-nowrap">
-                      Menunggu Verifikasi
+                    <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-[8.5px] sm:text-[10px] font-extrabold shrink-0">
+                      Menunggu
                     </span>
                   )}
                   {item.status_key === 'verified' && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9.5px] sm:text-[10px] font-bold whitespace-nowrap">
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[8.5px] sm:text-[10px] font-extrabold shrink-0">
                       Terverifikasi
                     </span>
                   )}
                   {item.status_key === 'paid' && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[9.5px] sm:text-[10px] font-bold whitespace-nowrap">
-                      Sudah Dibayarkan
+                    <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[8.5px] sm:text-[10px] font-extrabold shrink-0">
+                      Dibayar
                     </span>
                   )}
                   {item.status_key === 'rejected' && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[9.5px] sm:text-[10px] font-bold whitespace-nowrap">
-                      Pembayaran Ditolak
+                    <span className="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 text-[8.5px] sm:text-[10px] font-extrabold shrink-0">
+                      Ditolak
                     </span>
                   )}
 
-                  <span className="text-xs sm:text-sm font-black text-slate-900 whitespace-nowrap">
+                  <span className="text-[11px] sm:text-sm font-black text-slate-900 shrink-0">
                     {formatRp(item.commission)}
                   </span>
 
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                  <ChevronRight className="w-3 h-3 text-slate-300 shrink-0" />
                 </div>
               </div>
             ))}
