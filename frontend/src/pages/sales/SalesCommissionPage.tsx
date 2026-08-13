@@ -89,29 +89,29 @@ export const SalesCommissionPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Bottom/Right Section */}
-          <div className="grid grid-cols-3 sm:flex sm:flex-col sm:col-span-5 gap-2.5 pt-3 sm:pt-0 border-t border-white/15 sm:border-t-0 text-xs">
+          {/* Bottom/Right Section - Narrower gap on mobile */}
+          <div className="grid grid-cols-3 sm:flex sm:flex-col sm:col-span-5 gap-1.5 sm:gap-2.5 pt-2.5 sm:pt-0 border-t border-white/15 sm:border-t-0 text-xs">
             <div className="space-y-0.5">
-              <span className="text-emerald-200/80 text-[10px] sm:text-[11px] font-medium block truncate">Total Tanaman</span>
-              <span className="font-extrabold text-white text-xs sm:text-sm block truncate">
+              <span className="text-emerald-200/80 text-[9.5px] sm:text-[11px] font-medium block truncate">Total Tanaman</span>
+              <span className="font-extrabold text-white text-[11px] sm:text-sm block truncate leading-tight">
                 {formatRp(payload?.total_plant_total ?? 0)}
               </span>
             </div>
 
             <div className="space-y-0.5">
-              <span className="text-emerald-200/80 text-[10px] sm:text-[11px] font-medium block truncate">Persentase</span>
-              <span className="font-extrabold text-white text-xs sm:text-sm block">{payload?.commission_rate ?? 5}%</span>
+              <span className="text-emerald-200/80 text-[9.5px] sm:text-[11px] font-medium block truncate">Persentase</span>
+              <span className="font-extrabold text-white text-[11px] sm:text-sm block leading-tight">{payload?.commission_rate ?? 5}%</span>
             </div>
 
             <div className="space-y-0.5">
-              <span className="text-emerald-200/80 text-[10px] sm:text-[11px] font-medium block truncate">Pesanan</span>
-              <span className="font-extrabold text-white text-xs sm:text-sm block">{payload?.total_orders_count ?? 0} pesanan</span>
+              <span className="text-emerald-200/80 text-[9.5px] sm:text-[11px] font-medium block truncate">Pesanan</span>
+              <span className="font-extrabold text-white text-[11px] sm:text-sm block leading-tight">{payload?.total_orders_count ?? 0} pesanan</span>
             </div>
           </div>
         </div>
 
         {/* Footer Note inside Green Banner */}
-        <div className="relative z-10 pt-3 border-t border-emerald-800/80 flex items-start gap-2 text-[10.5px] text-emerald-100/90 font-medium leading-tight">
+        <div className="relative z-10 pt-2.5 border-t border-emerald-800/80 flex items-start gap-2 text-[10px] sm:text-[10.5px] text-emerald-100/90 font-medium leading-tight">
           <div className="w-4 h-4 rounded-full bg-white/15 flex items-center justify-center shrink-0 mt-0.5">
             <span className="text-[9px] font-bold">i</span>
           </div>
@@ -119,7 +119,7 @@ export const SalesCommissionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── RINGKASAN KOMISI (MOBILE SCROLL / GRID RESPONSIVE) ───────────────── */}
+      {/* ── RINGKASAN KOMISI (2x2 GRID ON MOBILE, 4 GRID ON DESKTOP) ───────── */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-5 shadow-2xs space-y-3.5">
         <div className="flex items-center justify-between">
           <h2 className="text-sm sm:text-base font-extrabold text-slate-900">Ringkasan Komisi</h2>
@@ -132,12 +132,12 @@ export const SalesCommissionPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Horizontal scrollable cards container on small screens, grid on desktop */}
-        <div className="flex sm:grid sm:grid-cols-4 gap-2.5 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1 no-scrollbar">
+        {/* 2x2 Grid on Mobile, 4-column Grid on Desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {/* Card 1: Menunggu Verifikasi */}
           <div
             onClick={() => setFilterStatus(filterStatus === 'waiting_verification' ? 'ALL' : 'waiting_verification')}
-            className={`min-w-[130px] sm:min-w-0 flex-1 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+            className={`p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
               filterStatus === 'waiting_verification'
                 ? 'bg-amber-50/90 border-amber-300 ring-2 ring-amber-400/50'
                 : 'bg-amber-50/50 border-amber-200/70 hover:bg-amber-50'
@@ -155,7 +155,7 @@ export const SalesCommissionPage: React.FC = () => {
           {/* Card 2: Terverifikasi */}
           <div
             onClick={() => setFilterStatus(filterStatus === 'verified' ? 'ALL' : 'verified')}
-            className={`min-w-[130px] sm:min-w-0 flex-1 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+            className={`p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
               filterStatus === 'verified'
                 ? 'bg-emerald-50/90 border-emerald-300 ring-2 ring-emerald-400/50'
                 : 'bg-emerald-50/50 border-emerald-200/70 hover:bg-emerald-50'
@@ -173,7 +173,7 @@ export const SalesCommissionPage: React.FC = () => {
           {/* Card 3: Sudah dibayarkan */}
           <div
             onClick={() => setFilterStatus(filterStatus === 'paid' ? 'ALL' : 'paid')}
-            className={`min-w-[130px] sm:min-w-0 flex-1 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+            className={`p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
               filterStatus === 'paid'
                 ? 'bg-blue-50/90 border-blue-300 ring-2 ring-blue-400/50'
                 : 'bg-blue-50/50 border-blue-200/70 hover:bg-blue-50'
@@ -191,7 +191,7 @@ export const SalesCommissionPage: React.FC = () => {
           {/* Card 4: Pembayaran ditolak */}
           <div
             onClick={() => setFilterStatus(filterStatus === 'rejected' ? 'ALL' : 'rejected')}
-            className={`min-w-[130px] sm:min-w-0 flex-1 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+            className={`p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
               filterStatus === 'rejected'
                 ? 'bg-rose-50/90 border-rose-300 ring-2 ring-rose-400/50'
                 : 'bg-rose-50/50 border-rose-200/70 hover:bg-rose-50'
@@ -208,10 +208,10 @@ export const SalesCommissionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── RIWAYAT KOMISI LIST (RESPONSIVE) ───────────────────────────── */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-2xs space-y-4">
+      {/* ── RIWAYAT KOMISI LIST (COMPACT MOBILE FRIENDLY) ───────────────── */}
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-5 shadow-2xs space-y-3.5">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-extrabold text-slate-900">Riwayat Komisi</h2>
+          <h2 className="text-sm sm:text-base font-extrabold text-slate-900">Riwayat Komisi</h2>
           <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
             <Filter className="w-3.5 h-3.5" />
             <select
@@ -240,52 +240,49 @@ export const SalesCommissionPage: React.FC = () => {
               <div
                 key={item.id}
                 onClick={() => navigate(`/orders/${item.id}`)}
-                className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-3 hover:bg-slate-50/80 rounded-xl px-1 transition-colors cursor-pointer"
+                className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-2 hover:bg-slate-50/80 rounded-xl px-1 transition-colors cursor-pointer"
               >
-                {/* Left info */}
-                <div className="min-w-0 flex-1">
+                {/* Left info - Order number & customer */}
+                <div className="min-w-0 flex-1 pr-1">
                   <p className="text-xs sm:text-sm font-black text-slate-900 truncate">{item.order_number}</p>
-                  <p className="text-[11px] font-medium text-slate-400 truncate mt-0.5">
+                  <p className="text-[10.5px] font-medium text-slate-400 truncate mt-0.5">
                     {item.customer_name} • {item.delivery_method || 'Kirim Paket'}
                   </p>
                 </div>
 
-                {/* Middle date */}
-                <span className="text-[11px] font-bold text-slate-400 shrink-0 hidden sm:inline">
-                  {item.date}
-                </span>
-
-                {/* Right status badge + amount */}
-                <div className="flex items-center gap-3 shrink-0 text-right">
-                  <span className="text-[10px] font-bold text-slate-400 sm:hidden block">{item.date}</span>
+                {/* Right status badge, date & amount (compact fit) */}
+                <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">
+                    {item.date}
+                  </span>
 
                   {/* Badges */}
                   {item.status_key === 'waiting_verification' && (
-                    <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold">
+                    <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[9.5px] sm:text-[10px] font-bold whitespace-nowrap">
                       Menunggu Verifikasi
                     </span>
                   )}
                   {item.status_key === 'verified' && (
-                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                    <span className="px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9.5px] sm:text-[10px] font-bold whitespace-nowrap">
                       Terverifikasi
                     </span>
                   )}
                   {item.status_key === 'paid' && (
-                    <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold">
+                    <span className="px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[9.5px] sm:text-[10px] font-bold whitespace-nowrap">
                       Sudah Dibayarkan
                     </span>
                   )}
                   {item.status_key === 'rejected' && (
-                    <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
+                    <span className="px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[9.5px] sm:text-[10px] font-bold whitespace-nowrap">
                       Pembayaran Ditolak
                     </span>
                   )}
 
-                  <span className="text-xs sm:text-sm font-black text-slate-900 min-w-[70px]">
+                  <span className="text-xs sm:text-sm font-black text-slate-900 whitespace-nowrap">
                     {formatRp(item.commission)}
                   </span>
 
-                  <ChevronRight className="w-4 h-4 text-slate-300" />
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
                 </div>
               </div>
             ))}
