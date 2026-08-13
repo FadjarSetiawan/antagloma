@@ -9,6 +9,7 @@ import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
 import { CompleteShipmentModal } from '../../components/orders/CompleteShipmentModal';
 import { CompletePackageShipmentModal } from '../../components/orders/CompletePackageShipmentModal';
 import { CustomSelect } from '../../components/shared/CustomSelect';
+import { CustomDatePickerModal } from '../../components/shared/CustomDatePickerModal';
 import {
   Plus,
   Search,
@@ -139,6 +140,8 @@ export const OrderListPage: React.FC = () => {
     { value: 'CANCELLED', label: 'Dibatalkan' },
   ];
 
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
   return (
     <div className="space-y-4 max-w-7xl pb-24 font-sans text-slate-900">
       {/* Title & Subtitle */}
@@ -174,7 +177,7 @@ export const OrderListPage: React.FC = () => {
           />
         </div>
 
-        {/* Filters Row: Status Dropdown & Date Picker in 1 row */}
+        {/* Filters Row: Status Dropdown & Custom Styled Date Picker */}
         <div className="flex gap-2 items-center w-full">
           <div className="flex-1 min-w-0">
             <CustomSelect
@@ -186,21 +189,22 @@ export const OrderListPage: React.FC = () => {
           </div>
 
           <div className="relative flex-shrink-0">
-            {/* Native date input, styled and hidden but clickable using standard calendar icon button */}
-            <label className="flex items-center justify-center w-11 h-11 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer shadow-xs active:scale-95">
+            {/* Custom Styled Calendar Button */}
+            <button
+              type="button"
+              onClick={() => setIsDatePickerOpen(true)}
+              className={`flex items-center justify-center w-11 h-11 bg-white border rounded-2xl transition-all cursor-pointer shadow-xs active:scale-95 ${
+                orderDateFilter ? 'border-[#04593f] ring-2 ring-emerald-600/20 bg-emerald-50/30' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+              title="Pilih Tanggal"
+            >
               <Calendar className={`w-4 h-4 ${orderDateFilter ? 'text-[#04593f]' : 'text-slate-500'}`} />
-              <input
-                type="date"
-                value={orderDateFilter}
-                onChange={(e) => setOrderDateFilter(e.target.value)}
-                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-              />
-            </label>
+            </button>
 
             {/* Active Date Badge / Clear Indicator */}
             {orderDateFilter && (
               <div className="absolute right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 shadow-lg text-[10px] flex items-center gap-1.5 whitespace-nowrap z-50 animate-in fade-in duration-100">
-                <span className="font-semibold text-slate-700">
+                <span className="font-bold text-[#04593f]">
                   {new Date(orderDateFilter).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
                 </span>
                 <button
@@ -559,6 +563,14 @@ export const OrderListPage: React.FC = () => {
           await packageShipmentMutation.mutateAsync({ packageId, payload });
           setShipmentPackage(null);
         }}
+      />
+
+      {/* Custom Date Picker Modal */}
+      <CustomDatePickerModal
+        isOpen={isDatePickerOpen}
+        value={orderDateFilter}
+        onChange={(val) => setOrderDateFilter(val)}
+        onClose={() => setIsDatePickerOpen(false)}
       />
     </div>
   );
