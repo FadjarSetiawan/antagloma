@@ -23,11 +23,14 @@ class ThermalPrinterService {
 
   public async connect(): Promise<string> {
     try {
-      const response = await fetch(this.localVirtualPrinterUrl, { method: 'GET' });
+      const response = await fetch(this.localVirtualPrinterUrl, { method: 'GET', mode: 'cors', cache: 'no-store' });
       if (!response.ok) throw new Error('Virtual Thermal Printer lokal belum berjalan.');
       this.deviceConfig = { device: null, characteristic: null, connected: true, name: 'ThermalLab Virtual Printer (localhost)' };
       return this.deviceConfig.name;
     } catch (err: any) {
+      if (err instanceof TypeError) {
+        throw new Error('Gagal mengakses Virtual Thermal Printer. Pastikan http://localhost:3000 terbuka dan tidak diblokir browser.');
+      }
       throw new Error(err.message || 'Virtual Thermal Printer lokal belum terhubung.');
     }
   }
