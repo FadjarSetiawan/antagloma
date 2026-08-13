@@ -188,17 +188,14 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           {/* Label Container Box */}
           <div className="border-2 border-black p-3 rounded-lg space-y-2 font-sans bg-white text-black">
             {/* Header Store & Order ID */}
-            <div className="flex items-start justify-between border-b-2 border-black pb-2">
-              <div className="flex items-center gap-1.5">
-                <Sprout className="w-5 h-5 text-black shrink-0" />
-                <div>
-                  <h1 className="font-extrabold text-sm tracking-wide text-black uppercase leading-none">
-                    ANTAGLOMA FLORIST
-                  </h1>
-                  <p className="text-[9px] font-bold text-black mt-0.5">
-                    WA: 0858-9450-3333 / 0857-3333-1889
-                  </p>
-                </div>
+            <div className="flex items-start justify-between border-b-2 border-black pb-2 pt-1">
+              <div>
+                <h1 className="font-extrabold text-sm tracking-wide text-black uppercase leading-normal pt-0.5">
+                  ANTAGLOMA FLORIST
+                </h1>
+                <p className="text-[9px] font-bold text-black mt-0.5">
+                  WA: 0858-9450-3333 / 0857-3333-1889
+                </p>
               </div>
 
               <div className="text-right">

@@ -172,10 +172,9 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 width: 78mm !important;
                 max-width: 78mm !important;
                 margin: 0 auto !important;
-                padding: 1.5mm 1mm !important;
+                padding: 3.5mm 1mm 1.5mm 1mm !important;
                 box-sizing: border-box !important;
                 background: #ffffff !important;
-                overflow: hidden !important;
               }
 
               /* Disable multi-page overflow breaks */
@@ -189,12 +188,9 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           `}</style>
 
           {/* Header Store Info */}
-          <div className="border-b-2 border-black pb-2 flex justify-between items-start gap-2">
+          <div className="border-b-2 border-black pb-2 pt-1 flex justify-between items-start gap-2">
             <div className="space-y-0.5 min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <Sprout className="w-4 h-4 text-black shrink-0" />
-                <h1 className="font-bold text-xs tracking-wider text-black uppercase leading-tight truncate">ANTAGLOMA FLORIST</h1>
-              </div>
+              <h1 className="font-bold text-xs tracking-wider text-black uppercase leading-normal pt-0.5">ANTAGLOMA FLORIST</h1>
               <p className="text-[9.5px] font-semibold text-black leading-tight">Spesialis Adenium Bunga Tumpuk</p>
               <p className="text-[9px] font-normal text-black leading-tight">WA: 0858-9450-3333 / 0857-3333-1889</p>
             </div>
