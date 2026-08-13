@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Order } from '../../types/order';
-import { Tag, Printer, X, Sprout, Phone, Bluetooth, AlertCircle } from 'lucide-react';
+import { Tag, Printer, X, Sprout, Phone, Bluetooth, AlertCircle, Download } from 'lucide-react';
 import { thermalPrinterService } from '../../utils/thermalPrinter';
 
 interface ShippingLabelModalProps {
@@ -52,6 +52,23 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
     }
   };
 
+  const handleDownloadThermalBitmap = async () => {
+    try {
+      const printableEl = document.getElementById('shipping-label-printable');
+      if (!printableEl) throw new Error('Elemen pratinjau label tidak ditemukan.');
+
+      const dataUrl = await thermalPrinterService.generateThermalBitmapDataUrl(printableEl, 576);
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `SIMULASI_CETAK_THERMAL_STIKER_10X10_${subOrderNum}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err: any) {
+      alert(err.message || 'Gagal membuat gambar simulasi label thermal.');
+    }
+  };
+
   const subOrderNum = packageInfo?.subOrderNumber || `${order.order_number}-A`;
   const rawPkgType = packageInfo?.packageType || 'Fullset';
   const normalizedPkgType = rawPkgType.trim().toLowerCase();
@@ -95,6 +112,16 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
                 <span className="whitespace-nowrap">{isBluetoothPrinting ? '...' : 'Bluetooth'}</span>
               </button>
             )}
+
+            <button
+              type="button"
+              onClick={handleDownloadThermalBitmap}
+              className="py-1.5 px-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-[10px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0 leading-tight"
+              title="Unduh Gambar Hasil Cetak Thermal (100% Persis Hasil Cetakan Bluetooth)"
+            >
+              <Download className="w-3.5 h-3.5 shrink-0 text-slate-300" />
+              <span className="whitespace-nowrap">Tes Gambar</span>
+            </button>
 
             <button
               onClick={handlePrint}

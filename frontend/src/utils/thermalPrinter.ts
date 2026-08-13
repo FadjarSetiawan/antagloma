@@ -116,10 +116,9 @@ class ThermalPrinterService {
   }
 
   /**
-   * Convert an HTML Element (Modal Nota/Label) into a 1-bit Monochrome Bitmap (576px wide for 80mm thermal printers)
-   * and print directly via ESC/POS raster commands GS v 0.
+   * Render HTML element to exact 576px wide 1-bit monochrome bitmap canvas
    */
-  public async printElementAsBitmap(element: HTMLElement, targetWidth = 576): Promise<void> {
+  public async renderToThermalCanvas(element: HTMLElement, targetWidth = 576): Promise<{ canvas: HTMLCanvasElement; imageBytes: Uint8Array; width: number; height: number }> {
     const canvas = await html2canvas(element, {
       scale: 2,
       backgroundColor: '#ffffff',
@@ -131,10 +130,10 @@ class ThermalPrinterService {
     const width = targetWidth; // 576 pixels for 80mm thermal printer head
     const height = Math.round(targetWidth * aspect);
 
-    const resizedCanvas = document.createElement('canvas');
-    resizedCanvas.width = width;
-    resizedCanvas.height = height;
-    const ctx = resizedCanvas.getContext('2d');
+    const monoCanvas = document.createElement('canvas');
+    monoCanvas.width = width;
+    monoCanvas.height = height;
+    const ctx = monoCanvas.getContext('2d');
 
     if (!ctx) throw new Error('Gagal memproses gambar cetak.');
 
@@ -145,7 +144,7 @@ class ThermalPrinterService {
     const imgData = ctx.getImageData(0, 0, width, height);
     const pixels = imgData.data;
 
-    // Convert RGBA pixels into 1-bit monochrome raster data for ESC/POS GS v 0
+    // Convert RGBA pixels into 1-bit monochrome raster data & render back exact monochrome preview pixels
     const bytesPerLine = width / 8;
     const imageBytes = new Uint8Array(bytesPerLine * height);
 
@@ -155,7 +154,6 @@ class ThermalPrinterService {
         const r = pixels[offset];
         const g = pixels[offset + 1];
         const b = pixels[offset + 2];
-        // Luminance thresholding
         const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
         const isBlack = brightness < 160;
 
@@ -163,9 +161,35 @@ class ThermalPrinterService {
           const byteIndex = y * bytesPerLine + Math.floor(x / 8);
           const bitIndex = 7 - (x % 8);
           imageBytes[byteIndex] |= 1 << bitIndex;
+          pixels[offset] = 0;
+          pixels[offset + 1] = 0;
+          pixels[offset + 2] = 0;
+        } else {
+          pixels[offset] = 255;
+          pixels[offset + 1] = 255;
+          pixels[offset + 2] = 255;
         }
       }
     }
+
+    ctx.putImageData(imgData, 0, 0);
+    return { canvas: monoCanvas, imageBytes, width, height };
+  }
+
+  /**
+   * Generate Data URL PNG image simulation of 100% exact thermal printer output
+   */
+  public async generateThermalBitmapDataUrl(element: HTMLElement, targetWidth = 576): Promise<string> {
+    const { canvas } = await this.renderToThermalCanvas(element, targetWidth);
+    return canvas.toDataURL('image/png');
+  }
+
+  /**
+   * Print directly via ESC/POS raster commands GS v 0.
+   */
+  public async printElementAsBitmap(element: HTMLElement, targetWidth = 576): Promise<void> {
+    const { imageBytes, width, height } = await this.renderToThermalCanvas(element, targetWidth);
+    const bytesPerLine = width / 8;
 
     // ESC/POS GS v 0 command: GS v 0 m xL xH yL yH data...
     const xL = bytesPerLine & 0xff;
