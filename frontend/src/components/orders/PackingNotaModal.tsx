@@ -140,99 +140,101 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           `}</style>
 
           {/* Header Store & Order Info Block */}
-          <div className="border-b border-slate-300 pb-2 flex justify-between items-start gap-2">
+          <div className="border-b border-black pb-2 flex justify-between items-start gap-2">
             <div className="space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                <Sprout className="w-4 h-4 text-[#04593f] flex-shrink-0" />
-                <span className="font-semibold text-[11px] uppercase tracking-wide text-slate-900 block leading-none">
+              <div className="flex items-center gap-1">
+                <Sprout className="w-4 h-4 text-black flex-shrink-0" />
+                <span className="font-bold text-[12px] uppercase tracking-wide text-black block leading-none">
                   ANTAGLOMA FLORIST
                 </span>
               </div>
-              <p className="text-[9px] font-medium text-slate-700">
+              <p className="text-[9.5px] font-semibold text-black">
                 Spesialis Adenium Bunga Tumpuk
               </p>
-              <p className="text-[9px] text-slate-500 leading-tight">
+              <p className="text-[9px] text-black leading-tight">
                 WA: 0858-9450-3333 / 0857-3333-1889
               </p>
             </div>
 
             <div className="text-right flex-shrink-0">
-              <span className="inline-block px-1.5 py-0.5 bg-emerald-50 border border-emerald-200 text-[#04593f] font-medium text-[8px] rounded uppercase tracking-wider mb-0.5">
+              <span className="inline-block px-1.5 py-0.5 border border-black text-black font-bold text-[8.5px] uppercase tracking-wider mb-0.5">
                 NOTA PACKING
               </span>
-              <p className="font-medium text-[11px] text-slate-900 block">{order.order_number}</p>
-              <p className="text-[10px] text-slate-400 font-medium">Tgl: {formattedDate}</p>
-              {packageInfo && <p className="text-[9px] text-[#04593f] font-medium">Paket {packageInfo.letter}</p>}
+              <p className="font-bold text-[11px] text-black block">{order.order_number}</p>
+              <p className="text-[9.5px] text-black font-medium">Tgl: {formattedDate}</p>
+              {packageInfo && <p className="text-[9.5px] text-black font-bold">Paket {packageInfo.letter}</p>}
             </div>
           </div>
 
-          {/* Receiver & Address Box */}
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-2.5 space-y-1.5 text-xs">
+          {/* Receiver & Address Section (Monochrome clean layout) */}
+          <div className="border-b border-black pb-2 space-y-1.5 text-xs">
             <div>
-              <span className="text-[9px] font-bold uppercase text-slate-400 block mb-0.5">
-                PENERIMA / CUSTOMER
+              <span className="text-[9px] font-bold uppercase text-black block mb-0.5 tracking-wider">
+                PENERIMA / CUSTOMER:
               </span>
-              <span className="font-medium text-slate-900 block text-[11px]">{order.customer_name}</span>
-              <span className="font-medium text-slate-600 text-[11px] block">{order.phone}</span>
-              <span className="inline-block mt-1 px-1.5 py-0.5 bg-[#04593f] text-white font-medium text-[9px] rounded">
-                Metode Kirim: {packageType}
-              </span>
-              {packageInfo && <span className="inline-block mt-1 ml-1 px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 font-medium text-[9px] rounded">Berat: {packageWeight}</span>}
+              <span className="font-bold text-black block text-[11.5px]">{order.customer_name}</span>
+              <span className="font-semibold text-black text-[11px] block">{order.phone}</span>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="font-bold text-[9.5px] text-black uppercase">
+                  [ {packageType} ]
+                </span>
+                {packageInfo && <span className="font-semibold text-[9.5px] text-black">Berat: {packageWeight}</span>}
+              </div>
             </div>
 
-            <div className="pt-1.5 border-t border-slate-200/80">
-              <span className="text-[9px] font-bold uppercase text-slate-400 block mb-0.5">
-                ALAMAT PENGIRIMAN TANAMAN
+            <div className="pt-1.5 border-t border-dashed border-slate-300">
+              <span className="text-[9px] font-bold uppercase text-black block mb-0.5 tracking-wider">
+                ALAMAT PENGIRIMAN:
               </span>
-              <p className="font-medium text-slate-700 leading-snug text-[11px]">
+              <p className="font-semibold text-black leading-snug text-[11px]">
                 {[order.district_name, order.regency_name, order.province_name]
                   .filter(Boolean)
                   .join(', ')}
               </p>
-              <p className="text-[11px] text-slate-800 font-bold mt-0.5">{order.full_address}</p>
+              <p className="text-[11px] text-black font-bold mt-0.5 leading-normal">{order.full_address}</p>
             </div>
           </div>
 
-          {/* Table Items */}
+          {/* Table Items (Monochrome minimal border) */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase text-slate-400 block">
+            <span className="text-[9.5px] font-bold uppercase text-black block tracking-wider">
               ITEM TANAMAN & BONSAI POT
             </span>
-            <div className="border border-slate-200 rounded-lg overflow-hidden">
+            <div className="border-t border-b border-black">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-bold text-[10px]">
+                <thead className="border-b border-black text-black font-bold text-[10px] uppercase">
                   <tr>
-                    <th className="py-1.5 px-2 text-center w-7">No</th>
-                    <th className="py-1.5 px-2">Varian Adenium</th>
-                    <th className="py-1.5 px-2">Ukuran</th>
-                    <th className="py-1.5 px-2 text-center w-10">Qty</th>
+                    <th className="py-1 px-1 text-center w-6">No</th>
+                    <th className="py-1 px-1">Varian Adenium</th>
+                    <th className="py-1 px-1">Ukuran</th>
+                    <th className="py-1 px-1 text-center w-8">Qty</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-normal text-slate-800 text-[10px]">
+                <tbody className="divide-y divide-slate-200 font-normal text-black text-[10px]">
                 {packageItems.length > 0 ? (
                   packageItems.map((item, idx) => {
                     const itemName = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name);
                     return (
-                    <tr key={idx} className="hover:bg-slate-50">
-                        <td className="py-1.5 px-2 text-center">{idx + 1}</td>
-                        <td className="py-1.5 px-2">
-                          <span className="font-medium text-slate-900 block">{itemName}</span>
+                      <tr key={idx}>
+                        <td className="py-1 px-1 text-center font-semibold">{idx + 1}</td>
+                        <td className="py-1 px-1">
+                          <span className="font-bold text-black block leading-tight">{itemName}</span>
                           {'tree_code' in item && item.tree_code && (
-                            <span className="text-[9px] text-slate-400 font-normal">Code: {item.tree_code}</span>
+                            <span className="text-[9px] text-black font-normal">Code: {item.tree_code}</span>
                           )}
                         </td>
-                        <td className="py-1.5 px-2">
-                          <span className="px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-[8px] font-normal">
+                        <td className="py-1 px-1">
+                          <span className="text-[9px] font-semibold text-black">
                             {'grade' in item ? `Grade ${item.grade || 'A'}` : 'Package'}
                           </span>
                         </td>
-                        <td className="py-1.5 px-2 text-center font-medium">{item.quantity}</td>
+                        <td className="py-1 px-1 text-center font-bold text-black">{item.quantity}</td>
                       </tr>
                     );
                   })
                   ) : (
                     <tr>
-                      <td colSpan={4} className="py-3 text-center text-slate-400 font-normal">
+                      <td colSpan={4} className="py-2 text-center text-black italic">
                         Tidak ada detail item tanaman.
                       </td>
                     </tr>
@@ -242,35 +244,35 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
             </div>
           </div>
 
-          {/* Notes Callout Box */}
+          {/* Notes Callout Box (Monochrome simple border) */}
           {order.notes && (
-            <div className="p-2 bg-amber-50/80 border border-amber-200/80 rounded-xl text-[11px]">
-              <span className="font-bold text-amber-950 uppercase block text-[9px]">
+            <div className="p-1.5 border border-black rounded text-[10.5px]">
+              <span className="font-bold text-black uppercase block text-[9px]">
                 CATATAN PENGIRIMAN / PACKING KAYU:
               </span>
-              <p className="text-amber-900 font-medium italic mt-0.5">"{order.notes}"</p>
+              <p className="text-black font-semibold italic mt-0.5">"{order.notes}"</p>
             </div>
           )}
 
           {/* Signatures Section */}
-          <div className="pt-3 border-t border-slate-200 grid grid-cols-3 gap-2 text-center text-[10px]">
+          <div className="pt-2 border-t border-black grid grid-cols-3 gap-2 text-center text-[9.5px]">
             <div>
-              <span className="text-slate-400 font-normal block mb-6">Sales Pembuat</span>
-              <span className="font-bold text-slate-800 block border-t border-dashed border-slate-300 pt-0.5">
+              <span className="text-black font-medium block mb-5">Sales Pembuat</span>
+              <span className="font-bold text-black block border-t border-black pt-0.5">
                 {order.creator?.name || 'Sales Staff'}
               </span>
             </div>
 
             <div>
-              <span className="text-slate-400 font-normal block mb-6">Verifikasi Admin</span>
-              <span className="font-bold text-slate-800 block border-t border-dashed border-slate-300 pt-0.5">
+              <span className="text-black font-medium block mb-5">Verifikasi Admin</span>
+              <span className="font-bold text-black block border-t border-black pt-0.5">
                 {order.verifier?.name || 'Admin'}
               </span>
             </div>
 
             <div>
-              <span className="text-slate-400 font-normal block mb-6">Staff Packing</span>
-              <span className="font-bold text-slate-800 block border-t border-dashed border-slate-300 pt-0.5">
+              <span className="text-black font-medium block mb-5">Staff Packing</span>
+              <span className="font-bold text-black block border-t border-black pt-0.5">
                 ( Packing )
               </span>
             </div>
