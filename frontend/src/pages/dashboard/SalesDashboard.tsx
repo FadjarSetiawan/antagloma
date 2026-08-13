@@ -117,7 +117,21 @@ export const SalesDashboard: React.FC = () => {
 
   return <div className="space-y-4 sm:space-y-5 max-w-5xl pb-24 font-sans text-slate-900 px-1 sm:px-0">
     <header><h1 className="text-lg sm:text-xl font-bold">Sales Dashboard</h1><p className="text-xs text-slate-500 mt-0.5">Pantau pesanan, packing, foto, dan resi milik Anda.</p></header>
-    <button onClick={() => window.location.assign(`/orders?order_date=${today}`)} className="w-full text-left bg-[#04593f] text-white rounded-2xl p-3.5 shadow-2xs"><span className="text-xs font-bold">Pesanan Dibuat Hari Ini · {todayCount} Order</span><span className="block text-[10px] text-emerald-100 mt-1">{today}</span></button>
+    <button
+      onClick={() => window.location.assign(`/orders?order_date=${today}`)}
+      className="w-full text-left bg-gradient-to-br from-[#04593f] via-[#04593f] to-emerald-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-lg relative overflow-hidden border border-emerald-950 font-sans transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+    >
+      <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform" />
+      <div className="relative z-10 flex items-center justify-between">
+        <div>
+          <span className="text-xs sm:text-sm font-extrabold text-white block">Pesanan Dibuat Hari Ini · {todayCount} Order</span>
+          <span className="block text-[10.5px] sm:text-xs text-emerald-200/90 font-semibold mt-1">{today}</span>
+        </div>
+        <div className="w-8 h-8 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0 group-hover:bg-white/25 transition-colors">
+          <span className="text-sm font-bold">›</span>
+        </div>
+      </div>
+    </button>
     <section aria-label="Ringkasan status pesanan" className="grid grid-cols-2 gap-2.5 sm:gap-3.5">{summaryCards.map(card => <article key={card.title} className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all group"><div className="flex items-start justify-between gap-2"><span className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">{card.icon}</span><strong className="text-xl sm:text-2xl leading-none text-slate-950">{card.count}</strong></div><div><h2 className="text-xs font-bold text-slate-800 leading-tight block">{card.title}</h2><p className="mt-1 flex items-center text-[10px] text-slate-400 leading-none truncate">{card.detail}</p></div><button onClick={card.onClick} className="w-full py-1.5 px-2 bg-emerald-50 group-hover:bg-[#04593f] text-[#04593f] group-hover:text-white rounded-xl text-[10px] sm:text-xs font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"><span>{card.action}</span><span aria-hidden="true">›</span></button></article>)}</section>
 
 
