@@ -122,40 +122,37 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           {/* Print specific style overrides */}
           <style>{`
             @media print {
-              /* Hide main layout elements */
-              #no-print-wrapper,
-              .no-print {
+              @page {
+                size: 100mm 100mm;
+                margin: 0;
+              }
+
+              /* Hide non-printable elements */
+              body * {
+                visibility: hidden !important;
+              }
+
+              .no-print,
+              .no-print * {
                 display: none !important;
               }
 
-              /* Reset root document bounds for 100mm sticker paper */
-              html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                background: #ffffff !important;
-                width: 100mm !important;
-                height: 100mm !important;
-                overflow: hidden !important;
-              }
-
-              #shipping-label-modal-container {
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 100mm !important;
-                height: 100mm !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                background: #ffffff !important;
+              /* Position printable container fixed at 100x100mm */
+              #shipping-label-printable,
+              #shipping-label-printable * {
+                visibility: visible !important;
               }
 
               #shipping-label-printable {
-                width: 100mm !important;
-                height: 100mm !important;
-                padding: 4mm !important;
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 96mm !important;
+                height: 96mm !important;
                 margin: 0 !important;
-                border: none !important;
-                box-shadow: none !important;
+                padding: 2mm !important;
+                box-sizing: border-box !important;
+                background: #ffffff !important;
               }
 
               /* Disable page breaks */

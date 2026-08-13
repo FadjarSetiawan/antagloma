@@ -130,44 +130,38 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           {/* Print specific style overrides */}
           <style>{`
             @media print {
-              /* Hide main layout elements */
-              #no-print-wrapper,
-              .no-print {
+              @page {
+                size: 80mm auto;
+                margin: 0;
+              }
+
+              /* Hide non-printable elements */
+              body * {
+                visibility: hidden !important;
+              }
+
+              .no-print,
+              .no-print * {
                 display: none !important;
               }
 
-              /* Reset root document bounds for 80mm thermal paper */
-              html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                background: #ffffff !important;
-                width: 80mm !important;
-                max-width: 80mm !important;
-                height: auto !important;
-                overflow: hidden !important;
-              }
-
-              /* Position printable container */
-              #packing-nota-modal-container {
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 80mm !important;
-                max-width: 80mm !important;
-                height: auto !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                background: #ffffff !important;
-                overflow: visible !important;
+              /* Make printable area visible and positioned at top left */
+              #packing-nota-printable,
+              #packing-nota-printable * {
+                visibility: visible !important;
               }
 
               #packing-nota-printable {
-                width: 80mm !important;
-                max-width: 80mm !important;
-                padding: 3mm !important;
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 76mm !important;
+                max-width: 76mm !important;
                 margin: 0 !important;
-                border: none !important;
-                box-shadow: none !important;
+                padding: 2mm 3mm !important;
+                box-sizing: border-box !important;
+                background: #ffffff !important;
+                overflow: visible !important;
               }
 
               /* Disable page breaks */
@@ -177,73 +171,75 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 page-break-before: avoid !important;
               }
             }
-          `}</style>          {/* Header Store Info */}
-          <div className="border-b-2 border-black pb-2 flex justify-between items-start">
-            <div className="space-y-0.5">
+          `}</style>
+
+          {/* Header Store Info */}
+          <div className="border-b-2 border-black pb-2 flex justify-between items-start gap-2">
+            <div className="space-y-0.5 min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <Sprout className="w-4 h-4 text-black shrink-0" />
-                <h1 className="font-extrabold text-xs tracking-wider text-black uppercase leading-tight">ANTAGLOMA FLORIST</h1>
+                <h1 className="font-extrabold text-xs tracking-wide text-black uppercase leading-tight truncate">ANTAGLOMA FLORIST</h1>
               </div>
-              <p className="text-[10px] font-bold text-black">Spesialis Adenium Bunga Tumpuk</p>
-              <p className="text-[9.5px] font-medium text-black">WA: 0858-9450-3333 / 0857-3333-1889</p>
+              <p className="text-[9.5px] font-bold text-black leading-tight">Spesialis Adenium Bunga Tumpuk</p>
+              <p className="text-[9px] font-medium text-black leading-tight">WA: 0858-9450-3333 / 0857-3333-1889</p>
             </div>
             <div className="text-right shrink-0">
-              <div className="border-2 border-black px-2 py-0.5 text-[9px] font-black text-black uppercase inline-block mb-1 tracking-wider">
+              <div className="border border-black px-1.5 py-0.5 text-[8.5px] font-black text-black uppercase inline-block mb-0.5 tracking-wider">
                 NOTA PACKING
               </div>
-              <p className="font-extrabold text-xs text-black leading-tight tracking-tight">{order.order_number}</p>
-              <p className="text-[9.5px] font-bold text-black mt-0.5">Tgl: {formattedDate}</p>
+              <p className="font-extrabold text-[11px] text-black leading-tight tracking-tight whitespace-nowrap">{order.order_number}</p>
+              <p className="text-[9px] font-bold text-black leading-tight">Tgl: {formattedDate}</p>
               {packageInfo && (
-                <p className="text-[10px] font-black text-black mt-0.5">Paket {packageInfo.letter}</p>
+                <p className="text-[9.5px] font-black text-black leading-tight mt-0.5">Paket {packageInfo.letter}</p>
               )}
             </div>
           </div>
 
           {/* Receiver Info */}
           <div className="border-b border-black pb-2 space-y-1">
-            <p className="text-[9.5px] font-bold text-black uppercase tracking-wider">PENERIMA / CUSTOMER:</p>
-            <p className="font-extrabold text-sm text-black leading-tight">{order.customer_name}</p>
-            <p className="text-[11px] font-extrabold text-black">{order.phone}</p>
+            <p className="text-[9px] font-bold text-black uppercase tracking-wider">PENERIMA / CUSTOMER:</p>
+            <p className="font-extrabold text-xs text-black leading-tight break-words">{order.customer_name}</p>
+            <p className="text-[10.5px] font-extrabold text-black leading-tight">{order.phone}</p>
             <div className="flex items-center gap-2 pt-0.5">
-              <span className="font-black text-[10px] text-black uppercase border border-black px-1.5 py-0.2 rounded-[2px]">[ {packageType} ]</span>
-              <span className="text-[10px] font-bold text-black">Berat: {packageWeight}</span>
+              <span className="font-bold text-[9px] text-black uppercase border border-black px-1 py-0.2 rounded-[2px] leading-tight shrink-0">[ {packageType} ]</span>
+              <span className="text-[9.5px] font-bold text-black leading-tight truncate">Berat: {packageWeight}</span>
             </div>
           </div>
 
           {/* Destination Address */}
-          <div className="border-b-2 border-black pb-2 space-y-1">
-            <p className="text-[9.5px] font-bold text-black uppercase tracking-wider">ALAMAT PENGIRIMAN:</p>
-            <p className="font-extrabold text-[11px] text-black leading-snug">
+          <div className="border-b-2 border-black pb-2 space-y-0.5">
+            <p className="text-[9px] font-bold text-black uppercase tracking-wider">ALAMAT PENGIRIMAN:</p>
+            <p className="font-extrabold text-[10px] text-black leading-snug break-words">
               {[order.district_name, order.regency_name, order.province_name].filter(Boolean).join(', ')}
             </p>
-            <p className="text-[10.5px] font-bold text-black leading-snug">{order.full_address}</p>
+            <p className="text-[10px] font-bold text-black leading-snug break-words">{order.full_address}</p>
           </div>
 
           {/* Plant Items Table */}
           <div className="space-y-1">
-            <p className="text-[9.5px] font-bold text-black uppercase tracking-wider">ITEM TANAMAN & BONSAI POT</p>
-            <table className="w-full text-left text-[10px] border-collapse">
+            <p className="text-[9px] font-bold text-black uppercase tracking-wider">ITEM TANAMAN & BONSAI POT</p>
+            <table className="w-full text-left text-[9.5px] border-collapse table-fixed">
               <thead>
-                <tr className="border-y-2 border-black font-black text-black uppercase tracking-wide">
-                  <th className="py-1 w-6">NO</th>
-                  <th className="py-1">VARIAN ADENIUM</th>
-                  <th className="py-1 text-center w-16">UKURAN</th>
-                  <th className="py-1 text-center w-8">QTY</th>
+                <tr className="border-y border-black font-extrabold text-black uppercase tracking-wider">
+                  <th className="py-1 w-5 text-center">NO</th>
+                  <th className="py-1 pl-1">VARIAN ADENIUM</th>
+                  <th className="py-1 text-center w-14">UKURAN</th>
+                  <th className="py-1 text-center w-6">QTY</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-black/40 font-bold text-black">
+              <tbody className="divide-y divide-black/30 font-bold text-black">
                 {packageItems.map((item, idx) => {
                   const itemName = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name);
                   const gradeStr = 'grade' in item ? `Grade ${item.grade || 'A'}` : '-';
 
                   return (
                     <tr key={idx}>
-                      <td className="py-1.5 align-top font-black">{idx + 1}</td>
-                      <td className="py-1.5 align-top">
+                      <td className="py-1 text-center align-top font-bold">{idx + 1}</td>
+                      <td className="py-1 pl-1 align-top break-words">
                         <span className="uppercase block font-extrabold leading-tight">{itemName} ({gradeStr})</span>
                       </td>
-                      <td className="py-1.5 align-top text-center font-bold">Package</td>
-                      <td className="py-1.5 align-top text-center font-black text-xs">{item.quantity}</td>
+                      <td className="py-1 align-top text-center font-normal">Package</td>
+                      <td className="py-1 align-top text-center font-bold text-xs">{item.quantity}</td>
                     </tr>
                   );
                 })}
@@ -252,42 +248,42 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           </div>
 
           {/* Packing Notes Box (Editable text box for admin) */}
-          <div className="border-2 border-black p-2.5 rounded-lg space-y-1.5 bg-white">
-            <div className="flex items-center justify-between text-[9.5px] font-black text-black uppercase tracking-wide">
+          <div className="border border-black p-2 rounded-md space-y-1 bg-white">
+            <div className="flex items-center justify-between text-[8.5px] font-bold text-black uppercase tracking-wider">
               <span>CATATAN PENGIRIMAN / PACKING KAYU:</span>
-              <span className="text-[8.5px] text-slate-500 font-normal italic no-print">(Dapat diedit admin sebelum dicetak)</span>
+              <span className="text-[8px] text-slate-500 font-normal italic no-print">(Dapat diedit admin sebelum dicetak)</span>
             </div>
             <textarea
               value={customNotes}
               onChange={(e) => setCustomNotes(e.target.value)}
               placeholder="Ketik catatan packing di sini..."
               rows={2}
-              className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-800 rounded p-1.5 text-[11px] font-bold italic text-black focus:outline-none focus:ring-1 focus:ring-emerald-700 resize-y no-print leading-relaxed"
+              className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-800 rounded p-1.5 text-[10px] font-bold italic text-black focus:outline-none focus:ring-1 focus:ring-emerald-700 resize-y no-print leading-relaxed"
             />
-            <div className="hidden print-block text-[11px] font-extrabold italic text-black whitespace-pre-wrap leading-relaxed">
+            <div className="hidden print:block text-[10px] font-bold italic text-black whitespace-pre-wrap leading-tight">
               {customNotes.trim() ? customNotes : '-'}
             </div>
           </div>
 
           {/* Signatures Section */}
-          <div className="pt-2 border-t-2 border-black grid grid-cols-3 gap-2 text-center text-[10px] font-bold">
+          <div className="pt-1.5 border-t border-black grid grid-cols-3 gap-1.5 text-center text-[9px] font-bold">
             <div>
-              <span className="text-black font-bold block mb-6">Sales</span>
-              <span className="font-extrabold text-black block border-t border-black pt-0.5">
+              <span className="text-black font-semibold block mb-4">Sales</span>
+              <span className="font-bold text-black block border-t border-black pt-0.5 truncate">
                 {order.creator?.name || 'Sales Staff'}
               </span>
             </div>
 
             <div>
-              <span className="text-black font-bold block mb-6">Admin</span>
-              <span className="font-extrabold text-black block border-t border-black pt-0.5">
+              <span className="text-black font-semibold block mb-4">Admin</span>
+              <span className="font-bold text-black block border-t border-black pt-0.5 truncate">
                 {order.verifier?.name || 'Admin'}
               </span>
             </div>
 
             <div>
-              <span className="text-black font-bold block mb-6">Packing</span>
-              <span className="font-extrabold text-black block border-t border-black pt-0.5">
+              <span className="text-black font-semibold block mb-4">Packing</span>
+              <span className="font-bold text-black block border-t border-black pt-0.5 truncate">
                 ( Staff )
               </span>
             </div>
