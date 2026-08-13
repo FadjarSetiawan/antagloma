@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { orderService, Region } from '../../services/orderService';
 import { AddPlantModal } from '../../components/orders/AddPlantModal';
+import { CustomDatePickerModal } from '../../components/shared/CustomDatePickerModal';
 import { OrderItem } from '../../types/order';
 import { CustomSelect } from '../../components/shared/CustomSelect';
 import {
@@ -22,6 +23,7 @@ import {
   Building2,
   QrCode,
   Banknote,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -42,6 +44,7 @@ export const OrderCreatePage: React.FC = () => {
 
   // Form Fields - Step 1
   const [orderDate, setOrderDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [previewOrderNum, setPreviewOrderNum] = useState<string>('ORD-0001');
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
@@ -380,13 +383,18 @@ export const OrderCreatePage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-extrabold text-slate-900 mb-1">Tanggal Transaksi *</label>
-                  <input
-                    type="date"
-                    required
-                    value={orderDate}
-                    onChange={(e) => setOrderDate(e.target.value)}
-                    className="w-full px-3 py-3 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-700 font-bold"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsDatePickerOpen(true)}
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white border border-slate-200 hover:border-[#04593f] hover:bg-emerald-50/30 rounded-2xl text-xs font-extrabold text-slate-900 shadow-2xs transition-all cursor-pointer text-left"
+                  >
+                    <span>
+                      {orderDate
+                        ? new Date(orderDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                        : 'Pilih Tanggal'}
+                    </span>
+                    <CalendarIcon className="w-4 h-4 text-[#04593f] shrink-0" />
+                  </button>
                 </div>
 
                 <div>
@@ -832,6 +840,16 @@ export const OrderCreatePage: React.FC = () => {
         isOpen={isAddPlantModalOpen}
         onClose={() => setIsAddPlantModalOpen(false)}
         onAddPlant={handleAddPlant}
+      />
+
+      {/* Custom Date Picker Modal */}
+      <CustomDatePickerModal
+        isOpen={isDatePickerOpen}
+        value={orderDate}
+        onChange={(val) => {
+          if (val) setOrderDate(val);
+        }}
+        onClose={() => setIsDatePickerOpen(false)}
       />
     </div>
   );

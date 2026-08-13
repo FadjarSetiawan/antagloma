@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   managementService, Discount, SalesCommissionOwnerView, PreviewResult,
 } from '../../services/managementService';
+import { CustomDatePickerModal } from '../../components/shared/CustomDatePickerModal';
 
 type Props = { section: 'commission' | 'discount' };
 
@@ -21,6 +22,7 @@ export const ManagementPage: React.FC<Props> = ({ section }) => {
   const [payoutTarget, setPayoutTarget] = useState<SalesCommissionOwnerView | null>(null);
   const [periodStart, setPeriodStart] = useState('');
   const [periodEnd, setPeriodEnd] = useState('');
+  const [activePickerTarget, setActivePickerTarget] = useState<'start' | 'end' | null>(null);
   const [payoutAmount, setPayoutAmount] = useState('');
   const [payoutNotes, setPayoutNotes] = useState('');
   const [payoutProofFile, setPayoutProofFile] = useState<File | null>(null);
@@ -388,27 +390,34 @@ export const ManagementPage: React.FC<Props> = ({ section }) => {
                   Pilih Periode Pembayaran
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  <label className="block text-[10px] font-bold text-slate-500">
-                    Dari Tanggal
-                    <input
-                      type="date"
-                      required
-                      value={periodStart}
-                      onChange={(e) => { setPeriodStart(e.target.value); setPreview(null); }}
-                      className="mt-1 w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-800 bg-white focus:outline-none focus:border-emerald-600"
-                    />
-                  </label>
-                  <label className="block text-[10px] font-bold text-slate-500">
-                    Sampai Tanggal
-                    <input
-                      type="date"
-                      required
-                      value={periodEnd}
-                      min={periodStart}
-                      onChange={(e) => { setPeriodEnd(e.target.value); setPreview(null); }}
-                      className="mt-1 w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-800 bg-white focus:outline-none focus:border-emerald-600"
-                    />
-                  </label>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 mb-1">Dari Tanggal</label>
+                    <button
+                      type="button"
+                      onClick={() => setActivePickerTarget('start')}
+                      className="w-full border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 text-left cursor-pointer flex items-center justify-between"
+                    >
+                      <span>
+                        {periodStart
+                          ? new Date(periodStart).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                          : 'Pilih Tanggal'}
+                      </span>
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 mb-1">Sampai Tanggal</label>
+                    <button
+                      type="button"
+                      onClick={() => setActivePickerTarget('end')}
+                      className="w-full border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 text-left cursor-pointer flex items-center justify-between"
+                    >
+                      <span>
+                        {periodEnd
+                          ? new Date(periodEnd).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                          : 'Pilih Tanggal'}
+                      </span>
+                    </button>
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -535,6 +544,22 @@ export const ManagementPage: React.FC<Props> = ({ section }) => {
           </div>
         </div>
       )}
+      {/* Custom Date Picker Modal */}
+      <CustomDatePickerModal
+        isOpen={activePickerTarget !== null}
+        value={activePickerTarget === 'start' ? periodStart : periodEnd}
+        onChange={(val) => {
+          if (val) {
+            if (activePickerTarget === 'start') {
+              setPeriodStart(val);
+            } else if (activePickerTarget === 'end') {
+              setPeriodEnd(val);
+            }
+            setPreview(null);
+          }
+        }}
+        onClose={() => setActivePickerTarget(null)}
+      />
     </main>
   );
 };
