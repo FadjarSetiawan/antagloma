@@ -116,11 +116,11 @@ class ThermalPrinterService {
   }
 
   /**
-   * Render HTML element to exact 576px wide 1-bit monochrome bitmap canvas
+   * Render HTML element to high-clarity 576px wide 1-bit monochrome bitmap canvas for 80mm thermal printers
    */
   public async renderToThermalCanvas(element: HTMLElement, targetWidth = 576): Promise<{ canvas: HTMLCanvasElement; imageBytes: Uint8Array; width: number; height: number }> {
     const canvas = await html2canvas(element, {
-      scale: 2,
+      scale: 3, // Higher resolution render before thresholding
       backgroundColor: '#ffffff',
       logging: false,
       useCORS: true,
@@ -137,6 +137,8 @@ class ThermalPrinterService {
 
     if (!ctx) throw new Error('Gagal memproses gambar cetak.');
 
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
     ctx.drawImage(canvas, 0, 0, width, height);
@@ -144,7 +146,7 @@ class ThermalPrinterService {
     const imgData = ctx.getImageData(0, 0, width, height);
     const pixels = imgData.data;
 
-    // Convert RGBA pixels into 1-bit monochrome raster data & render back exact monochrome preview pixels
+    // Convert RGBA pixels into 1-bit monochrome raster data using optimal sharp luminance thresholding (190)
     const bytesPerLine = width / 8;
     const imageBytes = new Uint8Array(bytesPerLine * height);
 
@@ -155,7 +157,7 @@ class ThermalPrinterService {
         const g = pixels[offset + 1];
         const b = pixels[offset + 2];
         const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-        const isBlack = brightness < 160;
+        const isBlack = brightness < 190; // Higher threshold for crisp, sharp text strokes
 
         if (isBlack) {
           const byteIndex = y * bytesPerLine + Math.floor(x / 8);
