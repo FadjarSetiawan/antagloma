@@ -82,37 +82,55 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           {/* Print specific style overrides */}
           <style>{`
             @media print {
+              /* Hide main layout elements */
+              #no-print-wrapper,
+              .no-print {
+                display: none !important;
+              }
+
+              /* Reset body */
               html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                width: 80mm !important;
+              }
+
+              /* Position printable container */
+              #packing-nota-modal-container {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 80mm !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                display: block !important;
+                visibility: visible !important;
+              }
+
+              #packing-nota-modal-container > div {
+                border: none !important;
+                box-shadow: none !important;
                 width: 80mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
               }
-              body * {
-                visibility: hidden !important;
+
+              #packing-nota-printable {
+                display: block !important;
+                visibility: visible !important;
+                width: 80mm !important;
+                padding: 4mm !important;
+                box-sizing: border-box !important;
               }
-              #packing-nota-printable,
+
               #packing-nota-printable * {
                 visibility: visible !important;
               }
-              #packing-nota-printable {
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 80mm !important;
-                max-width: 80mm !important;
-                height: auto !important;
-                margin: 0 !important;
-                padding: 4mm !important;
-                box-sizing: border-box !important;
-                background: #ffffff !important;
-                display: block !important;
-                z-index: 9999999 !important;
-              }
-              .no-print {
-                display: none !important;
-                visibility: hidden !important;
-              }
+
               @page {
                 size: 80mm auto;
                 margin: 0;

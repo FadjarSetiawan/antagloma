@@ -84,38 +84,60 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
           {/* Print specific style overrides */}
           <style>{`
             @media print {
+              /* Hide main layout elements */
+              #no-print-wrapper,
+              .no-print {
+                display: none !important;
+              }
+
+              /* Reset body */
               html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                width: 100mm !important;
+                height: 100mm !important;
+              }
+
+              /* Position printable container */
+              #shipping-label-modal-container {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100mm !important;
+                height: 100mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                display: block !important;
+                visibility: visible !important;
+              }
+
+              #shipping-label-modal-container > div {
+                border: none !important;
+                box-shadow: none !important;
                 width: 100mm !important;
                 height: 100mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
               }
-              body * {
-                visibility: hidden !important;
+
+              #shipping-label-printable {
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                visibility: visible !important;
+                width: 100mm !important;
+                height: 100mm !important;
+                padding: 4mm !important;
+                box-sizing: border-box !important;
               }
-              #shipping-label-printable,
+
               #shipping-label-printable * {
                 visibility: visible !important;
               }
-              #shipping-label-printable {
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100mm !important;
-                height: 100mm !important;
-                max-width: 100mm !important;
-                margin: 0 !important;
-                padding: 4mm !important;
-                box-sizing: border-box !important;
-                background: #ffffff !important;
-                display: block !important;
-                z-index: 9999999 !important;
-              }
-              .no-print {
-                display: none !important;
-                visibility: hidden !important;
-              }
+
               @page {
                 size: 100mm 100mm;
                 margin: 0;
