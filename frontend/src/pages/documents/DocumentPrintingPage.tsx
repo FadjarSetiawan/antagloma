@@ -51,21 +51,27 @@ export const DocumentPrintingPage: React.FC = () => {
   const orders = data?.data || [];
 
   // Backend package records are the source of truth for both identity and print state.
+  // Packages that already have a tracking number automatically disappear from this list.
   const expandedPackageCards = orders
     .filter((order) => order.status === 'PACKING_COMPLETED' || order.status === 'WAITING_PACKING')
     .sort((a, b) => a.id - b.id)
-    .flatMap((order) => (order.packages || []).map((pkg) => ({
-      id: pkg.id,
-      packageId: pkg.id,
-      order,
-      subOrderNumber: `${order.order_number}-${pkg.letter}`,
-      packageType: pkg.package_type || 'Paket',
-      plantCount: (pkg.items || []).reduce((sum, item) => sum + item.quantity, 0),
-      weightInfo: 'Berat mengikuti konfigurasi paket',
-      printedNota: pkg.nota_printed,
-      printedLabel: pkg.label_printed,
-      photoUploaded: pkg.photo_uploaded,
-    })));
+    .flatMap((order) =>
+      (order.packages || [])
+        .filter((pkg) => !pkg.tracking_number)
+        .map((pkg) => ({
+          id: pkg.id,
+          packageId: pkg.id,
+          order,
+          subOrderNumber: `${order.order_number}-${pkg.letter}`,
+          packageType: pkg.package_type || 'Paket',
+          plantCount: (pkg.items || []).reduce((sum, item) => sum + item.quantity, 0),
+          weightInfo: 'Berat mengikuti konfigurasi paket',
+          printedNota: pkg.nota_printed,
+          printedLabel: pkg.label_printed,
+          photoUploaded: pkg.photo_uploaded,
+          trackingNumber: pkg.tracking_number,
+        }))
+    );
 
   const getCardPrintStatus = (card: typeof expandedPackageCards[number]) => ({
     printedNota: card.printedNota,
