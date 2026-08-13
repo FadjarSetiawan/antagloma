@@ -80,49 +80,36 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
         </div>
 
         {/* Printable Shipping Label Body Container */}
-        <div className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs flex-1 flex flex-col justify-center">
+        <div id="shipping-label-printable" className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs flex-1 flex flex-col justify-center">
           {/* Print specific style overrides */}
           <style>{`
             @media print {
+              body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+              }
               body * {
                 visibility: hidden !important;
               }
-              #shipping-label-modal-container,
-              #shipping-label-modal-container * {
+              #shipping-label-printable,
+              #shipping-label-printable * {
                 visibility: visible !important;
               }
-              .no-print {
-                display: none !important;
-              }
-              #shipping-label-modal-container {
-                position: absolute !important;
+              #shipping-label-printable {
+                position: fixed !important;
                 left: 0 !important;
                 top: 0 !important;
                 width: 100mm !important;
                 height: 100mm !important;
                 margin: 0 !important;
-                padding: 0 !important;
-                background: white !important;
-              }
-              #shipping-label-modal-container > div {
-                border: none !important;
-                box-shadow: none !important;
-                width: 100mm !important;
-                height: 100mm !important;
-                max-width: 100mm !important;
-                max-height: 100mm !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                border-radius: 0 !important;
-              }
-              .print-area {
-                width: 100mm !important;
-                height: 100mm !important;
-                max-width: 100mm !important;
-                max-height: 100mm !important;
-                margin: 0 !important;
                 padding: 4mm !important;
                 box-sizing: border-box !important;
+                background: white !important;
+                z-index: 999999 !important;
+              }
+              .no-print {
+                display: none !important;
               }
               @page {
                 size: 100mm 100mm;

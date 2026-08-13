@@ -78,43 +78,35 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
         </div>
 
         {/* Printable Nota Body Container */}
-        <div className="p-3 sm:p-4 overflow-y-auto space-y-2.5 print-area text-slate-900 font-sans text-xs">
+        <div id="packing-nota-printable" className="p-3 sm:p-4 overflow-y-auto space-y-2.5 print-area text-slate-900 font-sans text-xs">
           {/* Print specific style overrides */}
           <style>{`
             @media print {
-              body * {
-                visibility: hidden !important;
-              }
-              #packing-nota-modal-container,
-              #packing-nota-modal-container * {
-                visibility: visible !important;
-              }
-              .no-print {
-                display: none !important;
-              }
-              #packing-nota-modal-container {
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 80mm !important;
+              body {
                 margin: 0 !important;
                 padding: 0 !important;
                 background: white !important;
               }
-              #packing-nota-modal-container > div {
-                border: none !important;
-                box-shadow: none !important;
-                width: 80mm !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                border-radius: 0 !important;
+              body * {
+                visibility: hidden !important;
               }
-              .print-area {
+              #packing-nota-printable,
+              #packing-nota-printable * {
+                visibility: visible !important;
+              }
+              #packing-nota-printable {
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
                 width: 80mm !important;
-                max-width: 80mm !important;
                 margin: 0 !important;
                 padding: 4mm !important;
                 box-sizing: border-box !important;
+                background: white !important;
+                z-index: 999999 !important;
+              }
+              .no-print {
+                display: none !important;
               }
               @page {
                 size: 80mm auto;
