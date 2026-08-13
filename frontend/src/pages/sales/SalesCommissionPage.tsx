@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { managementService, SalesCommissionData } from '../../services/managementService';
+import { CustomDatePickerModal } from '../../components/shared/CustomDatePickerModal';
 import {
-  ArrowLeft, Clock, ShieldCheck, Wallet, XCircle, ChevronRight, Filter,
+  ArrowLeft, Clock, ShieldCheck, Wallet, XCircle, ChevronRight, Filter, Calendar as CalendarIcon,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const SalesCommissionPage: React.FC = () => {
   const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState<boolean>(false);
+  const [selectedMonthDate, setSelectedMonthDate] = useState<string>('2026-08-13');
 
   const { data: commissionRes, isLoading } = useQuery({
     queryKey: ['sales-commission'],
@@ -50,10 +53,19 @@ export const SalesCommissionPage: React.FC = () => {
 
       {/* Month & Filter Bar */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-800 shadow-2xs">
-          <span>Agustus 2026</span>
+        <button
+          type="button"
+          onClick={() => setIsDatePickerOpen(true)}
+          className="flex items-center gap-1.5 bg-white border border-slate-200 hover:border-[#04593f] hover:bg-emerald-50/50 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 shadow-2xs transition-all cursor-pointer active:scale-95"
+        >
+          <CalendarIcon className="w-3.5 h-3.5 text-[#04593f]" />
+          <span>
+            {selectedMonthDate
+              ? new Date(selectedMonthDate).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+              : 'Agustus 2026'}
+          </span>
           <ChevronRight className="w-3.5 h-3.5 rotate-90 text-slate-400 shrink-0" />
-        </div>
+        </button>
 
         <button
           onClick={() => setFilterStatus(filterStatus === 'ALL' ? 'verified' : 'ALL')}
@@ -288,6 +300,15 @@ export const SalesCommissionPage: React.FC = () => {
           </div>
         )}
       </div>
+      {/* Custom Date Picker Modal */}
+      <CustomDatePickerModal
+        isOpen={isDatePickerOpen}
+        value={selectedMonthDate}
+        onChange={(val) => {
+          if (val) setSelectedMonthDate(val);
+        }}
+        onClose={() => setIsDatePickerOpen(false)}
+      />
     </div>
   );
 };
