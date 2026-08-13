@@ -356,7 +356,12 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
               <div><p className="text-xs font-bold text-slate-900">Preview Thermal 80mm</p><p className="text-[10px] text-slate-500">Raster yang sama dengan output Bluetooth</p></div>
               <button type="button" onClick={() => setThermalPreviewUrl(null)} className="p-1.5 bg-slate-200 rounded-lg text-slate-600"><X className="w-4 h-4" /></button>
             </div>
-            <div className="bg-white p-3 shadow-sm"><img src={thermalPreviewUrl} alt="Preview nota thermal 80mm" className="block w-[288px] max-w-full h-auto" style={{ imageRendering: 'pixelated' }} /></div>
+            <div className="bg-slate-300 p-4 overflow-auto shadow-inner">
+              <div className="mx-auto bg-white shadow-md" style={{ width: '80mm', minWidth: '80mm' }}>
+                <img src={thermalPreviewUrl} alt="Preview nota thermal 80mm" className="block w-full h-auto" style={{ imageRendering: 'pixelated' }} />
+              </div>
+            </div>
+            <p className="mt-2 text-center text-[10px] text-slate-500">80 mm paper · 576 dots · ESC/POS raster 1-bit</p>
             <a href={thermalPreviewUrl} download={`SIMULASI_CETAK_THERMAL_80MM_${order.order_number}.png`} className="mt-3 block text-center py-2 bg-slate-800 text-white rounded-xl text-[11px] font-semibold">Download PNG</a>
           </div>
         </div>
