@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Order } from '../../types/order';
 import { Printer, X, Tag, Sprout, Phone } from 'lucide-react';
 
@@ -43,7 +44,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
         ? 'Packing Kayu'
         : rawPkgType;
 
-  return (
+  const modalContent = (
     <div id="shipping-label-modal-container" className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto font-sans text-slate-900">
       <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
         {/* Header Modal Bar */}
@@ -214,4 +215,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
+

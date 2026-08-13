@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Order, OrderPackage } from '../../types/order';
 import { Printer, X, Sprout } from 'lucide-react';
 
@@ -41,7 +42,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     ? `${packageInfo.weight} kg`
     : 'Belum tersedia';
 
-  return (
+  const modalContent = (
     <div id="packing-nota-modal-container" className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto font-sans">
       <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col font-sans">
         {/* Header Modal Bar */}
@@ -288,4 +289,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
+
