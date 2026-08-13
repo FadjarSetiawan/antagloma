@@ -528,15 +528,15 @@ export const OrderCreatePage: React.FC = () => {
 
       {/* STEP 2: Detail Tanaman & Summary */}
       {step === 2 && (
-        <div className="space-y-4">
-          <div className="bg-white border-2 border-slate-200 rounded-3xl p-4 sm:p-6 space-y-5 shadow-xs">
+        <div className="space-y-4 font-sans">
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-6 space-y-5 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-[#04593f] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                  <Sprout className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#04593f] to-emerald-950 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Sprout className="w-5 h-5 text-emerald-200" />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-wide">DAFTAR TANAMAN ADENIUM</h3>
+                  <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-wider">DAFTAR TANAMAN ADENIUM</h3>
                   <p className="text-xs text-slate-500 font-medium">Tambahkan varian pohon dan grade yang dipesan.</p>
                 </div>
               </div>
@@ -544,7 +544,7 @@ export const OrderCreatePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsAddPlantModalOpen(true)}
-                className="w-full sm:w-auto px-5 py-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4 text-white" />
                 <span>Tambah Tanaman</span>
@@ -559,7 +559,7 @@ export const OrderCreatePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddPlantModalOpen(true)}
-                  className="text-xs font-black text-[#04593f] hover:underline cursor-pointer"
+                  className="text-xs font-extrabold text-[#04593f] hover:underline cursor-pointer"
                 >
                   Klik di sini untuk memilih varian pohon
                 </button>
@@ -581,13 +581,13 @@ export const OrderCreatePage: React.FC = () => {
                   return (
                     <div
                       key={idx}
-                      className="p-4 bg-slate-50/80 border-2 border-slate-200 rounded-3xl space-y-3 shadow-xs hover:border-[#04593f] transition-colors"
+                      className="p-4 bg-slate-50/80 border border-slate-200 rounded-2xl space-y-3 shadow-2xs hover:border-[#04593f] transition-colors"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-1">
-                          <h4 className="font-black text-slate-900 text-sm tracking-tight">{displayTitle}</h4>
+                          <h4 className="font-extrabold text-slate-900 text-sm tracking-tight">{displayTitle}</h4>
                           <div>
-                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg text-[10px] font-black uppercase inline-block">
+                            <span className="px-2 py-0.5 bg-emerald-100/80 text-emerald-900 border border-emerald-300/80 rounded-lg text-[10px] font-bold uppercase inline-block">
                               GRADE {item.grade || 'A'}
                             </span>
                           </div>
@@ -603,20 +603,20 @@ export const OrderCreatePage: React.FC = () => {
                         </button>
                       </div>
 
-                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200 text-xs font-bold text-slate-700">
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200/80 text-xs text-slate-700">
                       <div>
-                        <span className="text-[10px] text-slate-400 font-black block uppercase">QTY</span>
-                        <span className="font-black text-slate-900">{item.quantity} Tanaman</span>
+                        <span className="text-[10px] text-slate-400 font-extrabold block uppercase">QTY</span>
+                        <span className="font-bold text-slate-900">{item.quantity} Tanaman</span>
                       </div>
 
                       <div>
-                        <span className="text-[10px] text-slate-400 font-black block uppercase">HARGA SATUAN</span>
-                        <span className="font-black text-slate-900">Rp {itemUnitPrice(item).toLocaleString('id-ID')}</span>
+                        <span className="text-[10px] text-slate-400 font-extrabold block uppercase">HARGA SATUAN</span>
+                        <span className="font-bold text-slate-900">Rp {itemUnitPrice(item).toLocaleString('id-ID')}</span>
                       </div>
 
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-400 font-black block uppercase">SUBTOTAL</span>
-                        <span className="font-black text-emerald-900">
+                        <span className="text-[10px] text-slate-400 font-extrabold block uppercase">SUBTOTAL</span>
+                        <span className="font-extrabold text-[#04593f]">
                           Rp {Number(item.price).toLocaleString('id-ID')}
                         </span>
                       </div>
@@ -629,7 +629,7 @@ export const OrderCreatePage: React.FC = () => {
 
             {/* Kolom Catatan Pengiriman (Directly under plant list) */}
             <div className="pt-2">
-              <label className="block text-xs font-black text-slate-900 mb-1.5 flex items-center gap-1.5">
+              <label className="block text-xs font-extrabold text-slate-900 mb-1.5 flex items-center gap-1.5">
                 <Truck className="w-4 h-4 text-[#04593f]" />
                 <span>Catatan Pengiriman (Opsional)</span>
               </label>
@@ -638,38 +638,42 @@ export const OrderCreatePage: React.FC = () => {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={`Contoh: Id jws dikirim fullset\nId swl dikirim non fullset`}
-                className="w-full p-3.5 bg-white border-2 border-slate-200 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 shadow-xs"
+                className="w-full p-3 bg-white border border-slate-200 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 shadow-2xs placeholder:text-slate-400"
               />
             </div>
 
-            {/* SOLID FOREST GREEN FINANCIAL SUMMARY BOX */}
-            <div className="p-5 bg-[#04593f] text-white rounded-3xl space-y-2.5 text-xs font-bold shadow-md">
-              <div className="flex justify-between items-center text-emerald-100">
-                <span className="flex items-center gap-1.5">
-                  <Package className="w-4 h-4 text-emerald-300" />
-                  <span>Total Item:</span>
-                </span>
-                <span className="font-extrabold text-white">{totalItemCount} Tanaman</span>
-              </div>
+            {/* RICH EMERALD GRADIENT FINANCIAL SUMMARY BOX WITH AMBIENT GLOW */}
+            <div className="bg-gradient-to-br from-[#04593f] via-[#04593f] to-emerald-950 text-white rounded-3xl p-5 shadow-lg relative overflow-hidden border border-emerald-900 space-y-3">
+              <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
 
-              <div className="flex justify-between items-center text-emerald-100">
-                <span className="flex items-center gap-1.5">
-                  <Tag className="w-4 h-4 text-emerald-300" />
-                  <span>Total Diskon:</span>
-                </span>
-                <span className="font-extrabold text-emerald-300">
-                  {totalDiscount > 0 ? `- Rp ${totalDiscount.toLocaleString('id-ID')}` : 'Rp 0'}
-                </span>
-              </div>
+              <div className="relative z-10 space-y-2 text-xs">
+                <div className="flex justify-between items-center text-emerald-100/90 font-semibold">
+                  <span className="flex items-center gap-1.5">
+                    <Package className="w-4 h-4 text-emerald-300 shrink-0" />
+                    <span>Total Item:</span>
+                  </span>
+                  <span className="font-bold text-white">{totalItemCount} Tanaman</span>
+                </div>
 
-              <div className="flex justify-between items-center pt-3 border-t border-emerald-700/60 text-sm font-black text-white">
-                <span className="flex items-center gap-1.5">
-                  <Receipt className="w-4.5 h-4.5 text-emerald-300" />
-                  <span>Total Harga Tanaman:</span>
-                </span>
-                <span className="text-white text-lg font-black">
-                  Rp {totalPlantPrice.toLocaleString('id-ID')}
-                </span>
+                <div className="flex justify-between items-center text-emerald-100/90 font-semibold">
+                  <span className="flex items-center gap-1.5">
+                    <Tag className="w-4 h-4 text-emerald-300 shrink-0" />
+                    <span>Total Diskon:</span>
+                  </span>
+                  <span className="font-bold text-emerald-300">
+                    {totalDiscount > 0 ? `- Rp ${totalDiscount.toLocaleString('id-ID')}` : 'Rp 0'}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center pt-3 border-t border-white/15 text-sm font-bold text-white">
+                  <span className="flex items-center gap-1.5">
+                    <Receipt className="w-4.5 h-4.5 text-emerald-300 shrink-0" />
+                    <span>Total Harga Tanaman:</span>
+                  </span>
+                  <span className="text-white text-lg font-black tracking-tight">
+                    Rp {totalPlantPrice.toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
