@@ -14,6 +14,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
   const [customNotes, setCustomNotes] = useState<string>(order?.notes || '');
   const [isBluetoothPrinting, setIsBluetoothPrinting] = useState(false);
   const [btError, setBtError] = useState<string | null>(null);
+  const [thermalPreviewUrl, setThermalPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (order) {
@@ -55,18 +56,13 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     }
   };
 
-  const handleDownloadThermalBitmap = async () => {
+  const handlePreviewThermalBitmap = async () => {
     try {
       const printableEl = document.getElementById('packing-nota-printable');
       if (!printableEl) throw new Error('Elemen pratinjau nota tidak ditemukan.');
 
       const dataUrl = await thermalPrinterService.generateThermalBitmapDataUrl(printableEl, 576);
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `SIMULASI_CETAK_THERMAL_80MM_${order.order_number}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      setThermalPreviewUrl(dataUrl);
     } catch (err: any) {
       alert(err.message || 'Gagal membuat gambar simulasi thermal.');
     }
@@ -326,12 +322,12 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
 
             <button
               type="button"
-              onClick={handleDownloadThermalBitmap}
+              onClick={handlePreviewThermalBitmap}
               className="py-2 px-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
-              title="Unduh Gambar Hasil Cetak Thermal (100% Persis Hasil Cetakan Bluetooth)"
+              title="Preview hasil raster thermal 80mm dari nota asli"
             >
               <Download className="w-3.5 h-3.5 shrink-0 text-slate-300" />
-              <span className="whitespace-nowrap">Tes Gambar</span>
+              <span className="whitespace-nowrap">Preview Thermal</span>
             </button>
 
             <button
@@ -353,9 +349,20 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           </button>
         </div>
       </div>
+      {thermalPreviewUrl && (
+        <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-slate-950/70 p-4 no-print" onClick={() => setThermalPreviewUrl(null)}>
+          <div className="bg-slate-100 rounded-2xl p-4 max-h-[92vh] max-w-full overflow-auto shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between gap-4 mb-3">
+              <div><p className="text-xs font-bold text-slate-900">Preview Thermal 80mm</p><p className="text-[10px] text-slate-500">Raster yang sama dengan output Bluetooth</p></div>
+              <button type="button" onClick={() => setThermalPreviewUrl(null)} className="p-1.5 bg-slate-200 rounded-lg text-slate-600"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="bg-white p-3 shadow-sm"><img src={thermalPreviewUrl} alt="Preview nota thermal 80mm" className="block w-[288px] max-w-full h-auto" style={{ imageRendering: 'pixelated' }} /></div>
+            <a href={thermalPreviewUrl} download={`SIMULASI_CETAK_THERMAL_80MM_${order.order_number}.png`} className="mt-3 block text-center py-2 bg-slate-800 text-white rounded-xl text-[11px] font-semibold">Download PNG</a>
+          </div>
+        </div>
+      )}
     </div>
   );
 
   return createPortal(modalContent, document.body);
 };
-

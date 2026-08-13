@@ -11,10 +11,9 @@ export interface BluetoothDeviceConfig {
 
 class ThermalPrinterService {
   private deviceConfig: BluetoothDeviceConfig | null = null;
-  private readonly localVirtualPrinterUrl = 'http://localhost:3000/api/print';
 
   public isSupported(): boolean {
-    return typeof window !== 'undefined';
+    return typeof window !== 'undefined' && 'bluetooth' in navigator;
   }
 
   public getConnectedDeviceName(): string | null {
@@ -22,16 +21,27 @@ class ThermalPrinterService {
   }
 
   public async connect(): Promise<string> {
+    if (!this.isSupported()) {
+      throw new Error('Web Bluetooth API tidak didukung oleh browser ini. Gunakan Chrome/Edge di Android/Windows.');
+    }
+
     try {
-      const response = await fetch(this.localVirtualPrinterUrl, { method: 'GET', mode: 'cors', cache: 'no-store' });
-      if (!response.ok) throw new Error('Virtual Thermal Printer lokal belum berjalan.');
-      this.deviceConfig = { device: null, characteristic: null, connected: true, name: 'ThermalLab Virtual Printer (localhost)' };
-      return this.deviceConfig.name;
+      const device = await (navigator as any).bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: [
+          '000018f0-0000-1000-8000-00805f9b34fb',
+          'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+          '0000ff00-0000-1000-8000-00805f9b34fb',
+          '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+        ],
+      });
+
+      return await this.setupDevice(device);
     } catch (err: any) {
-      if (err instanceof TypeError) {
-        throw new Error('Gagal mengakses Virtual Thermal Printer. Pastikan http://localhost:3000 terbuka dan tidak diblokir browser.');
+      if (err.name === 'NotFoundError') {
+        throw new Error('Pencarian printer dibatalkan oleh pengguna.');
       }
-      throw new Error(err.message || 'Virtual Thermal Printer lokal belum terhubung.');
+      throw new Error(err.message || 'Gagal terhubung ke printer Bluetooth.');
     }
   }
 
@@ -75,15 +85,33 @@ class ThermalPrinterService {
   }
 
   public async ensureConnected(): Promise<void> {
-    if (!this.deviceConfig?.connected) {
+    if (!this.deviceConfig || !this.deviceConfig.device) {
       await this.connect();
+      return;
+    }
+
+    if (!this.deviceConfig.device.gatt.connected) {
+      await this.setupDevice(this.deviceConfig.device);
     }
   }
 
   public async printRaw(data: Uint8Array): Promise<void> {
     await this.ensureConnected();
-    const response = await fetch(this.localVirtualPrinterUrl, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: data as unknown as BodyInit });
-    if (!response.ok) throw new Error('Gagal mengirim nota ke Virtual Thermal Printer lokal.');
+
+    if (!this.deviceConfig || !this.deviceConfig.characteristic) {
+      throw new Error('Printer Bluetooth belum terhubung.');
+    }
+
+    const CHUNK_SIZE = 512;
+    for (let i = 0; i < data.length; i += CHUNK_SIZE) {
+      const chunk = data.slice(i, i + CHUNK_SIZE);
+      if (this.deviceConfig.characteristic.properties.writeWithoutResponse) {
+        await this.deviceConfig.characteristic.writeValueWithoutResponse(chunk);
+      } else {
+        await this.deviceConfig.characteristic.writeValue(chunk);
+      }
+      await new Promise((res) => setTimeout(res, 40));
+    }
   }
 
   /**
