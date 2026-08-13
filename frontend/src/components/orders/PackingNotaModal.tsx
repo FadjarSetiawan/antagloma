@@ -92,59 +92,27 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     <div id="packing-nota-modal-container" className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto font-sans">
       <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col font-sans">
         {/* Header Modal Bar */}
-        <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0 no-print">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#04593f] text-white flex items-center justify-center font-bold">
+        <div className="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0 no-print">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[#04593f] text-white flex items-center justify-center font-bold shrink-0">
               <Printer className="w-4 h-4" />
             </div>
             <div>
               <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
                 Pratinjau Nota Packing
               </h3>
-              <p className="text-[10px] text-slate-400 font-normal">
+              <p className="text-[10px] text-slate-500 font-normal">
                 Format thermal 80mm
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
-            {thermalPrinterService.isSupported() && (
-              <button
-                type="button"
-                disabled={isBluetoothPrinting}
-                onClick={handleDirectBluetoothPrint}
-                className="py-1.5 px-2 bg-emerald-900 hover:bg-emerald-950 text-white rounded-lg text-[10px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shrink-0 leading-tight"
-                title="Cetak langsung via Bluetooth Printer"
-              >
-                <Bluetooth className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
-                <span className="whitespace-nowrap">{isBluetoothPrinting ? '...' : 'Bluetooth'}</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={handleDownloadThermalBitmap}
-              className="py-1.5 px-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-[10px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0 leading-tight"
-              title="Unduh Gambar Hasil Cetak Thermal (100% Persis Hasil Cetakan Bluetooth)"
-            >
-              <Download className="w-3.5 h-3.5 shrink-0 text-slate-300" />
-              <span className="whitespace-nowrap">Tes Gambar</span>
-            </button>
-
-            <button
-              onClick={handlePrint}
-              className="py-1.5 px-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[10px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0 leading-tight"
-            >
-              <Printer className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap">Browser</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg transition-colors cursor-pointer shrink-0"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 bg-slate-200/80 hover:bg-slate-300 text-slate-600 rounded-xl transition-colors cursor-pointer shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
         {btError && (
@@ -158,7 +126,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
         )}
 
         {/* Printable Nota Body Container */}
-        <div id="packing-nota-printable" className="p-3 sm:p-4 overflow-y-auto space-y-2.5 print-area text-slate-900 font-sans text-xs">
+        <div id="packing-nota-printable" className="p-3 sm:p-4 overflow-y-auto space-y-2.5 print-area text-slate-900 font-sans text-xs flex-1">
           {/* Print specific style overrides */}
           <style>{`
             @media print {
@@ -187,208 +155,188 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 width: 80mm !important;
                 max-width: 80mm !important;
                 height: auto !important;
-                margin: 0 !important;
                 padding: 0 !important;
-                background: #ffffff !important;
-                display: block !important;
-                visibility: visible !important;
-                page-break-after: avoid !important;
-                page-break-inside: avoid !important;
-              }
-
-              #packing-nota-modal-container > div {
-                border: none !important;
-                box-shadow: none !important;
-                width: 80mm !important;
-                max-width: 80mm !important;
                 margin: 0 !important;
-                padding: 0 !important;
                 background: #ffffff !important;
+                overflow: visible !important;
               }
 
               #packing-nota-printable {
-                display: block !important;
-                visibility: visible !important;
                 width: 80mm !important;
                 max-width: 80mm !important;
                 padding: 3mm !important;
-                box-sizing: border-box !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+              }
+
+              /* Disable page breaks */
+              * {
+                page-break-inside: avoid !important;
                 page-break-after: avoid !important;
-              }
-
-              #packing-nota-printable * {
-                visibility: visible !important;
-              }
-
-              @page {
-                size: 80mm auto;
-                margin: 0;
+                page-break-before: avoid !important;
               }
             }
           `}</style>
 
-          {/* Header Store & Order Info Block */}
-          <div className="border-b border-black pb-2 flex justify-between items-start gap-2">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1">
-                <Sprout className="w-4 h-4 text-black flex-shrink-0" />
-                <span className="font-bold text-[12px] uppercase tracking-wide text-black block leading-none">
-                  ANTAGLOMA FLORIST
-                </span>
-              </div>
-              <p className="text-[9.5px] font-semibold text-black">
-                Spesialis Adenium Bunga Tumpuk
-              </p>
-              <p className="text-[9px] text-black leading-tight">
-                WA: 0858-9450-3333 / 0857-3333-1889
-              </p>
-            </div>
-
-            <div className="text-right flex-shrink-0">
-              <span className="inline-block px-1.5 py-0.5 border border-black text-black font-bold text-[8.5px] uppercase tracking-wider mb-0.5">
-                NOTA PACKING
-              </span>
-              <p className="font-bold text-[11px] text-black block">{order.order_number}</p>
-              <p className="text-[9.5px] text-black font-medium">Tgl: {formattedDate}</p>
-              {packageInfo && <p className="text-[9.5px] text-black font-bold">Paket {packageInfo.letter}</p>}
-            </div>
-          </div>
-
-          {/* Receiver & Address Section (Monochrome clean layout) */}
-          <div className="border-b border-black pb-2 space-y-1.5 text-xs">
+          {/* Header Store Info */}
+          <div className="border-b-2 border-black pb-2 flex justify-between items-start">
             <div>
-              <span className="text-[9px] font-bold uppercase text-black block mb-0.5 tracking-wider">
-                PENERIMA / CUSTOMER:
-              </span>
-              <span className="font-bold text-black block text-[11.5px]">{order.customer_name}</span>
-              <span className="font-semibold text-black text-[11px] block">{order.phone}</span>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="font-bold text-[9.5px] text-black uppercase">
-                  [ {packageType} ]
-                </span>
-                {packageInfo && <span className="font-semibold text-[9.5px] text-black">Berat: {packageWeight}</span>}
+              <div className="flex items-center gap-1">
+                <Sprout className="w-3.5 h-3.5 text-black" />
+                <h1 className="font-extrabold text-xs tracking-wide text-black uppercase">ANTAGLOMA FLORIST</h1>
               </div>
+              <p className="text-[9.5px] font-bold text-black mt-0.5">Spesialis Adenium Bunga Tumpuk</p>
+              <p className="text-[9px] text-black">WA: 0858-9450-3333 / 0857-3333-1889</p>
             </div>
-
-            <div className="pt-1.5 border-t border-dashed border-slate-300">
-              <span className="text-[9px] font-bold uppercase text-black block mb-0.5 tracking-wider">
-                ALAMAT PENGIRIMAN:
-              </span>
-              <p className="font-semibold text-black leading-snug text-[11px]">
-                {[order.district_name, order.regency_name, order.province_name]
-                  .filter(Boolean)
-                  .join(', ')}
-              </p>
-              <p className="text-[11px] text-black font-bold mt-0.5 leading-normal">{order.full_address}</p>
+            <div className="text-right">
+              <div className="border border-black px-1.5 py-0.5 text-[9px] font-extrabold text-black uppercase inline-block mb-1">
+                NOTA PACKING
+              </div>
+              <p className="font-extrabold text-[10.5px] text-black leading-tight">{order.order_number}</p>
+              <p className="text-[9px] font-bold text-black">Tgl: {formattedDate}</p>
+              {packageInfo && (
+                <p className="text-[10px] font-black text-black mt-0.5">Paket {packageInfo.letter}</p>
+              )}
             </div>
           </div>
 
-          {/* Table Items (Monochrome minimal border) */}
+          {/* Receiver Info */}
+          <div className="border-b border-black pb-2 space-y-1">
+            <p className="text-[9px] font-bold text-black uppercase">PENERIMA / CUSTOMER:</p>
+            <p className="font-extrabold text-xs text-black leading-tight">{order.customer_name}</p>
+            <p className="text-[10.5px] font-bold text-black">{order.phone}</p>
+            <div className="flex items-center gap-2 pt-0.5">
+              <span className="font-extrabold text-[10px] text-black uppercase">[ {packageType} ]</span>
+              <span className="text-[9.5px] font-semibold text-black">Berat: {packageWeight}</span>
+            </div>
+          </div>
+
+          {/* Destination Address */}
+          <div className="border-b-2 border-black pb-2 space-y-0.5">
+            <p className="text-[9px] font-bold text-black uppercase">ALAMAT PENGIRIMAN:</p>
+            <p className="font-extrabold text-[10.5px] text-black leading-snug">
+              {[order.district_name, order.regency_name, order.province_name].filter(Boolean).join(', ')}
+            </p>
+            <p className="text-[10px] font-bold text-black leading-tight">{order.full_address}</p>
+          </div>
+
+          {/* Plant Items Table */}
           <div className="space-y-1">
-            <span className="text-[9.5px] font-bold uppercase text-black block tracking-wider">
-              ITEM TANAMAN & BONSAI POT
-            </span>
-            <div className="border-t border-b border-black">
-              <table className="w-full text-left text-xs">
-                <thead className="border-b border-black text-black font-bold text-[10px] uppercase">
-                  <tr>
-                    <th className="py-1 px-1 text-center w-6">No</th>
-                    <th className="py-1 px-1">Varian Adenium</th>
-                    <th className="py-1 px-1">Ukuran</th>
-                    <th className="py-1 px-1 text-center w-8">Qty</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 font-normal text-black text-[10px]">
-                {packageItems.length > 0 ? (
-                  packageItems.map((item, idx) => {
-                    const itemName = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name);
-                    return (
-                      <tr key={idx}>
-                        <td className="py-1 px-1 text-center font-semibold">{idx + 1}</td>
-                        <td className="py-1 px-1">
-                          <span className="font-bold text-black block leading-tight">{itemName}</span>
-                          {'tree_code' in item && item.tree_code && (
-                            <span className="text-[9px] text-black font-normal">Code: {item.tree_code}</span>
-                          )}
-                        </td>
-                        <td className="py-1 px-1">
-                          <span className="text-[9px] font-semibold text-black">
-                            {'grade' in item ? `Grade ${item.grade || 'A'}` : 'Package'}
-                          </span>
-                        </td>
-                        <td className="py-1 px-1 text-center font-bold text-black">{item.quantity}</td>
-                      </tr>
-                    );
-                  })
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="py-2 text-center text-black italic">
-                        Tidak ada detail item tanaman.
+            <p className="text-[9px] font-bold text-black uppercase">ITEM TANAMAN & BONSAI POT</p>
+            <table className="w-full text-left text-[9.5px] border-collapse">
+              <thead>
+                <tr className="border-y-2 border-black font-extrabold text-black">
+                  <th className="py-1 w-6">NO</th>
+                  <th className="py-1">VARIAN ADENIUM</th>
+                  <th className="py-1 text-center w-14">UKURAN</th>
+                  <th className="py-1 text-center w-8">QTY</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-300 font-bold text-black">
+                {packageItems.map((item, idx) => {
+                  const itemName = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name);
+                  const gradeStr = 'grade' in item ? `Grade ${item.grade || 'A'}` : '-';
+
+                  return (
+                    <tr key={idx}>
+                      <td className="py-1.5 align-top">{idx + 1}</td>
+                      <td className="py-1.5 align-top">
+                        <span className="uppercase block font-extrabold">{itemName} ({gradeStr})</span>
                       </td>
+                      <td className="py-1.5 align-top text-center">Package</td>
+                      <td className="py-1.5 align-top text-center font-extrabold">{item.quantity}</td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
 
-          {/* Notes Callout Box (Monochrome simple border with editable feature for admin) */}
-          <div className="p-1.5 border border-black rounded text-[10.5px]">
-            <div className="flex items-center justify-between no-print mb-1">
-              <span className="font-bold text-black uppercase block text-[9px]">
-                CATATAN PENGIRIMAN / PACKING KAYU:
-              </span>
-              <span className="text-[8.5px] text-slate-400 font-normal italic">
-                (Dapat diedit admin sebelum dicetak)
-              </span>
+          {/* Packing Notes Box (Editable text box for admin) */}
+          <div className="border border-black p-2 rounded-lg space-y-1">
+            <div className="flex items-center justify-between text-[9px] font-extrabold text-black uppercase">
+              <span>CATATAN PENGIRIMAN / PACKING KAYU:</span>
+              <span className="text-[8px] text-slate-500 font-normal italic no-print">(Dapat diedit admin sebelum dicetak)</span>
             </div>
-            <span className="font-bold text-black uppercase hidden print:block text-[9px]">
-              CATATAN PENGIRIMAN / PACKING KAYU:
-            </span>
             <textarea
               value={customNotes}
               onChange={(e) => setCustomNotes(e.target.value)}
-              placeholder="Ketik catatan pengiriman / packing kayu di sini..."
+              placeholder="Ketik catatan packing di sini..."
               rows={2}
-              className="w-full text-black font-semibold italic mt-0.5 bg-transparent border-none p-0 focus:ring-0 focus:outline-none resize-none no-print"
+              className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-800 rounded p-1.5 text-[10.5px] font-bold italic text-black focus:outline-none focus:ring-1 focus:ring-emerald-700 resize-y no-print leading-relaxed"
             />
-            <p className="text-black font-semibold italic mt-0.5 hidden print:block whitespace-pre-wrap">
-              {customNotes.trim() ? `"${customNotes}"` : '-'}
-            </p>
+            <div className="hidden print:block text-[10px] font-bold italic text-black whitespace-pre-wrap">
+              {customNotes.trim() ? customNotes : '-'}
+            </div>
           </div>
 
           {/* Signatures Section */}
           <div className="pt-2 border-t border-black grid grid-cols-3 gap-2 text-center text-[9.5px]">
             <div>
-              <span className="text-black font-medium block mb-5">Sales Pembuat</span>
+              <span className="text-black font-medium block mb-5">Sales</span>
               <span className="font-bold text-black block border-t border-black pt-0.5">
                 {order.creator?.name || 'Sales Staff'}
               </span>
             </div>
 
             <div>
-              <span className="text-black font-medium block mb-5">Verifikasi Admin</span>
+              <span className="text-black font-medium block mb-5">Admin</span>
               <span className="font-bold text-black block border-t border-black pt-0.5">
                 {order.verifier?.name || 'Admin'}
               </span>
             </div>
 
             <div>
-              <span className="text-black font-medium block mb-5">Staff Packing</span>
+              <span className="text-black font-medium block mb-5">Packing</span>
               <span className="font-bold text-black block border-t border-black pt-0.5">
-                ( Packing )
+                ( Staff )
               </span>
             </div>
           </div>
         </div>
 
-        {/* Modal Footer Bar */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-end flex-shrink-0 no-print">
+        {/* Modal Footer Bar: Clean Action Buttons Row */}
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            {thermalPrinterService.isSupported() && (
+              <button
+                type="button"
+                disabled={isBluetoothPrinting}
+                onClick={handleDirectBluetoothPrint}
+                className="py-2 px-2.5 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shrink-0"
+              >
+                <Bluetooth className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                <span className="whitespace-nowrap">{isBluetoothPrinting ? 'Proses...' : 'Bluetooth'}</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleDownloadThermalBitmap}
+              className="py-2 px-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
+              title="Unduh Gambar Hasil Cetak Thermal (100% Persis Hasil Cetakan Bluetooth)"
+            >
+              <Download className="w-3.5 h-3.5 shrink-0 text-slate-300" />
+              <span className="whitespace-nowrap">Tes Gambar</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="py-2 px-2.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
+            >
+              <Printer className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap">Browser</span>
+            </button>
+          </div>
+
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+            className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer shrink-0"
           >
-            Tutup Pratinjau
+            Tutup
           </button>
         </div>
       </div>

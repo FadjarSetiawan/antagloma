@@ -84,59 +84,27 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
     <div id="shipping-label-modal-container" className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto font-sans text-slate-900">
       <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col font-sans">
         {/* Header Modal Bar */}
-        <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0 no-print">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl bg-[#04593f] text-white flex items-center justify-center font-bold">
+        <div className="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0 no-print">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[#04593f] text-white flex items-center justify-center font-bold shrink-0">
               <Tag className="w-4 h-4" />
             </div>
             <div>
               <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
                 Pratinjau Label Alamat Pengiriman
               </h3>
-              <p className="text-[10px] text-slate-400 font-normal">
+              <p className="text-[10px] text-slate-500 font-normal">
                 Format stiker 10x10 cm
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
-            {thermalPrinterService.isSupported() && (
-              <button
-                type="button"
-                disabled={isBluetoothPrinting}
-                onClick={handleDirectBluetoothPrint}
-                className="py-1.5 px-2 bg-emerald-900 hover:bg-emerald-950 text-white rounded-lg text-[10px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shrink-0 leading-tight"
-                title="Cetak langsung via Bluetooth Printer"
-              >
-                <Bluetooth className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
-                <span className="whitespace-nowrap">{isBluetoothPrinting ? '...' : 'Bluetooth'}</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={handleDownloadThermalBitmap}
-              className="py-1.5 px-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-[10px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0 leading-tight"
-              title="Unduh Gambar Hasil Cetak Thermal (100% Persis Hasil Cetakan Bluetooth)"
-            >
-              <Download className="w-3.5 h-3.5 shrink-0 text-slate-300" />
-              <span className="whitespace-nowrap">Tes Gambar</span>
-            </button>
-
-            <button
-              onClick={handlePrint}
-              className="py-1.5 px-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[10px] font-medium flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0 leading-tight"
-            >
-              <Printer className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap">Browser</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-lg transition-colors cursor-pointer shrink-0"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 bg-slate-200/80 hover:bg-slate-300 text-slate-600 rounded-xl transition-colors cursor-pointer shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
         {btError && (
@@ -160,93 +128,78 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
                 display: none !important;
               }
 
-              /* Reset body */
+              /* Reset root document bounds for 100mm sticker paper */
               html, body {
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
                 width: 100mm !important;
                 height: 100mm !important;
+                overflow: hidden !important;
               }
 
-              /* Position printable container */
               #shipping-label-modal-container {
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
                 width: 100mm !important;
                 height: 100mm !important;
-                margin: 0 !important;
                 padding: 0 !important;
-                background: #ffffff !important;
-                display: block !important;
-                visibility: visible !important;
-              }
-
-              #shipping-label-modal-container > div {
-                border: none !important;
-                box-shadow: none !important;
-                width: 100mm !important;
-                height: 100mm !important;
                 margin: 0 !important;
-                padding: 0 !important;
                 background: #ffffff !important;
               }
 
               #shipping-label-printable {
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: space-between !important;
-                visibility: visible !important;
                 width: 100mm !important;
                 height: 100mm !important;
                 padding: 4mm !important;
-                box-sizing: border-box !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
               }
 
-              #shipping-label-printable * {
-                visibility: visible !important;
-              }
-
-              @page {
-                size: 100mm 100mm;
-                margin: 0;
+              /* Disable page breaks */
+              * {
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+                page-break-before: avoid !important;
               }
             }
           `}</style>
 
-          {/* Shipping Sticker Box */}
-          <div className="border border-black p-3 space-y-2 bg-white flex flex-col justify-between h-full min-h-[280px]">
-            {/* Header Store & Package Barcode */}
-            <div className="border-b border-black pb-2 flex items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <Sprout className="w-5 h-5 text-black" />
-                  <span className="font-bold text-[12px] uppercase tracking-wide text-black block leading-none">
+          {/* Label Container Box */}
+          <div className="border-2 border-black p-3 rounded-lg space-y-2 font-sans bg-white text-black">
+            {/* Header Store & Order ID */}
+            <div className="flex items-start justify-between border-b-2 border-black pb-2">
+              <div className="flex items-center gap-1.5">
+                <Sprout className="w-5 h-5 text-black shrink-0" />
+                <div>
+                  <h1 className="font-extrabold text-sm tracking-wide text-black uppercase leading-none">
                     ANTAGLOMA FLORIST
-                  </span>
-                </div>
-                <span className="text-[10px] text-black font-semibold block mt-1">Pengirim: Antagloma Florist</span>
-                <div className="text-[9.5px] text-black font-medium leading-normal mt-0.5">
-                  <p className="flex items-center gap-1"><Phone className="w-3 h-3 text-black" /> 0858-9450-3333 / 0857-3333-1889</p>
+                  </h1>
+                  <p className="text-[9px] font-bold text-black mt-0.5">
+                    WA: 0858-9450-3333 / 0857-3333-1889
+                  </p>
                 </div>
               </div>
 
-              <div className="text-right flex-shrink-0">
-                <span className="inline-block px-1.5 py-0.5 border border-black text-black font-bold text-[8.5px] uppercase tracking-wider">
+              <div className="text-right">
+                <div className="border border-black px-1.5 py-0.5 text-[8.5px] font-extrabold text-black uppercase inline-block mb-0.5">
+                  STIKER RESI
+                </div>
+                <p className="font-extrabold text-xs text-black leading-tight">{subOrderNum}</p>
+                <span className="font-extrabold text-[9.5px] text-black uppercase block">
                   [ {pkgType} ]
                 </span>
-                <p className="font-bold text-[11px] text-black block mt-1 break-words">{subOrderNum}</p>
               </div>
             </div>
 
-            {/* Receiver Name & Address Section (Monochrome clean layout) */}
-            <div className="p-2 border border-black rounded space-y-1.5 flex-1 flex flex-col justify-center text-xs my-1">
-              <span className="text-[9px] font-bold uppercase text-black block tracking-wider">
-                PENERIMA / ALAMAT PENGIRIMAN:
-              </span>
-
-              <div className="space-y-0.5">
+            {/* Destination Address Block */}
+            <div className="space-y-1.5">
+              <div>
+                <span className="text-[9px] font-bold uppercase text-black block tracking-wider">
+                  PENERIMA:
+                </span>
                 <h2 className="text-sm font-bold text-black block leading-tight">{order.customer_name}</h2>
                 <p className="text-[11px] font-bold text-black flex items-center gap-1 mt-0.5">
                   <Phone className="w-3.5 h-3.5 text-black" /> {order.phone}
@@ -268,17 +221,50 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
               <span>Antagloma Florist</span>
               <span>Stiker Alamat Thermal 10x10 cm</span>
             </div>
-
           </div>
         </div>
 
-        {/* Modal Footer Bar */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-end flex-shrink-0 no-print">
+        {/* Modal Footer Bar: Clean Action Buttons Row */}
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            {thermalPrinterService.isSupported() && (
+              <button
+                type="button"
+                disabled={isBluetoothPrinting}
+                onClick={handleDirectBluetoothPrint}
+                className="py-2 px-2.5 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shrink-0"
+              >
+                <Bluetooth className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                <span className="whitespace-nowrap">{isBluetoothPrinting ? 'Proses...' : 'Bluetooth'}</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleDownloadThermalBitmap}
+              className="py-2 px-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
+              title="Unduh Gambar Hasil Cetak Thermal (100% Persis Hasil Cetakan Bluetooth)"
+            >
+              <Download className="w-3.5 h-3.5 shrink-0 text-slate-300" />
+              <span className="whitespace-nowrap">Tes Gambar</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="py-2 px-2.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
+            >
+              <Printer className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap">Browser</span>
+            </button>
+          </div>
+
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+            className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer shrink-0"
           >
-            Tutup Pratinjau
+            Tutup
           </button>
         </div>
       </div>
