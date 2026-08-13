@@ -115,15 +115,18 @@ class ThermalPrinterService {
   }
 
   /**
-   * Render HTML element to high-clarity 576px wide 1-bit monochrome bitmap canvas for 80mm thermal printers
+   * Render HTML element to high-clarity 576px wide 1-bit monochrome bitmap canvas for 80mm thermal printers.
+   * Uses 384px CSS render width for true 8cm physical paper aspect ratio.
    */
   public async renderToThermalCanvas(element: HTMLElement, targetWidth = 576): Promise<{ canvas: HTMLCanvasElement; imageBytes: Uint8Array; width: number; height: number }> {
-    // Create temporary off-screen container with exact fixed 576px width for 1:1 pixel rendering
+    const cssRenderWidth = 384;
+    const renderScale = targetWidth / cssRenderWidth; // 576 / 384 = 1.5x
+
     const container = document.createElement('div');
     container.style.position = 'absolute';
     container.style.left = '-9999px';
     container.style.top = '-9999px';
-    container.style.width = `${targetWidth}px`;
+    container.style.width = `${cssRenderWidth}px`;
     container.style.backgroundColor = '#ffffff';
     container.style.color = '#000000';
     container.style.boxSizing = 'border-box';
@@ -143,11 +146,11 @@ class ThermalPrinterService {
     let canvas: HTMLCanvasElement;
     try {
       canvas = await html2canvas(container, {
-        scale: 2,
+        scale: renderScale,
         backgroundColor: '#ffffff',
         logging: false,
         useCORS: true,
-        width: targetWidth,
+        width: cssRenderWidth,
       });
     } finally {
       document.body.removeChild(container);
@@ -164,7 +167,7 @@ class ThermalPrinterService {
 
     if (!ctx) throw new Error('Gagal memproses gambar cetak.');
 
-    ctx.imageSmoothingEnabled = false; // Keep text pixel edges crisp
+    ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
     ctx.drawImage(canvas, 0, 0, width, height);
@@ -172,7 +175,7 @@ class ThermalPrinterService {
     const imgData = ctx.getImageData(0, 0, width, height);
     const pixels = imgData.data;
 
-    // Convert RGBA pixels into 1-bit monochrome raster data using optimal sharp luminance thresholding (160)
+    // Convert RGBA pixels into 1-bit monochrome raster data using luminance thresholding (160)
     const bytesPerLine = width / 8;
     const imageBytes = new Uint8Array(bytesPerLine * height);
 
