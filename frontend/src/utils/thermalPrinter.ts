@@ -119,15 +119,40 @@ class ThermalPrinterService {
    * Render HTML element to high-clarity 576px wide 1-bit monochrome bitmap canvas for 80mm thermal printers
    */
   public async renderToThermalCanvas(element: HTMLElement, targetWidth = 576): Promise<{ canvas: HTMLCanvasElement; imageBytes: Uint8Array; width: number; height: number }> {
-    // Clone or capture element with exact 576px fixed width for 1:1 thermal head alignment
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      backgroundColor: '#ffffff',
-      logging: false,
-      useCORS: true,
-      windowWidth: 576,
-      width: element.scrollWidth || 576,
-    });
+    // Create temporary off-screen container with exact fixed 576px width for 1:1 pixel rendering
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+    container.style.top = '-9999px';
+    container.style.width = `${targetWidth}px`;
+    container.style.backgroundColor = '#ffffff';
+    container.style.color = '#000000';
+    container.style.boxSizing = 'border-box';
+    container.style.padding = '8px';
+
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.style.width = '100%';
+    clone.style.maxWidth = '100%';
+    clone.style.boxShadow = 'none';
+    clone.style.border = 'none';
+    clone.style.borderRadius = '0';
+    clone.style.transform = 'none';
+
+    container.appendChild(clone);
+    document.body.appendChild(container);
+
+    let canvas: HTMLCanvasElement;
+    try {
+      canvas = await html2canvas(container, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true,
+        width: targetWidth,
+      });
+    } finally {
+      document.body.removeChild(container);
+    }
 
     const aspect = canvas.height / canvas.width;
     const width = targetWidth; // 576 pixels for 80mm thermal printer head
@@ -140,7 +165,7 @@ class ThermalPrinterService {
 
     if (!ctx) throw new Error('Gagal memproses gambar cetak.');
 
-    ctx.imageSmoothingEnabled = false; // Disable anti-aliasing interpolation to keep text strokes sharp
+    ctx.imageSmoothingEnabled = false; // Keep text pixel edges crisp
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
     ctx.drawImage(canvas, 0, 0, width, height);
@@ -148,7 +173,7 @@ class ThermalPrinterService {
     const imgData = ctx.getImageData(0, 0, width, height);
     const pixels = imgData.data;
 
-    // Convert RGBA pixels into 1-bit monochrome raster data using optimal sharp luminance thresholding (170)
+    // Convert RGBA pixels into 1-bit monochrome raster data using optimal sharp luminance thresholding (160)
     const bytesPerLine = width / 8;
     const imageBytes = new Uint8Array(bytesPerLine * height);
 
@@ -159,7 +184,7 @@ class ThermalPrinterService {
         const g = pixels[offset + 1];
         const b = pixels[offset + 2];
         const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-        const isBlack = brightness < 170;
+        const isBlack = brightness < 160;
 
         if (isBlack) {
           const byteIndex = y * bytesPerLine + Math.floor(x / 8);
