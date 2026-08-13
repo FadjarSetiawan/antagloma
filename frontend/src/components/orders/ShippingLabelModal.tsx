@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Order } from '../../types/order';
-import { Printer, X, Tag, Sprout, Phone } from 'lucide-react';
+import { Tag, Printer, X, Sprout, Phone, Bluetooth, AlertCircle } from 'lucide-react';
+import { thermalPrinterService } from '../../utils/thermalPrinter';
 
 interface ShippingLabelModalProps {
   order: Order | null;
@@ -14,23 +15,61 @@ interface ShippingLabelModalProps {
   onClose: () => void;
 }
 
-export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
-  order,
-  packageInfo,
-  onClose,
-}) => {
+export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, packageInfo, onClose }) => {
+  const [isBluetoothPrinting, setIsBluetoothPrinting] = useState(false);
+  const [btError, setBtError] = useState<string | null>(null);
+
   if (!order) return null;
 
   const handlePrint = () => {
     const originalTitle = document.title;
-    const cleanSubOrder = subOrderNum.replace(/[^a-zA-Z0-9-]/g, '_');
-    document.title = `Label_Alamat_${cleanSubOrder}`;
+    const cleanSubOrder = (subOrderNum || 'label').replace(/[^a-zA-Z0-9-]/g, '_');
+    document.title = `Label_Pengiriman_${cleanSubOrder}`;
     
     window.print();
     
+    // Restore original document title after print dialog closes
     setTimeout(() => {
       document.title = originalTitle;
     }, 100);
+  };
+
+  const handleDirectBluetoothPrint = async () => {
+    setIsBluetoothPrinting(true);
+    setBtError(null);
+
+    try {
+      if (!thermalPrinterService.getConnectedDeviceName()) {
+        await thermalPrinterService.connect();
+      }
+
+      const printText = `
+================================
+       ANTAGLOMA FLORIST
+     LABEL STIKER PENGIRIMAN
+ WA: 0858-9450-3333/0857-3333-1889
+================================
+RESI/ORDER: ${subOrderNum}
+METODE: [ ${pkgType} ]
+--------------------------------
+PENERIMA:
+${order.customer_name}
+TELP: ${order.phone}
+
+ALAMAT PENGIRIMAN:
+Kec. ${order.district_name || '-'}, ${order.regency_name || '-'}
+${order.full_address}
+--------------------------------
+PENGIRIM: ANTAGLOMA FLORIST
+================================
+`.trim();
+
+      await thermalPrinterService.printEscPosText(printText);
+    } catch (err: any) {
+      setBtError(err.message || 'Gagal cetak label via Bluetooth.');
+    } finally {
+      setIsBluetoothPrinting(false);
+    }
   };
 
   const subOrderNum = packageInfo?.subOrderNumber || `${order.order_number}-A`;
@@ -46,7 +85,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
 
   const modalContent = (
     <div id="shipping-label-modal-container" className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto font-sans text-slate-900">
-      <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+      <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col font-sans">
         {/* Header Modal Bar */}
         <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0 no-print">
           <div className="flex items-center gap-2">
@@ -58,18 +97,31 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
                 Pratinjau Label Alamat Pengiriman
               </h3>
               <p className="text-[10px] text-slate-400 font-normal">
-                Label stiker thermal pengiriman paket
+                Format stiker 10x10 cm
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5">
+            {thermalPrinterService.isSupported() && (
+              <button
+                type="button"
+                disabled={isBluetoothPrinting}
+                onClick={handleDirectBluetoothPrint}
+                className="min-h-9 px-2.5 py-1.5 bg-emerald-900 hover:bg-emerald-950 text-white rounded-lg text-[10.5px] font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                title="Cetak langsung via Bluetooth Printer"
+              >
+                <Bluetooth className="w-3.5 h-3.5 text-emerald-300" />
+                <span>{isBluetoothPrinting ? 'Proses...' : 'Cetak Bluetooth'}</span>
+              </button>
+            )}
+
             <button
               onClick={handlePrint}
               className="min-h-9 px-2.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[10.5px] font-normal flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Cetak Label</span>
+              <span>Cetak Browser</span>
             </button>
             <button
               onClick={onClose}
@@ -79,6 +131,16 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
             </button>
           </div>
         </div>
+
+        {btError && (
+          <div className="p-2.5 bg-rose-50 border-b border-rose-200 text-rose-800 text-[10.5px] font-medium flex items-center justify-between no-print">
+            <div className="flex items-center gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+              <span>{btError}</span>
+            </div>
+            <button onClick={() => setBtError(null)} className="text-rose-600 font-bold ml-2">✕</button>
+          </div>
+        )}
 
         {/* Printable Shipping Label Body Container */}
         <div id="shipping-label-printable" className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs flex-1 flex flex-col justify-center">

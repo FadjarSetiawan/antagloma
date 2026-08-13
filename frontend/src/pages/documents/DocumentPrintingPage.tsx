@@ -4,7 +4,8 @@ import { orderService } from '../../services/orderService';
 import { Order, OrderPackage } from '../../types/order';
 import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
 import { ShippingLabelModal } from '../../components/orders/ShippingLabelModal';
-import { Printer, Tag, Check, Package as PackageIcon, ArrowLeft, FileText, CheckCircle2, Eye, X } from 'lucide-react';
+import { BluetoothPrinterModal } from '../../components/shared/BluetoothPrinterModal';
+import { Printer, Tag, Check, Package as PackageIcon, ArrowLeft, FileText, CheckCircle2, Eye, X, Bluetooth } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const DocumentPrintingPage: React.FC = () => {
@@ -12,6 +13,7 @@ export const DocumentPrintingPage: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<'unprinted' | 'printed'>('unprinted');
+  const [isBluetoothModalOpen, setIsBluetoothModalOpen] = useState(false);
 
   const [selectedNotaOrder, setSelectedNotaOrder] = useState<Order | null>(null);
   const [selectedNotaPackage, setSelectedNotaPackage] = useState<OrderPackage | null>(null);
@@ -167,21 +169,32 @@ export const DocumentPrintingPage: React.FC = () => {
         </div>
       )}
       {/* Header Bar */}
-      <div className="flex items-center gap-3 pt-1 border-b border-slate-200/80 pb-3">
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="p-1.5 text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-sm font-bold"
-        >
-          <ArrowLeft className="w-5 h-5 text-slate-700" />
-        </button>
-        <div>
-          <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
-            Dokumen Pengiriman
-          </h1>
-          <p className="text-xs text-slate-500 font-normal mt-0.5">
-            Cetak nota packing & label alamat pengiriman
-          </p>
+      <div className="flex items-center justify-between gap-3 pt-1 border-b border-slate-200/80 pb-3">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="p-1.5 text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-sm font-bold"
+          >
+            <ArrowLeft className="w-5 h-5 text-slate-700" />
+          </button>
+          <div>
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+              Dokumen Pengiriman
+            </h1>
+            <p className="text-xs text-slate-500 font-normal mt-0.5">
+              Cetak nota packing & label alamat pengiriman
+            </p>
+          </div>
         </div>
+
+        <button
+          onClick={() => setIsBluetoothModalOpen(true)}
+          className="py-2 px-3 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs shrink-0"
+        >
+          <Bluetooth className="w-4 h-4 text-[#04593f]" />
+          <span className="hidden sm:inline">Set Bluetooth Thermal</span>
+          <span className="sm:hidden">Bluetooth</span>
+        </button>
       </div>
 
       {/* Top Batch Action Buttons */}
@@ -541,6 +554,12 @@ export const DocumentPrintingPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Bluetooth Direct Thermal Printer Pairing Modal */}
+      <BluetoothPrinterModal
+        isOpen={isBluetoothModalOpen}
+        onClose={() => setIsBluetoothModalOpen(false)}
+      />
     </div>
   );
 };

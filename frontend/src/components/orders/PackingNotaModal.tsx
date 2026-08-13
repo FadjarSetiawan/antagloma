@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Order, OrderPackage } from '../../types/order';
-import { Printer, X, Sprout } from 'lucide-react';
+import { Printer, X, Sprout, Bluetooth, AlertCircle } from 'lucide-react';
+import { thermalPrinterService } from '../../utils/thermalPrinter';
 
 interface PackingNotaModalProps {
   order: Order | null;
@@ -11,6 +12,8 @@ interface PackingNotaModalProps {
 
 export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packageInfo, onClose }) => {
   const [customNotes, setCustomNotes] = useState<string>(order?.notes || '');
+  const [isBluetoothPrinting, setIsBluetoothPrinting] = useState(false);
+  const [btError, setBtError] = useState<string | null>(null);
 
   useEffect(() => {
     if (order) {
@@ -32,6 +35,58 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     setTimeout(() => {
       document.title = originalTitle;
     }, 100);
+  };
+
+  const handleDirectBluetoothPrint = async () => {
+    setIsBluetoothPrinting(true);
+    setBtError(null);
+
+    try {
+      if (!thermalPrinterService.getConnectedDeviceName()) {
+        await thermalPrinterService.connect();
+      }
+
+      const itemsList = packageItems.map((item, idx) => {
+        const itemName = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name);
+        const gradeStr = 'grade' in item ? `Grade ${item.grade || 'A'}` : 'Package';
+        return `${idx + 1}. ${itemName}\n   [${gradeStr}] x${item.quantity}`;
+      }).join('\n');
+
+      const printText = `
+================================
+       ANTAGLOMA FLORIST
+ Spesialis Adenium Bunga Tumpuk
+ WA: 0858-9450-3333/0857-3333-1889
+================================
+NOTA PACKING: ${order.order_number} ${packageInfo ? `(Paket ${packageInfo.letter})` : ''}
+TGL: ${formattedDate}
+--------------------------------
+PENERIMA:
+${order.customer_name} (${order.phone})
+[ ${packageType} ] ${packageWeight}
+
+ALAMAT:
+${[order.district_name, order.regency_name, order.province_name].filter(Boolean).join(', ')}
+${order.full_address}
+--------------------------------
+ITEM TANAMAN:
+${itemsList || 'Tidak ada detail item'}
+--------------------------------
+CATATAN PACKING:
+${customNotes.trim() ? customNotes : '-'}
+--------------------------------
+Sales: ${order.creator?.name || 'Sales Staff'}
+Admin: ${order.verifier?.name || 'Admin'}
+Packing: ( Staff Packing )
+================================
+`.trim();
+
+      await thermalPrinterService.printEscPosText(printText);
+    } catch (err: any) {
+      setBtError(err.message || 'Gagal cetak via Bluetooth.');
+    } finally {
+      setIsBluetoothPrinting(false);
+    }
   };
 
   const formattedDate = order.order_date
@@ -64,18 +119,31 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 Pratinjau Nota Packing
               </h3>
               <p className="text-[10px] text-slate-400 font-normal">
-                Format nota thermal pengemasan
+                Format thermal 80mm
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5">
+            {thermalPrinterService.isSupported() && (
+              <button
+                type="button"
+                disabled={isBluetoothPrinting}
+                onClick={handleDirectBluetoothPrint}
+                className="min-h-9 px-2.5 py-1.5 bg-emerald-900 hover:bg-emerald-950 text-white rounded-lg text-[10.5px] font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                title="Cetak langsung via Bluetooth Printer"
+              >
+                <Bluetooth className="w-3.5 h-3.5 text-emerald-300" />
+                <span>{isBluetoothPrinting ? 'Proses...' : 'Cetak Bluetooth'}</span>
+              </button>
+            )}
+
             <button
               onClick={handlePrint}
               className="min-h-9 px-2.5 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[10.5px] font-normal flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Cetak Nota</span>
+              <span>Cetak Browser</span>
             </button>
             <button
               onClick={onClose}
@@ -85,6 +153,16 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
             </button>
           </div>
         </div>
+
+        {btError && (
+          <div className="p-2.5 bg-rose-50 border-b border-rose-200 text-rose-800 text-[10.5px] font-medium flex items-center justify-between no-print">
+            <div className="flex items-center gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+              <span>{btError}</span>
+            </div>
+            <button onClick={() => setBtError(null)} className="text-rose-600 font-bold ml-2">✕</button>
+          </div>
+        )}
 
         {/* Printable Nota Body Container */}
         <div id="packing-nota-printable" className="p-3 sm:p-4 overflow-y-auto space-y-2.5 print-area text-slate-900 font-sans text-xs">
