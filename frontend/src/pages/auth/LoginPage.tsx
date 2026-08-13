@@ -87,9 +87,11 @@ export const LoginPage: React.FC = () => {
       <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xl space-y-5">
         {/* Brand Header */}
         <div className="text-center">
-          <div className="w-14 h-14 bg-[#04593f] rounded-2xl text-white font-bold flex items-center justify-center mx-auto mb-3 shadow-md">
-            <Sprout className="w-8 h-8 text-emerald-300" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Antagloma Florist Logo"
+            className="w-14 h-14 rounded-2xl object-cover mx-auto mb-3 shadow-md border border-emerald-950/20"
+          />
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Antagloma Florist</h1>
           <p className="text-xs text-slate-500 mt-0.5 font-semibold">Spesialis Tanaman Hias Adenium Bunga Tumpuk</p>
         </div>

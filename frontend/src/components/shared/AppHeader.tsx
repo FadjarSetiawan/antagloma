@@ -25,9 +25,11 @@ export const AppHeader: React.FC = () => {
           onClick={() => navigate('/dashboard')}
           className="flex items-center gap-2.5 cursor-pointer group"
         >
-          <div className="w-9 h-9 rounded-xl bg-emerald-800 text-white flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0 group-hover:bg-emerald-900 transition-colors">
-            <Sprout className="w-5 h-5 text-emerald-300" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Antagloma Florist Logo"
+            className="w-9 h-9 rounded-xl object-cover shadow-xs flex-shrink-0 group-hover:opacity-90 transition-opacity"
+          />
           <div>
             <span className="font-extrabold text-slate-900 block leading-tight text-base sm:text-lg tracking-tight">
               Antagloma Florist

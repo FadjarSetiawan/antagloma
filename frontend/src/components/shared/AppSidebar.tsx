@@ -78,9 +78,11 @@ export const AppSidebar: React.FC = () => {
       <div className="space-y-6">
         {/* Brand */}
         <div className="flex items-center gap-3 px-2 pt-2">
-          <div className="w-9 h-9 rounded-xl bg-[#04593f] text-white flex items-center justify-center font-black">
-            <Sprout className="w-5 h-5 text-emerald-300" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Antagloma Florist Logo"
+            className="w-9 h-9 rounded-xl object-cover shadow-xs flex-shrink-0"
+          />
           <div>
             <h1 className="font-extrabold text-sm text-white leading-tight">Antagloma Florist</h1>
             <p className="text-[10px] text-slate-400 font-medium">Sales Order Management</p>
