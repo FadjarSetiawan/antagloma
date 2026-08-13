@@ -21,6 +21,7 @@ import {
   Eye,
   PieChart,
   Package,
+  X,
 } from 'lucide-react';
 import { RpIcon } from '../../components/shared/RpIcon';
 
@@ -30,6 +31,7 @@ export const ReportsPage: React.FC = () => {
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<Order | null>(null);
   const [showGradeReport, setShowGradeReport] = useState(false);
   const [showPlantPerformance, setShowPlantPerformance] = useState(false);
+  const [showAllSoldModal, setShowAllSoldModal] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['reports-orders-list'],
@@ -447,9 +449,13 @@ export const ReportsPage: React.FC = () => {
             </div>
           )}
           {soldPlants.length > 5 && (
-            <p className="text-center text-xs font-bold text-[#04593f] hover:underline cursor-pointer mt-2">
+            <button
+              type="button"
+              onClick={() => setShowAllSoldModal(true)}
+              className="w-full text-center text-xs font-bold text-[#04593f] hover:underline cursor-pointer mt-2 py-1"
+            >
               Lihat {soldPlants.length} ID Terjual
-            </p>
+            </button>
           )}
         </div>
         <div className="bg-white border border-orange-200/80 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-2xs">
@@ -702,6 +708,73 @@ export const ReportsPage: React.FC = () => {
         order={selectedDetailOrder}
         onClose={() => setSelectedDetailOrder(null)}
       />
+
+      {/* Pop-up Modal: Daftar Lengkap ID Tanaman Terjual */}
+      {showAllSoldModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-3 sm:p-4 font-sans animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+              <div>
+                <h3 className="text-base font-extrabold text-[#04593f]">Daftar ID Tanaman Terjual</h3>
+                <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                  Total {soldPlants.length} ID tanaman terjual pada periode {reportPeriodLabel.toLowerCase()}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAllSoldModal(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body Table (Scrollable) */}
+            <div className="p-4 overflow-y-auto flex-1">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-emerald-50 text-[#04593f] font-bold sticky top-0 shadow-2xs">
+                  <tr>
+                    <th className="px-3 py-2.5 w-14 text-center rounded-l-xl">Rank</th>
+                    <th className="px-3 py-2.5 w-20">ID</th>
+                    <th className="px-3 py-2.5">Nama Tanaman</th>
+                    <th className="px-3 py-2.5 text-right w-24">Terjual</th>
+                    <th className="px-3 py-2.5 text-right w-32 rounded-r-xl">Omzet</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {soldPlants.map((plant, index) => (
+                    <tr key={plant.code} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-3 py-3 text-center font-extrabold text-slate-900">
+                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                      </td>
+                      <td className="px-3 py-3 font-extrabold text-[#04593f]">{plant.code}</td>
+                      <td className="px-3 py-3 text-slate-700 font-bold leading-tight">{plant.name}</td>
+                      <td className="px-3 py-3 text-right font-extrabold text-[#04593f] whitespace-nowrap">
+                        {plant.quantity} Pohon
+                      </td>
+                      <td className="px-3 py-3 text-right font-black text-slate-900 whitespace-nowrap">
+                        Rp {plant.omzet.toLocaleString('id-ID')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowAllSoldModal(false)}
+                className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
