@@ -199,7 +199,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
               </div>
 
               <div className="text-right">
-                <div className="border border-black px-1.5 py-0.5 text-[8.5px] font-extrabold text-black uppercase inline-block mb-0.5">
+                <div className="border border-black px-2 py-1 text-[8.5px] font-extrabold text-black uppercase inline-flex items-center justify-center mt-1 mb-1 tracking-wider leading-none">
                   STIKER RESI
                 </div>
                 <p className="font-extrabold text-xs text-black leading-tight">{subOrderNum}</p>

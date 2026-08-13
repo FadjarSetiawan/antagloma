@@ -195,7 +195,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
               <p className="text-[9px] font-normal text-black leading-tight">WA: 0858-9450-3333 / 0857-3333-1889</p>
             </div>
             <div className="text-right shrink-0">
-              <div className="border border-black px-1.5 py-0.5 text-[8.5px] font-bold text-black uppercase inline-block mb-0.5 tracking-wider">
+              <div className="border border-black px-2 py-1 text-[8.5px] font-bold text-black uppercase inline-flex items-center justify-center mt-1 mb-1 tracking-wider leading-none">
                 NOTA PACKING
               </div>
               <p className="font-bold text-[11px] text-black leading-tight tracking-tight whitespace-nowrap">{order.order_number}</p>
