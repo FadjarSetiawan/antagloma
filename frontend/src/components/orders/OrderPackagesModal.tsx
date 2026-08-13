@@ -182,6 +182,24 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
     setPackages(packages.map((p) => (p.id === pkgId ? { ...p, customWeight: weight } : p)));
   };
 
+  // Helper to get standard plant weight in kg based on Grade & Fullset/Non-Fullset
+  const getPlantWeightInKg = (grade?: string, isFullset: boolean = false): number => {
+    if (!grade) return isFullset ? 4.0 : 2.0;
+    const g = grade.trim().toUpperCase();
+
+    if (g === 'A') return isFullset ? 0.0 : 0.2;     // 200 gr
+    if (g === 'B') return isFullset ? 0.0 : 0.4;     // 400 gr
+    if (g === 'B+') return isFullset ? 0.0 : 0.5;    // 500 gr
+    if (g === 'C') return isFullset ? 0.0 : 0.6;     // 600 gr
+    if (g === 'C+') return isFullset ? 0.0 : 1.0;    // 1 kg
+    if (g === 'D') return isFullset ? 6.0 : 2.0;     // 2 kg / 6 kg
+    if (g === 'D+') return isFullset ? 6.0 : 2.0;    // 2 kg / 6 kg
+    if (g === 'J') return isFullset ? 8.0 : 4.0;     // 4 kg / 8 kg
+    if (g === 'J+') return isFullset ? 10.0 : 5.0;   // 5 kg / 10 kg
+
+    return isFullset ? 4.0 : 2.0;
+  };
+
   // Helper to calculate auto weight & breakdown text
   const computePackageWeightInfo = (pkg: PackageAssignment) => {
     const itemsAllocated = Object.entries(pkg.allocations).filter(([_, qty]) => qty > 0);
@@ -193,35 +211,31 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
       };
     }
 
-    const ratePerPlant = pkg.packageType === 'Fullset' ? 4.0 : 2.0;
-    let totalQty = 0;
-    const names: string[] = [];
+    const isFullset = pkg.packageType === 'Fullset';
+    let calculatedWeight = 0;
+    const itemDetails: string[] = [];
 
     itemsAllocated.forEach(([idxStr, qty]) => {
       const itemIdx = Number(idxStr);
       const item = totalOrderItems[itemIdx];
       if (item) {
-        totalQty += qty;
-        names.push(`${item.tree_name || item.product_name} x${qty}`);
+        const itemWeightPerUnit = getPlantWeightInKg(item.grade, isFullset);
+        calculatedWeight += itemWeightPerUnit * qty;
+        itemDetails.push(`${item.tree_name || item.product_name} (Grade ${item.grade || 'A'}) x${qty}`);
       }
     });
 
-    const autoWeight = totalQty * ratePerPlant;
-    const breakdownText = `Terisi dari: ${names.join(', ')} (${pkg.packageType.toLowerCase()} → ${ratePerPlant} kg/pohon)`;
+    const breakdownText = `Terisi dari: ${itemDetails.join(', ')}`;
 
     return {
-      autoWeight,
+      autoWeight: Number(calculatedWeight.toFixed(2)),
       breakdownText,
     };
   };
 
   // Weight visibility check rule
   const shouldShowWeightBox = (pkg: PackageAssignment) => {
-    if (pkg.packageType === 'Non-fullset') return true;
-    const itemKeys = Object.keys(pkg.allocations).map(Number);
-    if (itemKeys.length === 0) return false;
-    const selectedItem = totalOrderItems[itemKeys[0]];
-    return isGradeDOrHigher(selectedItem?.grade);
+    return true; // Always visible for editing and verification
   };
 
   // Handle Save Submit
