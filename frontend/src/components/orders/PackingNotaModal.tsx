@@ -82,35 +82,39 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           {/* Print specific style overrides */}
           <style>{`
             @media print {
-              /* Hide all components from React layout completely */
-              #no-print-wrapper, .no-print, div[role="dialog"], body > div:not(#packing-nota-modal-container) {
-                display: none !important;
+              body * {
                 visibility: hidden !important;
               }
-              html, body {
-                width: 80mm !important;
-                height: auto !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                background-color: white !important;
-              }
-              #packing-nota-modal-container, .print-area, .print-area * {
+              #packing-nota-modal-container,
+              #packing-nota-modal-container * {
                 visibility: visible !important;
-                display: block !important;
               }
-              .print-area {
+              .no-print {
+                display: none !important;
+              }
+              #packing-nota-modal-container {
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
+                width: 80mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+              }
+              #packing-nota-modal-container > div {
+                border: none !important;
+                box-shadow: none !important;
+                width: 80mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+              }
+              .print-area {
                 width: 80mm !important;
                 max-width: 80mm !important;
                 margin: 0 !important;
                 padding: 4mm !important;
                 box-sizing: border-box !important;
-              }
-              .print-area table,
-              .print-area tr {
-                break-inside: avoid;
               }
               @page {
                 size: 80mm auto;

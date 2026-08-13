@@ -84,17 +84,15 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
           {/* Print specific style overrides */}
           <style>{`
             @media print {
-              /* Hide all components from React layout completely */
-              #no-print-wrapper, .no-print, div[role="dialog"], body > div:not(#shipping-label-modal-container) {
-                display: none !important;
+              body * {
                 visibility: hidden !important;
               }
-              html, body {
-                width: 100mm !important;
-                height: 100mm !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                background-color: white !important;
+              #shipping-label-modal-container,
+              #shipping-label-modal-container * {
+                visibility: visible !important;
+              }
+              .no-print {
+                display: none !important;
               }
               #shipping-label-modal-container {
                 position: absolute !important;
@@ -105,8 +103,6 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
                 margin: 0 !important;
                 padding: 0 !important;
                 background: white !important;
-                display: block !important;
-                visibility: visible !important;
               }
               #shipping-label-modal-container > div {
                 border: none !important;
@@ -127,13 +123,6 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({
                 margin: 0 !important;
                 padding: 4mm !important;
                 box-sizing: border-box !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: space-between !important;
-                visibility: visible !important;
-              }
-              .print-area * {
-                visibility: visible !important;
               }
               @page {
                 size: 100mm 100mm;
