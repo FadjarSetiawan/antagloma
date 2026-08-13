@@ -63,6 +63,14 @@ export const SalesCommissionPage: React.FC = () => {
     label: `Tahun ${y}`,
   }));
 
+  const statusFilterOptions = [
+    { value: 'ALL', label: 'Semua Status' },
+    { value: 'waiting_verification', label: 'Menunggu Verifikasi' },
+    { value: 'verified', label: 'Terverifikasi' },
+    { value: 'paid', label: 'Sudah Dibayarkan' },
+    { value: 'rejected', label: 'Ditolak' },
+  ];
+
   const filterPeriodLabel = React.useMemo(() => {
     if (filterMode === 'date') {
       return selectedDate ? new Date(selectedDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Pilih Tanggal';
@@ -369,19 +377,12 @@ export const SalesCommissionPage: React.FC = () => {
       <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-2xs space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-xs sm:text-base font-extrabold text-slate-900 truncate">Riwayat Komisi</h2>
-          <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 shrink-0">
-            <Filter className="w-3 h-3 shrink-0" />
-            <select
+          <div className="w-44 shrink-0">
+            <CustomSelect
+              options={statusFilterOptions}
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="bg-transparent border-none font-bold text-[11px] focus:outline-none cursor-pointer"
-            >
-              <option value="ALL">Semua Status</option>
-              <option value="waiting_verification">Menunggu Verifikasi</option>
-              <option value="verified">Terverifikasi</option>
-              <option value="paid">Sudah Dibayarkan</option>
-              <option value="rejected">Ditolak</option>
-            </select>
+              onChange={setFilterStatus}
+            />
           </div>
         </div>
 
