@@ -47,6 +47,79 @@ export const SalesCommissionPage: React.FC = () => {
           <p className="text-xs text-slate-400 font-bold mt-0.5">Ringkasan status komisi & riwayat pesanan Anda</p>
         </div>
       </div>
+      {/* Month & Filter Bar */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-3.5 py-2 text-xs font-bold text-slate-800 shadow-2xs">
+          <span>Agustus 2026</span>
+          <ChevronRight className="w-4 h-4 rotate-90 text-slate-400" />
+        </div>
+
+        <button
+          onClick={() => setFilterStatus(filterStatus === 'ALL' ? 'verified' : 'ALL')}
+          className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-2xl px-3.5 py-2 text-xs font-bold text-slate-800 shadow-2xs hover:bg-slate-50 cursor-pointer"
+        >
+          <span>Filter Status</span>
+          <Filter className="w-3.5 h-3.5 text-slate-500" />
+        </button>
+      </div>
+
+      {/* ── GREEN BANNER CARD: TOTAL KOMISI BULAN INI ──────────────────────────── */}
+      <div className="bg-gradient-to-r from-[#04593f] to-emerald-900 text-white rounded-3xl p-6 sm:p-7 shadow-lg relative overflow-hidden border border-emerald-950 font-sans space-y-4">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-700/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="grid gap-6 sm:grid-cols-12 relative z-10 items-center">
+          {/* Left Side */}
+          <div className="space-y-4 sm:col-span-7 sm:border-r sm:border-white/10 sm:pr-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/15 text-emerald-100 flex items-center justify-center flex-shrink-0 shadow-inner">
+                <Wallet className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-extrabold text-emerald-200 uppercase tracking-widest block">
+                  TOTAL KOMISI BULAN INI
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-none">
+                {isLoading ? '...' : formatRp(payload?.total_commission_this_month ?? (summary.verified + summary.paid))}
+              </h2>
+              <p className="text-[11px] text-emerald-100/80 font-medium">
+                Total komisi yang Anda dapatkan pada Agustus 2026
+              </p>
+            </div>
+          </div>
+
+          {/* Right Side */}
+          <div className="sm:col-span-5 space-y-3.5 text-xs">
+            <div className="space-y-0.5">
+              <span className="text-emerald-200/80 text-[11px] font-medium block">Dari Total Harga Tanaman</span>
+              <span className="font-extrabold text-white text-sm block">
+                {formatRp(payload?.total_plant_total ?? 0)}
+              </span>
+            </div>
+
+            <div className="space-y-0.5">
+              <span className="text-emerald-200/80 text-[11px] font-medium block">Persentase Komisi</span>
+              <span className="font-extrabold text-white text-sm block">{payload?.commission_rate ?? 5}%</span>
+            </div>
+
+            <div className="space-y-0.5">
+              <span className="text-emerald-200/80 text-[11px] font-medium block">Jumlah Pesanan</span>
+              <span className="font-extrabold text-white text-sm block">{payload?.total_orders_count ?? 0} pesanan</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Note inside Green Banner */}
+        <div className="relative z-10 pt-3 border-t border-emerald-700/60 flex items-center gap-2 text-[11px] text-emerald-100/90 font-medium">
+          <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+            <span className="text-[10px] font-bold">i</span>
+          </div>
+          <span>Komisi {payload?.commission_rate ?? 5}% dihitung otomatis dari Total Harga Tanaman setelah diverifikasi Admin.</span>
+        </div>
+      </div>
 
       {/* ── RINGKASAN KOMISI (4 CARD GRID MATCHING MOCKUP) ────────────────────── */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-2xs space-y-4">

@@ -73,6 +73,9 @@ export interface SalesCommissionSummary {
 
 export interface SalesCommissionData {
   commission_rate: number;
+  total_commission_this_month?: number;
+  total_plant_total?: number;
+  total_orders_count?: number;
   summary: SalesCommissionSummary;
   history: SalesCommissionHistoryItem[];
   payout_history: PayoutHistory[];

@@ -223,13 +223,31 @@ class CommissionController extends Controller
             ];
         });
 
+        // Total verified plant total & count for top banner
+        $verifiedOrders = $allOrders->filter(function ($o) {
+            $st = $o->status instanceof \BackedEnum ? $o->status->value : (string) $o->status;
+            return !in_array($st, ['WAITING_PROCESS', 'CANCELLED'], true);
+        });
+
+        $totalPlantTotal = 0;
+        foreach ($verifiedOrders as $vo) {
+            foreach ($vo->items as $item) {
+                $totalPlantTotal += (float) $item->price;
+            }
+        }
+
+        $totalCommissionThisMonth = round($totalPlantTotal * $rate / 100);
+
         return response()->json([
             'success' => true,
             'data'    => [
-                'commission_rate' => $rate,
-                'summary'         => $summary,
-                'history'         => $orderHistory,
-                'payout_history'  => $payoutHistory->values()->all(),
+                'commission_rate'              => $rate,
+                'total_commission_this_month'  => $totalCommissionThisMonth,
+                'total_plant_total'            => $totalPlantTotal,
+                'total_orders_count'           => $verifiedOrders->count(),
+                'summary'                      => $summary,
+                'history'                      => $orderHistory,
+                'payout_history'               => $payoutHistory->values()->all(),
             ],
         ]);
     }
