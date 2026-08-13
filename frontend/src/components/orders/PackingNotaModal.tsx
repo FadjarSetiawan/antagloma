@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Order, OrderPackage } from '../../types/order';
 import { Printer, X, Sprout } from 'lucide-react';
@@ -10,6 +10,14 @@ interface PackingNotaModalProps {
 }
 
 export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packageInfo, onClose }) => {
+  const [customNotes, setCustomNotes] = useState<string>(order?.notes || '');
+
+  useEffect(() => {
+    if (order) {
+      setCustomNotes(order.notes || '');
+    }
+  }, [order]);
+
   if (!order) return null;
 
   const handlePrint = () => {
@@ -244,15 +252,30 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
             </div>
           </div>
 
-          {/* Notes Callout Box (Monochrome simple border) */}
-          {order.notes && (
-            <div className="p-1.5 border border-black rounded text-[10.5px]">
+          {/* Notes Callout Box (Monochrome simple border with editable feature for admin) */}
+          <div className="p-1.5 border border-black rounded text-[10.5px]">
+            <div className="flex items-center justify-between no-print mb-1">
               <span className="font-bold text-black uppercase block text-[9px]">
                 CATATAN PENGIRIMAN / PACKING KAYU:
               </span>
-              <p className="text-black font-semibold italic mt-0.5">"{order.notes}"</p>
+              <span className="text-[8.5px] text-slate-400 font-normal italic">
+                (Dapat diedit admin sebelum dicetak)
+              </span>
             </div>
-          )}
+            <span className="font-bold text-black uppercase hidden print:block text-[9px]">
+              CATATAN PENGIRIMAN / PACKING KAYU:
+            </span>
+            <textarea
+              value={customNotes}
+              onChange={(e) => setCustomNotes(e.target.value)}
+              placeholder="Ketik catatan pengiriman / packing kayu di sini..."
+              rows={2}
+              className="w-full text-black font-semibold italic mt-0.5 bg-transparent border-none p-0 focus:ring-0 focus:outline-none resize-none no-print"
+            />
+            <p className="text-black font-semibold italic mt-0.5 hidden print:block whitespace-pre-wrap">
+              {customNotes.trim() ? `"${customNotes}"` : '-'}
+            </p>
+          </div>
 
           {/* Signatures Section */}
           <div className="pt-2 border-t border-black grid grid-cols-3 gap-2 text-center text-[9.5px]">
