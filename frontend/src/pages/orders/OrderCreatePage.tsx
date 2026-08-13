@@ -23,6 +23,7 @@ import {
   Building2,
   QrCode,
   Banknote,
+  ShoppingBag,
   Calendar as CalendarIcon,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -242,6 +243,7 @@ export const OrderCreatePage: React.FC = () => {
     { id: 'Transfer Bank', label: 'Transfer Bank', icon: Building2, desc: 'BCA / BRI' },
     { id: 'QRIS', label: 'QRIS', icon: QrCode, desc: 'Scan Instant' },
     { id: 'Tunai', label: 'Tunai', icon: Banknote, desc: 'Bayar Cash' },
+    { id: 'Marketplace', label: 'Marketplace', icon: ShoppingBag, desc: 'Shopee/Tokopedia' },
   ];
 
   return (
@@ -728,10 +730,10 @@ export const OrderCreatePage: React.FC = () => {
               </div>
             )}
 
-            {/* 3 SELECTABLE CARDS FOR PAYMENT METHODS */}
+            {/* SELECTABLE CARDS FOR PAYMENT METHODS (Transfer, QRIS, Tunai, Marketplace) */}
             <div className="space-y-2">
               <label className="block text-xs font-black text-slate-900">Metode Pembayaran *</label>
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {paymentCardMethods.map((pm) => {
                   const Icon = pm.icon;
                   const isSelected = paymentMethod === pm.id;

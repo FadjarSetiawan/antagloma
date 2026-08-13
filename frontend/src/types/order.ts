@@ -81,7 +81,7 @@ export interface Order {
   notes?: string;
   status: OrderStatus;
   rejection_reason?: string;
-  payment_method?: 'Transfer Bank' | 'QRIS' | 'Tunai';
+  payment_method?: 'Transfer Bank' | 'QRIS' | 'Tunai' | 'Marketplace';
   bank_name?: 'BCA' | 'BRI';
   buyer_shipping_cost?: number;
   payment_proof_url?: string;

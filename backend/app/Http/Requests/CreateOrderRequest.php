@@ -40,7 +40,7 @@ class CreateOrderRequest extends FormRequest
             'district_name'       => ['nullable', 'string'],
             'full_address'        => ['required', 'string'],
             'notes'               => ['nullable', 'string', 'max:1000'],
-            'payment_method'      => ['required', 'string', 'in:Transfer Bank,QRIS,Tunai'],
+            'payment_method'      => ['required', 'string', 'in:Transfer Bank,QRIS,Tunai,Marketplace'],
             'bank_name'           => ['nullable', 'string', 'in:BCA,BRI'],
             'buyer_shipping_cost' => ['nullable', 'numeric', 'min:0'],
             'payment_proof'       => ['nullable', 'file', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
