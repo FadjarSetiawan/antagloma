@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { managementService, SalesCommissionData } from '../../services/managementService';
 import { CustomDatePickerModal } from '../../components/shared/CustomDatePickerModal';
+import { CustomSelect } from '../../components/shared/CustomSelect';
 import {
   ArrowLeft, Clock, ShieldCheck, Wallet, XCircle, ChevronRight, Filter, Calendar as CalendarIcon,
 } from 'lucide-react';
@@ -46,6 +47,21 @@ export const SalesCommissionPage: React.FC = () => {
     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
   ];
+
+  const monthOptions = monthNames.map((m, idx) => ({
+    value: String(idx + 1),
+    label: m,
+  }));
+
+  const yearOptions = [2024, 2025, 2026, 2027, 2028].map((y) => ({
+    value: String(y),
+    label: String(y),
+  }));
+
+  const yearOnlyOptions = [2024, 2025, 2026, 2027, 2028].map((y) => ({
+    value: String(y),
+    label: `Tahun ${y}`,
+  }));
 
   const filterPeriodLabel = React.useMemo(() => {
     if (filterMode === 'date') {
@@ -155,39 +171,33 @@ export const SalesCommissionPage: React.FC = () => {
           )}
 
           {filterMode === 'month' && (
-            <div className="flex items-center gap-1.5">
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer shadow-2xs"
-              >
-                {monthNames.map((m, idx) => (
-                  <option key={idx + 1} value={idx + 1}>{m}</option>
-                ))}
-              </select>
+            <div className="flex items-center gap-2">
+              <div className="w-36">
+                <CustomSelect
+                  options={monthOptions}
+                  value={String(selectedMonth)}
+                  onChange={(val) => setSelectedMonth(Number(val))}
+                />
+              </div>
 
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer shadow-2xs"
-              >
-                {[2024, 2025, 2026, 2027, 2028].map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
+              <div className="w-28">
+                <CustomSelect
+                  options={yearOptions}
+                  value={String(selectedYear)}
+                  onChange={(val) => setSelectedYear(Number(val))}
+                />
+              </div>
             </div>
           )}
 
           {filterMode === 'year' && (
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer shadow-2xs"
-            >
-              {[2024, 2025, 2026, 2027, 2028].map((y) => (
-                <option key={y} value={y}>Tahun {y}</option>
-              ))}
-            </select>
+            <div className="w-36">
+              <CustomSelect
+                options={yearOnlyOptions}
+                value={String(selectedYear)}
+                onChange={(val) => setSelectedYear(Number(val))}
+              />
+            </div>
           )}
 
           {filterMode === 'all' && (
