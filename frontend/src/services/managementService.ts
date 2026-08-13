@@ -118,9 +118,9 @@ export const managementService = {
     return res.data;
   },
 
-  // Sales: get own commission data (pending + history)
-  getSalesCommission: async () => {
-    const res = await api.get<{ success: boolean; data: SalesCommissionData }>('/commissions');
+  // Sales: get own commission data (pending + history) with optional filters
+  getSalesCommission: async (params?: { date?: string; month?: number | string; year?: number | string }) => {
+    const res = await api.get<{ success: boolean; data: SalesCommissionData }>('/commissions', { params });
     return res.data;
   },
 

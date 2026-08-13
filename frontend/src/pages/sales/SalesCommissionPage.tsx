@@ -9,13 +9,26 @@ import { useNavigate } from 'react-router-dom';
 
 export const SalesCommissionPage: React.FC = () => {
   const navigate = useNavigate();
+  const [filterMode, setFilterMode] = useState<'month' | 'date' | 'year' | 'all'>('month');
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
   const [isDatePickerOpen, setIsDatePickerOpen] = useState<boolean>(false);
-  const [selectedMonthDate, setSelectedMonthDate] = useState<string>('2026-08-13');
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState<string>(todayStr); // YYYY-MM-DD
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1); // 1-12
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear()); // e.g. 2026
+
+  // Build params based on active filter mode
+  const queryParams = React.useMemo(() => {
+    if (filterMode === 'date') return { date: selectedDate };
+    if (filterMode === 'month') return { month: selectedMonth, year: selectedYear };
+    if (filterMode === 'year') return { year: selectedYear };
+    return {}; // 'all'
+  }, [filterMode, selectedDate, selectedMonth, selectedYear]);
 
   const { data: commissionRes, isLoading } = useQuery({
-    queryKey: ['sales-commission'],
-    queryFn: () => managementService.getSalesCommission(),
+    queryKey: ['sales-commission', filterMode, selectedDate, selectedMonth, selectedYear],
+    queryFn: () => managementService.getSalesCommission(queryParams),
     refetchInterval: 30000,
   });
 
@@ -28,6 +41,24 @@ export const SalesCommissionPage: React.FC = () => {
   };
   const history = payload?.history ?? [];
   const formatRp = (n: number) => 'Rp ' + n.toLocaleString('id-ID');
+
+  const monthNames = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+
+  const filterPeriodLabel = React.useMemo(() => {
+    if (filterMode === 'date') {
+      return selectedDate ? new Date(selectedDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Pilih Tanggal';
+    }
+    if (filterMode === 'month') {
+      return `${monthNames[selectedMonth - 1]} ${selectedYear}`;
+    }
+    if (filterMode === 'year') {
+      return `Tahun ${selectedYear}`;
+    }
+    return 'Semua Waktu';
+  }, [filterMode, selectedDate, selectedMonth, selectedYear]);
 
   const filteredHistory = history.filter((item) => {
     if (filterStatus === 'ALL') return true;
@@ -51,32 +82,135 @@ export const SalesCommissionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Month & Filter Bar */}
-      <div className="flex items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={() => setIsDatePickerOpen(true)}
-          className="flex items-center gap-1.5 bg-white border border-slate-200 hover:border-[#04593f] hover:bg-emerald-50/50 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 shadow-2xs transition-all cursor-pointer active:scale-95"
-        >
-          <CalendarIcon className="w-3.5 h-3.5 text-[#04593f]" />
-          <span>
-            {selectedMonthDate
-              ? new Date(selectedMonthDate).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
-              : 'Agustus 2026'}
-          </span>
-          <ChevronRight className="w-3.5 h-3.5 rotate-90 text-slate-400 shrink-0" />
-        </button>
+      {/* 3 Filter Toolbar: Tanggal, Bulan, Tahun */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-2.5 space-y-2.5 shadow-2xs">
+        <div className="flex items-center justify-between gap-1 border-b border-slate-100 pb-2">
+          <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Tipe Filter Periode:</span>
+          
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => { setFilterMode('date'); setIsDatePickerOpen(true); }}
+              className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+                filterMode === 'date'
+                  ? 'bg-[#04593f] text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Harian (Tanggal)
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterMode('month')}
+              className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+                filterMode === 'month'
+                  ? 'bg-[#04593f] text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Bulanan
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterMode('year')}
+              className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+                filterMode === 'year'
+                  ? 'bg-[#04593f] text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Tahunan
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterMode('all')}
+              className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+                filterMode === 'all'
+                  ? 'bg-[#04593f] text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Semua
+            </button>
+          </div>
+        </div>
 
-        <button
-          onClick={() => setFilterStatus(filterStatus === 'ALL' ? 'verified' : 'ALL')}
-          className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-800 shadow-2xs hover:bg-slate-50 cursor-pointer shrink-0"
-        >
-          <span>Filter Status</span>
-          <Filter className="w-3 h-3 text-slate-500" />
-        </button>
+        {/* Dynamic Filter Controls Row */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+          {/* Mode 1: Tanggal Specific */}
+          {filterMode === 'date' && (
+            <button
+              type="button"
+              onClick={() => setIsDatePickerOpen(true)}
+              className="flex items-center gap-1.5 bg-emerald-50/80 border border-emerald-300 hover:bg-emerald-100/60 rounded-xl px-3 py-1.5 text-xs font-extrabold text-[#04593f] shadow-2xs transition-all cursor-pointer"
+            >
+              <CalendarIcon className="w-4 h-4 text-[#04593f]" />
+              <span>{filterPeriodLabel}</span>
+              <ChevronRight className="w-3.5 h-3.5 rotate-90 text-emerald-800 shrink-0" />
+            </button>
+          )}
+
+          {/* Mode 2: Bulan & Tahun Dropdown */}
+          {filterMode === 'month' && (
+            <div className="flex items-center gap-1.5">
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer shadow-2xs"
+              >
+                {monthNames.map((m, idx) => (
+                  <option key={idx + 1} value={idx + 1}>{m}</option>
+                ))}
+              </select>
+
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer shadow-2xs"
+              >
+                {[2024, 2025, 2026, 2027, 2028].map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Mode 3: Tahun Only Dropdown */}
+          {filterMode === 'year' && (
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer shadow-2xs"
+            >
+              {[2024, 2025, 2026, 2027, 2028].map((y) => (
+                <option key={y} value={y}>Tahun {y}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Mode 4: Semua Waktu Badge */}
+          {filterMode === 'all' && (
+            <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">
+              Menampilkan Semua Data Komisi
+            </span>
+          )}
+
+          {/* Filter Status Badge / Button */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === 'ALL' ? 'verified' : 'ALL')}
+            className={`flex items-center gap-1.5 border rounded-xl px-3 py-1.5 text-xs font-bold transition-all cursor-pointer shrink-0 shadow-2xs ${
+              filterStatus !== 'ALL'
+                ? 'bg-emerald-50 border-emerald-300 text-[#04593f]'
+                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <span>{filterStatus === 'ALL' ? 'Semua Status' : 'Terverifikasi'}</span>
+            <Filter className="w-3.5 h-3.5 text-slate-500" />
+          </button>
+        </div>
       </div>
 
-      {/* ── GREEN BANNER CARD: TOTAL KOMISI BULAN INI (PERFECT MOBILE FIT) ── */}
+      {/* ── GREEN BANNER CARD: TOTAL KOMISI PERIODE (PERFECT MOBILE FIT) ── */}
       <div className="bg-gradient-to-br from-[#04593f] via-[#04593f] to-emerald-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg relative overflow-hidden border border-emerald-950 font-sans space-y-3">
         <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-600/20 rounded-full blur-2xl pointer-events-none" />
 
@@ -87,7 +221,7 @@ export const SalesCommissionPage: React.FC = () => {
               <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
             <span className="text-[9.5px] sm:text-[10px] font-extrabold text-emerald-200 uppercase tracking-wider">
-              TOTAL KOMISI BULAN INI
+              TOTAL KOMISI ({filterPeriodLabel.toUpperCase()})
             </span>
           </div>
 
@@ -97,7 +231,7 @@ export const SalesCommissionPage: React.FC = () => {
               {isLoading ? '...' : formatRp(payload?.total_commission_this_month ?? (summary.verified + summary.paid))}
             </h2>
             <p className="text-[10px] sm:text-[11px] text-emerald-100/90 font-medium">
-              Total komisi yang Anda dapatkan pada Agustus 2026
+              Total komisi yang Anda dapatkan pada periode {filterPeriodLabel}
             </p>
           </div>
 
@@ -303,9 +437,12 @@ export const SalesCommissionPage: React.FC = () => {
       {/* Custom Date Picker Modal */}
       <CustomDatePickerModal
         isOpen={isDatePickerOpen}
-        value={selectedMonthDate}
+        value={selectedDate}
         onChange={(val) => {
-          if (val) setSelectedMonthDate(val);
+          if (val) {
+            setSelectedDate(val);
+            setFilterMode('date');
+          }
         }}
         onClose={() => setIsDatePickerOpen(false)}
       />

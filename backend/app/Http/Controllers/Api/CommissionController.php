@@ -122,15 +122,30 @@ class CommissionController extends Controller
         // ── SALES VIEW ───────────────────────────────────────────────────────
         $rate = (float) ($user->commission_rate ?? 5);
 
+        $dateFilter  = $request->query('date');   // YYYY-MM-DD
+        $monthFilter = $request->query('month');  // 1 - 12 or MM
+        $yearFilter  = $request->query('year');   // YYYY
+
         // IDs of orders already in any payout for this sales
         $paidOrderIds = CommissionPayoutOrder::whereHas('payout', fn($q) => $q->where('sales_id', $user->id))
             ->pluck('order_id')->toArray();
 
-        // Fetch all orders of this sales user
-        $allOrders = Order::with('items')
-            ->where('created_by', $user->id)
-            ->orderBy('order_date', 'desc')
-            ->get();
+        // Query orders of this sales user with date/month/year filter
+        $query = Order::with('items')
+            ->where('created_by', $user->id);
+
+        if (!empty($dateFilter)) {
+            $query->whereDate('order_date', $dateFilter);
+        } else {
+            if (!empty($monthFilter)) {
+                $query->whereMonth('order_date', (int) $monthFilter);
+            }
+            if (!empty($yearFilter)) {
+                $query->whereYear('order_date', (int) $yearFilter);
+            }
+        }
+
+        $allOrders = $query->orderBy('order_date', 'desc')->get();
 
         $summary = [
             'waiting_verification' => 0, // WAITING_PROCESS
