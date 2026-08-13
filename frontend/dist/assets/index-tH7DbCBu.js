@@ -436,12 +436,13 @@ Id swl dikirim non fullset`,className:"w-full px-3.5 py-3 border border-slate-30
                 display: none !important;
               }
 
-              /* Reset body */
+              /* Reset root document bounds for 80mm thermal paper */
               html, body {
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
-                width: 80mm !important;
+                width: 76mm !important;
+                max-width: 76mm !important;
               }
 
               /* Position printable container */
@@ -449,7 +450,8 @@ Id swl dikirim non fullset`,className:"w-full px-3.5 py-3 border border-slate-30
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
-                width: 80mm !important;
+                width: 76mm !important;
+                max-width: 76mm !important;
                 height: auto !important;
                 margin: 0 !important;
                 padding: 0 !important;
@@ -461,7 +463,8 @@ Id swl dikirim non fullset`,className:"w-full px-3.5 py-3 border border-slate-30
               #packing-nota-modal-container > div {
                 border: none !important;
                 box-shadow: none !important;
-                width: 80mm !important;
+                width: 76mm !important;
+                max-width: 76mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
@@ -470,8 +473,9 @@ Id swl dikirim non fullset`,className:"w-full px-3.5 py-3 border border-slate-30
               #packing-nota-printable {
                 display: block !important;
                 visibility: visible !important;
-                width: 80mm !important;
-                padding: 4mm !important;
+                width: 76mm !important;
+                max-width: 76mm !important;
+                padding: 2mm !important;
                 box-sizing: border-box !important;
               }
 

@@ -97,12 +97,13 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 display: none !important;
               }
 
-              /* Reset body */
+              /* Reset root document bounds for 80mm thermal paper */
               html, body {
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
-                width: 80mm !important;
+                width: 76mm !important;
+                max-width: 76mm !important;
               }
 
               /* Position printable container */
@@ -110,7 +111,8 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
-                width: 80mm !important;
+                width: 76mm !important;
+                max-width: 76mm !important;
                 height: auto !important;
                 margin: 0 !important;
                 padding: 0 !important;
@@ -122,7 +124,8 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
               #packing-nota-modal-container > div {
                 border: none !important;
                 box-shadow: none !important;
-                width: 80mm !important;
+                width: 76mm !important;
+                max-width: 76mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
@@ -131,8 +134,9 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
               #packing-nota-printable {
                 display: block !important;
                 visibility: visible !important;
-                width: 80mm !important;
-                padding: 4mm !important;
+                width: 76mm !important;
+                max-width: 76mm !important;
+                padding: 2mm !important;
                 box-sizing: border-box !important;
               }
 
