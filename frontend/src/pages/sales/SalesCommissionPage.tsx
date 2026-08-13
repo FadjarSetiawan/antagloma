@@ -85,7 +85,7 @@ export const SalesCommissionPage: React.FC = () => {
       {/* 3 Filter Toolbar: Tanggal, Bulan, Tahun */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-2.5 space-y-2.5 shadow-2xs">
         <div className="flex items-center justify-between gap-1 border-b border-slate-100 pb-2">
-          <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Tipe Filter Periode:</span>
+          <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Filter Periode:</span>
           
           <div className="flex items-center gap-1">
             <button
@@ -97,7 +97,7 @@ export const SalesCommissionPage: React.FC = () => {
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              Harian (Tanggal)
+              Harian
             </button>
             <button
               type="button"
