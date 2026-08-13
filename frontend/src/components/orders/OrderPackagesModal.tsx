@@ -533,8 +533,8 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isLoading || totalOrderItems.reduce((sum, item, idx) => sum + (item.quantity || 0) - getUsedQuantity(idx), 0) !== 0}
-              className="px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+              disabled={isLoading}
+              className="px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{isLoading ? 'Menyimpan Paket...' : 'Selesaikan & Buat Nota'}</span>
