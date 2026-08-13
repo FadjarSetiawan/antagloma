@@ -132,7 +132,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 Spesialis Adenium Bunga Tumpuk
               </p>
               <p className="text-[9px] text-slate-500 leading-tight">
-                Kebun 1, 2, 3 | WA: +62 858-8180-8740
+                WA: 0858-9450-3333 / 0857-3333-1889
               </p>
             </div>
 
