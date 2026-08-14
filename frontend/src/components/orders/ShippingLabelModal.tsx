@@ -148,6 +148,9 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
                 top: 0 !important;
                 width: 100mm !important;
                 height: 100mm !important;
+                display: block !important;
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
                 padding: 0 !important;
                 margin: 0 !important;
                 background: #ffffff !important;
@@ -160,6 +163,8 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
                 box-shadow: none !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
                 width: 100mm !important;
                 height: 100mm !important;
               }

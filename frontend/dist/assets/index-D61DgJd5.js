@@ -489,6 +489,10 @@ PERFORMANCE OF THIS SOFTWARE.
                 left: 0 !important;
                 top: 0 !important;
                 width: 80mm !important;
+                height: auto !important;
+                display: block !important;
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
                 padding: 0 !important;
                 margin: 0 !important;
                 background: #ffffff !important;
@@ -501,8 +505,11 @@ PERFORMANCE OF THIS SOFTWARE.
                 box-shadow: none !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
                 width: 80mm !important;
                 max-width: 80mm !important;
+                height: auto !important;
               }
 
               #packing-nota-printable {
@@ -510,7 +517,7 @@ PERFORMANCE OF THIS SOFTWARE.
                 width: 78mm !important;
                 max-width: 78mm !important;
                 margin: 0 auto !important;
-                padding: 4mm 1.5mm 3mm 1.5mm !important;
+                padding: 1.5mm 1.5mm 3mm 1.5mm !important;
                 box-sizing: border-box !important;
                 background: #ffffff !important;
               }
@@ -552,6 +559,9 @@ Id swl dikirim non fullset`,className:"w-full p-3 bg-white border border-slate-2
                 top: 0 !important;
                 width: 100mm !important;
                 height: 100mm !important;
+                display: block !important;
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
                 padding: 0 !important;
                 margin: 0 !important;
                 background: #ffffff !important;
@@ -564,6 +574,8 @@ Id swl dikirim non fullset`,className:"w-full p-3 bg-white border border-slate-2
                 box-shadow: none !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
                 width: 100mm !important;
                 height: 100mm !important;
               }
