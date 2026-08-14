@@ -38,7 +38,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     const cleanOrderNumber = (order.order_number || 'order').replace(/[^a-zA-Z0-9-]/g, '_');
     const cleanPkgLetter = packageInfo ? `-${packageInfo.letter}` : '';
     const title = `Nota_Packing_${cleanOrderNumber}${cleanPkgLetter}`;
@@ -46,6 +46,26 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     // Blur active button focus to prevent Chrome Android touch event cancellation flicker
     if (document.activeElement && 'blur' in document.activeElement) {
       (document.activeElement as HTMLElement).blur();
+    }
+
+    // Android's system print service can capture the whole application and
+    // queue the job until RawBT is opened. Send only the rendered nota bitmap
+    // directly to RawBT so one click opens the correct printer workflow and
+    // never includes dashboard pages.
+    if (/Android/i.test(navigator.userAgent)) {
+      setIsBluetoothPrinting(true);
+      try {
+        const printableEl = document.getElementById('packing-nota-printable');
+        if (!printableEl) throw new Error('Elemen pratinjau nota tidak ditemukan.');
+
+        await thermalPrinterService.sendToRawBT(printableEl, 576);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Gagal mengirim nota ke aplikasi RawBT.';
+        window.alert(message);
+      } finally {
+        setIsBluetoothPrinting(false);
+      }
+      return;
     }
 
     printElementViaIframe('packing-nota-printable', title, 'size: 80mm auto;');
@@ -311,10 +331,11 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           <button
             type="button"
             onClick={handlePrint}
-            className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1"
+            disabled={isBluetoothPrinting}
+            className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 disabled:bg-emerald-700/60 disabled:cursor-wait text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1"
           >
             <Printer className="w-4 h-4 shrink-0" />
-            <span className="whitespace-nowrap">Cetak Nota</span>
+            <span className="whitespace-nowrap">{isBluetoothPrinting ? 'Menyiapkan...' : 'Cetak Nota'}</span>
           </button>
 
           <button

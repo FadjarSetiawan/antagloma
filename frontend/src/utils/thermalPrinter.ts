@@ -141,12 +141,20 @@ class ThermalPrinterService {
     container.style.backgroundColor = '#ffffff';
     container.style.color = '#000000';
     container.style.boxSizing = 'border-box';
-    container.style.padding = isLabel ? '16px 12px' : '12px 8px 16px 8px';
+    container.style.padding = isLabel ? '0' : '12px 8px 16px 8px';
     container.style.fontFamily = 'Arial, Helvetica, sans-serif';
 
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.width = '100%';
     clone.style.maxWidth = '100%';
+    if (isLabel) {
+      // The 4-inch label is 100x150 mm (2:3). Keep the cloned printable area
+      // at that full ratio so its flex layout uses the whole sticker instead
+      // of collapsing the content into the upper half of the PDF.
+      clone.style.height = '750px';
+      clone.style.minHeight = '750px';
+      clone.style.overflow = 'hidden';
+    }
     clone.style.boxShadow = 'none';
     clone.style.border = 'none';
     clone.style.borderRadius = '0';
