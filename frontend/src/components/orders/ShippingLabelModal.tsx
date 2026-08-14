@@ -171,8 +171,8 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
 
               #shipping-label-printable {
                 position: relative !important;
-                width: 98mm !important;
-                height: 98mm !important;
+                width: 96mm !important;
+                height: 96mm !important;
                 margin: 0 auto !important;
                 padding: 1.5mm !important;
                 box-sizing: border-box !important;
@@ -190,56 +190,69 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
             }
           `}</style>
 
-          {/* Label Container Box */}
-          <div className="border-2 border-black p-3 rounded-lg space-y-2 font-sans bg-white text-black">
+          {/* Label Container Box (1:1 Ratio proportioned for 10x10cm sticker) */}
+          <div className="border-2 border-black p-3.5 rounded-lg space-y-2.5 font-sans bg-white text-black h-full flex flex-col justify-between">
             {/* Header Store & Order ID */}
-            <div className="flex items-start justify-between border-b-2 border-black pb-2 pt-1">
-              <div>
-                <h1 className="font-extrabold text-sm tracking-wide text-black uppercase leading-normal pt-0.5">
+            <div className="flex items-start justify-between border-b-2 border-black pb-2.5 pt-1 gap-2">
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <h1 className="font-extrabold text-xs sm:text-sm tracking-wider text-black uppercase leading-normal pt-0.5">
                   ANTAGLOMA FLORIST
                 </h1>
-                <p className="text-[9px] font-bold text-black mt-0.5">
+                <p className="text-[9.5px] font-semibold text-black leading-tight">
+                  Spesialis Adenium Bunga Tumpuk
+                </p>
+                <p className="text-[9px] font-normal text-black leading-tight">
                   WA: 0858-9450-3333 / 0857-3333-1889
                 </p>
               </div>
 
-              <div className="text-right">
-                <div className="border border-black px-2 py-1 text-[8.5px] font-extrabold text-black uppercase inline-flex items-center justify-center mt-1 mb-1 tracking-wider leading-none">
+              <div className="text-right shrink-0">
+                <div className="border border-black px-2 py-1 text-[8.5px] font-bold text-black uppercase inline-block mt-0.5 mb-1 tracking-wider leading-normal text-center">
                   STIKER RESI
                 </div>
-                <p className="font-extrabold text-xs text-black leading-tight">{subOrderNum}</p>
-                <span className="font-extrabold text-[9.5px] text-black uppercase block">
+                <p className="font-extrabold text-xs text-black leading-tight tracking-tight whitespace-nowrap">{subOrderNum}</p>
+                <span className="font-bold text-[9.5px] text-black uppercase block mt-0.5">
                   [ {pkgType} ]
                 </span>
               </div>
             </div>
 
             {/* Destination Address Block */}
-            <div className="space-y-1.5">
+            <div className="space-y-2 flex-1 flex flex-col justify-center">
               <div>
-                <span className="text-[9px] font-bold uppercase text-black block tracking-wider">
-                  PENERIMA:
+                <span className="text-[9px] font-bold uppercase text-black block tracking-wider mb-0.5">
+                  PENERIMA / CUSTOMER:
                 </span>
-                <h2 className="text-sm font-bold text-black block leading-tight">{order.customer_name}</h2>
-                <p className="text-[11px] font-bold text-black flex items-center gap-1 mt-0.5">
-                  <Phone className="w-3.5 h-3.5 text-black" /> {order.phone}
+                <h2 className="text-sm font-bold text-black block leading-tight break-words">{order.customer_name}</h2>
+                <p className="text-xs font-bold text-black flex items-center gap-1 mt-1">
+                  <Phone className="w-3.5 h-3.5 text-black shrink-0" /> {order.phone}
                 </p>
               </div>
 
-              <div className="pt-1.5 border-t border-black text-xs font-semibold text-black leading-snug">
-                <p className="font-bold text-black">
-                  Kec. {order.district_name || '-'}, {order.regency_name || '-'}
+              <div className="pt-2 border-t border-black space-y-1">
+                <span className="text-[9px] font-bold uppercase text-black block tracking-wider">
+                  ALAMAT PENGIRIMAN:
+                </span>
+                <p className="font-bold text-[11px] text-black leading-snug break-words">
+                  {[order.district_name, order.regency_name, order.province_name].filter(Boolean).join(', ')}
                 </p>
-                <p className="text-black font-bold text-[11px] mt-0.5 leading-relaxed">
+                <p className="text-[10.5px] font-normal text-black leading-relaxed break-words">
                   {order.full_address}
                 </p>
               </div>
+
+              {packageInfo?.itemsSummary && (
+                <div className="border border-black rounded p-1.5 text-[9px] font-bold text-black flex items-center justify-between bg-slate-50/50">
+                  <span>Isi Paket: {packageInfo.itemsSummary}</span>
+                  <span>Berat: {packageInfo.weightInfo}</span>
+                </div>
+              )}
             </div>
 
             {/* Footer Note */}
-            <div className="border-t border-black pt-1 flex items-center justify-between text-[8px] font-bold text-black uppercase tracking-widest">
-              <span>Antagloma Florist</span>
-              <span>Stiker Alamat Thermal 10x10 cm</span>
+            <div className="border-t border-black pt-1.5 flex items-center justify-between text-[8.5px] font-bold text-black uppercase tracking-wider shrink-0">
+              <span>ANTAGLOMA FLORIST</span>
+              <span>STIKER ALAMAT THERMAL 10X10 CM</span>
             </div>
           </div>
         </div>
