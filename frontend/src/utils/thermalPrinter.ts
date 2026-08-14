@@ -125,12 +125,13 @@ class ThermalPrinterService {
   }
 
   /**
-   * Render HTML element to high-clarity 576px wide 1-bit monochrome bitmap canvas for 80mm thermal printers.
-   * Uses 384px CSS render width for true 8cm physical paper aspect ratio.
+   * Render HTML element to ultra-sharp 1-bit monochrome bitmap canvas for thermal printers.
+   * Renders at 3x High-DPI resolution with sharp luminance binarization so printed output is 100% crystal clear.
    */
   public async renderToThermalCanvas(element: HTMLElement, targetWidth = 576): Promise<{ canvas: HTMLCanvasElement; imageBytes: Uint8Array; width: number; height: number }> {
-    const cssRenderWidth = 384;
-    const renderScale = targetWidth / cssRenderWidth; // 576 / 384 = 1.5x
+    const isLabel = targetWidth >= 700;
+    const cssRenderWidth = isLabel ? 500 : 384;
+    const targetScale = 3; // 3x High-DPI scale for crystal clear vector text & crisp lines
 
     const container = document.createElement('div');
     container.style.position = 'absolute';
@@ -140,7 +141,8 @@ class ThermalPrinterService {
     container.style.backgroundColor = '#ffffff';
     container.style.color = '#000000';
     container.style.boxSizing = 'border-box';
-    container.style.padding = '12px 8px 16px 8px';
+    container.style.padding = isLabel ? '16px 12px' : '12px 8px 16px 8px';
+    container.style.fontFamily = 'Arial, Helvetica, sans-serif';
 
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.width = '100%';
@@ -149,14 +151,24 @@ class ThermalPrinterService {
     clone.style.border = 'none';
     clone.style.borderRadius = '0';
     clone.style.transform = 'none';
+    clone.style.color = '#000000';
+
+    // Force crisp dark contrast on all child elements
+    const allNodes = clone.querySelectorAll('*');
+    allNodes.forEach((node: any) => {
+      if (node.style) {
+        node.style.color = '#000000';
+        node.style.borderColor = '#000000';
+      }
+    });
 
     container.appendChild(clone);
     document.body.appendChild(container);
 
-    let canvas: HTMLCanvasElement;
+    let highResCanvas: HTMLCanvasElement;
     try {
-      canvas = await html2canvas(container, {
-        scale: renderScale,
+      highResCanvas = await html2canvas(container, {
+        scale: targetScale,
         backgroundColor: '#ffffff',
         logging: false,
         useCORS: true,
@@ -166,8 +178,8 @@ class ThermalPrinterService {
       document.body.removeChild(container);
     }
 
-    const aspect = canvas.height / canvas.width;
-    const width = targetWidth; // 576 pixels for 80mm thermal printer head
+    const aspect = highResCanvas.height / highResCanvas.width;
+    const width = targetWidth;
     const height = Math.round(targetWidth * aspect);
 
     const monoCanvas = document.createElement('canvas');
@@ -177,26 +189,31 @@ class ThermalPrinterService {
 
     if (!ctx) throw new Error('Gagal memproses gambar cetak.');
 
-    ctx.imageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
-    ctx.drawImage(canvas, 0, 0, width, height);
+    ctx.drawImage(highResCanvas, 0, 0, width, height);
 
     const imgData = ctx.getImageData(0, 0, width, height);
     const pixels = imgData.data;
 
-    // Convert RGBA pixels into 1-bit monochrome raster data using luminance thresholding (160)
     const bytesPerLine = width / 8;
     const imageBytes = new Uint8Array(bytesPerLine * height);
 
+    // Apply Sharp Binarization with Adaptive Contrast Thresholding (185)
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const offset = (y * width + x) * 4;
         const r = pixels[offset];
         const g = pixels[offset + 1];
         const b = pixels[offset + 2];
-        const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-        const isBlack = brightness < 160;
+
+        // Perceived luminance formula
+        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+
+        // Sharp threshold at 185: eliminates fuzzy anti-alias gray pixels into jet black
+        const isBlack = luminance < 185;
 
         if (isBlack) {
           const byteIndex = y * bytesPerLine + Math.floor(x / 8);
@@ -205,10 +222,12 @@ class ThermalPrinterService {
           pixels[offset] = 0;
           pixels[offset + 1] = 0;
           pixels[offset + 2] = 0;
+          pixels[offset + 3] = 255;
         } else {
           pixels[offset] = 255;
           pixels[offset + 1] = 255;
           pixels[offset + 2] = 255;
+          pixels[offset + 3] = 255;
         }
       }
     }
