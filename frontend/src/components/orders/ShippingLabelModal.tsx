@@ -269,50 +269,36 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           </div>
         </div>
 
-        {/* Modal Footer Bar: Responsive Action Buttons */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex-shrink-0 no-print">
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-between">
-            {thermalPrinterService.isSupported() && (
-              <button
-                type="button"
-                disabled={isBluetoothPrinting}
-                onClick={handleDirectBluetoothPrint}
-                className="py-2.5 px-2 bg-teal-900 hover:bg-teal-950 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 w-full"
-                title="Cetak langsung dari Web via Web Bluetooth (0 Aplikasi Pihak Ketiga)"
-              >
-                <Bluetooth className="w-4 h-4 text-teal-300 shrink-0" />
-                <span className="whitespace-nowrap">{isBluetoothPrinting ? 'Mencetak...' : 'Direct Bluetooth'}</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={handleRawBTPrint}
-              className="py-2.5 px-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer w-full"
-              title="Cetak langsung menggunakan Aplikasi RawBT di Android"
-            >
-              <Printer className="w-4 h-4 text-emerald-300 shrink-0" />
-              <span className="whitespace-nowrap">RawBT (App)</span>
-            </button>
-
+        {/* Modal Footer Bar: Clean Action Buttons */}
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <button
               type="button"
               onClick={handlePreviewThermalBitmap}
-              className="py-2.5 px-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer w-full"
-              title="Preview simulasi raster thermal stiker 100mm 100% persis output printer"
+              className="py-2.5 px-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
+              title="Preview simulasi hasil cetak thermal stiker 100mm"
             >
               <Download className="w-4 h-4 shrink-0 text-slate-300" />
-              <span className="whitespace-nowrap">Preview</span>
+              <span className="whitespace-nowrap">Preview Thermal</span>
             </button>
 
             <button
               type="button"
-              onClick={onClose}
-              className="py-2.5 px-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center w-full"
+              onClick={handlePrint}
+              className="py-2.5 px-4 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer flex-1 justify-center"
             >
-              Tutup
+              <Printer className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap">Cetak Label</span>
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="py-2.5 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center shrink-0"
+          >
+            Tutup
+          </button>
         </div>
       </div>
       {thermalPreviewUrl && (
