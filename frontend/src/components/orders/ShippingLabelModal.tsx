@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Order } from '../../types/order';
-import { Tag, Printer, X, Phone, Download } from 'lucide-react';
+import { Tag, Printer, X, Phone, Download, Bluetooth } from 'lucide-react';
 import { thermalPrinterService } from '../../utils/thermalPrinter';
 
 interface ShippingLabelModalProps {
@@ -16,7 +16,23 @@ interface ShippingLabelModalProps {
 }
 
 export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, packageInfo, onClose }) => {
+  const [isBluetoothPrinting, setIsBluetoothPrinting] = useState(false);
+
   if (!order) return null;
+
+  const handleDirectBluetoothPrint = async () => {
+    setIsBluetoothPrinting(true);
+    try {
+      const printableEl = document.getElementById('shipping-label-printable');
+      if (!printableEl) throw new Error('Elemen pratinjau label tidak ditemukan.');
+
+      await thermalPrinterService.printElementAsBitmap(printableEl, 800, 'label');
+    } catch (err: any) {
+      alert(err.message || 'Gagal cetak label via Bluetooth.');
+    } finally {
+      setIsBluetoothPrinting(false);
+    }
+  };
 
   const handlePrint = () => {
     const originalTitle = document.title;
@@ -242,6 +258,19 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         {/* Modal Footer Bar: Clean Action Buttons */}
         <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
           <div className="flex items-center gap-2 flex-1 min-w-0">
+            {thermalPrinterService.isSupported() && (
+              <button
+                type="button"
+                disabled={isBluetoothPrinting}
+                onClick={handleDirectBluetoothPrint}
+                className="py-2.5 px-3 bg-teal-900 hover:bg-teal-950 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                title="Cetak langsung dari Web via Web Bluetooth (0 Aplikasi Pihak Ketiga)"
+              >
+                <Bluetooth className="w-4 h-4 text-teal-300 shrink-0" />
+                <span className="whitespace-nowrap">{isBluetoothPrinting ? 'Mencetak...' : 'Direct Bluetooth'}</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={handleRawBTPrint}
@@ -249,7 +278,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
               title="Cetak langsung menggunakan Aplikasi RawBT di Android"
             >
               <Printer className="w-4 h-4 text-emerald-300 shrink-0" />
-              <span className="whitespace-nowrap">RawBT (App)</span>
+              <span className="whitespace-nowrap">RawBT</span>
             </button>
 
             <button

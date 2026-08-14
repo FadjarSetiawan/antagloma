@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Order, OrderPackage } from '../../types/order';
-import { Printer, X, Download } from 'lucide-react';
+import { Printer, X, Download, Bluetooth } from 'lucide-react';
 import { thermalPrinterService } from '../../utils/thermalPrinter';
 
 interface PackingNotaModalProps {
@@ -13,6 +13,7 @@ interface PackingNotaModalProps {
 export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packageInfo, onClose }) => {
   const [customNotes, setCustomNotes] = useState<string>(order?.notes || '');
   const [thermalPreviewUrl, setThermalPreviewUrl] = useState<string | null>(null);
+  const [isBluetoothPrinting, setIsBluetoothPrinting] = useState(false);
 
   useEffect(() => {
     if (order) {
@@ -21,6 +22,20 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
   }, [order]);
 
   if (!order) return null;
+
+  const handleDirectBluetoothPrint = async () => {
+    setIsBluetoothPrinting(true);
+    try {
+      const printableEl = document.getElementById('packing-nota-printable');
+      if (!printableEl) throw new Error('Elemen pratinjau nota tidak ditemukan.');
+
+      await thermalPrinterService.printElementAsBitmap(printableEl, 576, 'nota');
+    } catch (err: any) {
+      alert(err.message || 'Gagal cetak nota via Bluetooth.');
+    } finally {
+      setIsBluetoothPrinting(false);
+    }
+  };
 
   const handlePrint = () => {
     const originalTitle = document.title;
@@ -295,6 +310,19 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
         {/* Modal Footer Bar: Responsive Action Buttons */}
         <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
           <div className="flex items-center gap-2 flex-1 min-w-0">
+            {thermalPrinterService.isSupported() && (
+              <button
+                type="button"
+                disabled={isBluetoothPrinting}
+                onClick={handleDirectBluetoothPrint}
+                className="py-2.5 px-3 bg-teal-900 hover:bg-teal-950 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                title="Cetak langsung dari Web via Web Bluetooth (0 Aplikasi Pihak Ketiga)"
+              >
+                <Bluetooth className="w-4 h-4 text-teal-300 shrink-0" />
+                <span className="whitespace-nowrap">{isBluetoothPrinting ? 'Mencetak...' : 'Direct Bluetooth'}</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={handleRawBTPrint}
@@ -302,7 +330,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
               title="Cetak langsung menggunakan Aplikasi RawBT di Android"
             >
               <Printer className="w-4 h-4 text-emerald-300 shrink-0" />
-              <span className="whitespace-nowrap">RawBT (App)</span>
+              <span className="whitespace-nowrap">RawBT</span>
             </button>
 
             <button
@@ -312,7 +340,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
               title="Preview hasil raster thermal 80mm dari nota asli"
             >
               <Download className="w-4 h-4 shrink-0 text-slate-300" />
-              <span className="whitespace-nowrap">Preview Thermal</span>
+              <span className="whitespace-nowrap">Preview</span>
             </button>
 
             <button

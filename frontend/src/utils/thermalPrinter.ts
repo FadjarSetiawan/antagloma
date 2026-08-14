@@ -228,7 +228,7 @@ class ThermalPrinterService {
   /**
    * Print directly via ESC/POS raster commands GS v 0.
    */
-  public async printElementAsBitmap(element: HTMLElement, targetWidth = 576): Promise<void> {
+  public async printElementAsBitmap(element: HTMLElement, targetWidth = 576, type: 'nota' | 'label' = 'nota'): Promise<void> {
     const { imageBytes, width, height } = await this.renderToThermalCanvas(element, targetWidth);
     const bytesPerLine = width / 8;
 
@@ -248,7 +248,7 @@ class ThermalPrinterService {
     fullBuffer.set(imageBytes, initCmd.length + gsV0Header.length);
     fullBuffer.set(feedCut, initCmd.length + gsV0Header.length + imageBytes.length);
 
-    await this.printRaw(fullBuffer);
+    await this.printRaw(fullBuffer, type);
   }
 
   /**
