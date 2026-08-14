@@ -138,7 +138,6 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
               }
 
               /* Hide non-printable elements completely from document flow */
-              body > *:not(#packing-nota-modal-container),
               .no-print {
                 display: none !important;
               }

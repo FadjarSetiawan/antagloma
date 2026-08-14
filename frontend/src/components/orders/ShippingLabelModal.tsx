@@ -157,7 +157,6 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
               }
 
               /* Hide non-printable elements completely from document flow */
-              body > *:not(#shipping-label-modal-container),
               .no-print {
                 display: none !important;
               }

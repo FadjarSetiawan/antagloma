@@ -10,10 +10,14 @@ export function printElementViaIframe(
 ): void {
   const sourceEl = document.getElementById(elementId);
   if (!sourceEl) {
-    // Fallback to window.print if element not found
     window.print();
     return;
   }
+
+  // Clone target element and remove internal modal <style> tags that might contain display:none or body selectors
+  const clone = sourceEl.cloneNode(true) as HTMLElement;
+  const internalStyles = clone.querySelectorAll('style');
+  internalStyles.forEach((s) => s.remove());
 
   // Remove any stale print iframe from DOM
   const existingIframe = document.getElementById('antagloma-print-iframe');
@@ -40,7 +44,7 @@ export function printElementViaIframe(
     return;
   }
 
-  // Extract all stylesheets & font links from parent document
+  // Extract external stylesheets & font links (exclude inline styles with body selectors)
   const styleElements = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
     .map((el) => el.outerHTML)
     .join('\n');
@@ -66,6 +70,9 @@ export function printElementViaIframe(
             color: #000000 !important;
             width: 100% !important;
             height: auto !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
           }
           body {
             -webkit-print-color-adjust: exact !important;
@@ -73,12 +80,16 @@ export function printElementViaIframe(
           }
           *, *::before, *::after {
             box-sizing: border-box !important;
+            visibility: visible !important;
+          }
+          .no-print {
+            display: none !important;
           }
         </style>
       </head>
       <body>
-        <div style="width: 100%; padding: 0; margin: 0;">
-          ${sourceEl.outerHTML}
+        <div style="width: 100%; padding: 0; margin: 0; display: block !important; visibility: visible !important;">
+          ${clone.outerHTML}
         </div>
       </body>
     </html>
@@ -98,5 +109,5 @@ export function printElementViaIframe(
       console.warn('Iframe print fallback to window.print:', e);
       window.print();
     }
-  }, 200);
+  }, 250);
 }
