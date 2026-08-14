@@ -241,11 +241,23 @@ class ThermalPrinterService {
     await this.printRaw(fullBuffer);
   }
 
+  /**
+   * Send high-clarity 1-bit thermal bitmap directly to RawBT app via Android Intent
+   */
+  public async sendToRawBT(element: HTMLElement, targetWidth = 576): Promise<void> {
+    const dataUrl = await this.generateThermalBitmapDataUrl(element, targetWidth);
+    const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, '');
+    
+    // Primary Android Intent scheme for RawBT app
+    const intentUrl = `intent:image/png;base64,${base64Data}#Intent;scheme=rawbt;package=ru.a404.rawbt;end;`;
+    window.location.href = intentUrl;
+  }
+
   // Convert text string to ESC/POS commands
   public async printEscPosText(text: string): Promise<void> {
     const encoder = new TextEncoder();
-    const initCmd = new Uint8Array([0x1b, 0x40]); // ESC @ (Initialize printer)
-    const feedCut = new Uint8Array([0x1d, 0x56, 0x42, 0x00]); // GS V B 0 (Feed and Cut)
+    const initCmd = new Uint8Array([0x1b, 0x40]);
+    const feedCut = new Uint8Array([0x1d, 0x56, 0x42, 0x00]);
 
     const bytesText = encoder.encode(text + '\n\n\n');
     const fullData = new Uint8Array(initCmd.length + bytesText.length + feedCut.length);

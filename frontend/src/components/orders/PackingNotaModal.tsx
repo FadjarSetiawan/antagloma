@@ -36,6 +36,17 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     }, 100);
   };
 
+  const handleRawBTPrint = async () => {
+    try {
+      const printableEl = document.getElementById('packing-nota-printable');
+      if (!printableEl) throw new Error('Elemen pratinjau nota tidak ditemukan.');
+
+      await thermalPrinterService.sendToRawBT(printableEl, 576);
+    } catch (err: any) {
+      alert(err.message || 'Gagal mengirim nota ke aplikasi RawBT.');
+    }
+  };
+
   const handlePreviewThermalBitmap = async () => {
     try {
       const printableEl = document.getElementById('packing-nota-printable');
@@ -286,6 +297,16 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <button
               type="button"
+              onClick={handleRawBTPrint}
+              className="py-2.5 px-3 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
+              title="Cetak langsung menggunakan Aplikasi RawBT di Android"
+            >
+              <Printer className="w-4 h-4 text-emerald-300 shrink-0" />
+              <span className="whitespace-nowrap">RawBT (App)</span>
+            </button>
+
+            <button
+              type="button"
               onClick={handlePreviewThermalBitmap}
               className="py-2.5 px-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
               title="Preview hasil raster thermal 80mm dari nota asli"
@@ -300,7 +321,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
               className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
             >
               <Printer className="w-4 h-4 shrink-0" />
-              <span className="whitespace-nowrap">Cetak Nota</span>
+              <span className="whitespace-nowrap">Browser</span>
             </button>
           </div>
 
