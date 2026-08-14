@@ -141,12 +141,18 @@ class ThermalPrinterService {
     container.style.backgroundColor = '#ffffff';
     container.style.color = '#000000';
     container.style.boxSizing = 'border-box';
-    container.style.padding = isLabel ? '0' : '12px 8px 16px 8px';
+    // Extra trailing room keeps the final signature row inside the captured
+    // bitmap on Android/RawBT instead of clipping its lower pixels.
+    container.style.padding = isLabel ? '0' : '12px 8px 32px 8px';
     container.style.fontFamily = 'Arial, Helvetica, sans-serif';
 
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.width = '100%';
     clone.style.maxWidth = '100%';
+    clone.style.height = 'auto';
+    clone.style.maxHeight = 'none';
+    clone.style.overflow = 'visible';
+    clone.style.flex = 'none';
     if (isLabel) {
       // The 4-inch label is 100x150 mm (2:3). Keep the cloned printable area
       // at that full ratio so its flex layout uses the whole sticker instead
@@ -160,6 +166,14 @@ class ThermalPrinterService {
     clone.style.borderRadius = '0';
     clone.style.transform = 'none';
     clone.style.color = '#000000';
+
+    // Match the actual print document: controls and editor-only hints must not
+    // become part of the bitmap sent to RawBT. Print-only values are revealed
+    // explicitly because html2canvas renders with screen media rules.
+    clone.querySelectorAll('.no-print').forEach((node) => node.remove());
+    clone.querySelectorAll<HTMLElement>('.thermal-print-only').forEach((node) => {
+      node.style.display = 'block';
+    });
 
     // Force crisp dark contrast on all child elements
     const allNodes = clone.querySelectorAll('*');

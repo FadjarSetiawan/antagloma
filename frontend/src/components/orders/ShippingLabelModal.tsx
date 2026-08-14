@@ -44,10 +44,11 @@ const createSingleImagePdf = async (canvas: HTMLCanvasElement): Promise<Blob> =>
     appendText(`${objectNumber} 0 obj\n`);
   };
 
-  // One 100x150 mm page. 4BarCode accepts PDF documents and routes them to
-  // the XP-420B label-printer workflow.
-  const pageWidth = '283.465';
-  const pageHeight = '425.197';
+  // Use the exact standard 4x6-inch MediaBox. 4BarCode recognizes this preset
+  // reliably, while a 100x150 mm custom page can be remembered as 4x8 inches
+  // and shrink the label into the upper half of the physical sticker.
+  const pageWidth = '288';
+  const pageHeight = '432';
   const contentStream = `q\n${pageWidth} 0 0 ${pageHeight} 0 0 cm\n/Im0 Do\nQ\n`;
 
   appendText('%PDF-1.4\n');
