@@ -277,9 +277,11 @@ class ThermalPrinterService {
     const dataUrl = await this.generateThermalBitmapDataUrl(element, targetWidth);
     const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, '');
     
-    // Primary Android Intent scheme for RawBT app
-    const intentUrl = `intent:image/png;base64,${base64Data}#Intent;scheme=rawbt;package=ru.a404.rawbt;end;`;
-    window.location.href = intentUrl;
+    // Direct rawbt scheme link (prevents auto-redirecting to PlayStore if app not installed)
+    const rawbtUrl = `rawbt:image/png;base64,${base64Data}`;
+    const link = document.createElement('a');
+    link.href = rawbtUrl;
+    link.click();
   }
 
   // Convert text string to ESC/POS commands
