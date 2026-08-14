@@ -82,10 +82,10 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
       const printableEl = document.getElementById('shipping-label-printable');
       if (!printableEl) throw new Error('Elemen pratinjau label tidak ditemukan.');
 
-      const dataUrl = await thermalPrinterService.generateThermalBitmapDataUrl(printableEl, 576);
+      const dataUrl = await thermalPrinterService.generateThermalBitmapDataUrl(printableEl, 800);
       const link = document.createElement('a');
       link.href = dataUrl;
-      link.download = `SIMULASI_CETAK_THERMAL_STIKER_10X10_${subOrderNum}.png`;
+      link.download = `SIMULASI_CETAK_THERMAL_STIKER_10X15_${subOrderNum}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -310,18 +310,18 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           <div className="bg-slate-100 rounded-2xl p-4 max-h-[92vh] max-w-full overflow-auto shadow-2xl" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between gap-4 mb-3">
               <div>
-                <p className="text-xs font-bold text-slate-900">Preview Stiker Thermal 10x10 cm</p>
-                <p className="text-[10px] text-slate-500">Raster 1-bit monochrome yang dikirim via Direct Bluetooth & RawBT</p>
+                <p className="text-xs font-bold text-slate-900">Preview Stiker Thermal 10x15 cm</p>
+                <p className="text-[10px] text-slate-500">Raster 1-bit monochrome resolusi tinggi 10x15 cm (100mm x 150mm)</p>
               </div>
               <button type="button" onClick={() => setThermalPreviewUrl(null)} className="p-1.5 bg-slate-200 rounded-lg text-slate-600"><X className="w-4 h-4" /></button>
             </div>
             <div className="bg-slate-300 p-4 overflow-auto shadow-inner flex justify-center">
               <div className="bg-white shadow-md p-2" style={{ width: '100mm', minWidth: '100mm' }}>
-                <img src={thermalPreviewUrl} alt="Preview stiker label thermal 10x10" className="block w-full h-auto" style={{ imageRendering: 'pixelated' }} />
+                <img src={thermalPreviewUrl} alt="Preview stiker label thermal 10x15" className="block w-full h-auto max-h-[60vh] object-contain" style={{ imageRendering: 'pixelated' }} />
               </div>
             </div>
-            <p className="mt-2 text-center text-[10px] text-slate-500">100 mm paper · 800 dots · ESC/POS raster 1-bit</p>
-            <a href={thermalPreviewUrl} download={`SIMULASI_CETAK_THERMAL_STIKER_10X10_${subOrderNum}.png`} className="mt-3 block text-center py-2 bg-slate-800 text-white rounded-xl text-[11px] font-semibold">Download PNG</a>
+            <p className="mt-2 text-center text-[10px] text-slate-500">100mm x 150mm paper · 800 x 1200 dots · 1-bit High-DPI</p>
+            <a href={thermalPreviewUrl} download={`SIMULASI_CETAK_THERMAL_STIKER_10X15_${subOrderNum}.png`} className="mt-3 block text-center py-2 bg-slate-800 text-white rounded-xl text-[11px] font-semibold">Download PNG 10x15</a>
           </div>
         </div>
       )}
