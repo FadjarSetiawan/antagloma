@@ -305,7 +305,9 @@ class ThermalPrinterService {
     const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, '');
     
     // Direct rawbt scheme link (prevents auto-redirecting to PlayStore if app not installed)
-    const rawbtUrl = `rawbt:image/png;base64,${base64Data}`;
+    // RawBT expects the image as a data URI after the rawbt scheme.
+    // Without the `data:` segment RawBT may treat the payload as plain text.
+    const rawbtUrl = `rawbt:data:image/png;base64,${base64Data}`;
     const link = document.createElement('a');
     link.href = rawbtUrl;
     link.click();

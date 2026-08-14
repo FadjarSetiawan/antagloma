@@ -29,12 +29,15 @@ export function printElementViaIframe(
   const iframe = document.createElement('iframe');
   iframe.id = 'antagloma-print-iframe';
   iframe.style.position = 'fixed';
-  iframe.style.left = '-9999px';
+  iframe.style.left = '-10000px';
   iframe.style.top = '-9999px';
-  iframe.style.width = '0px';
-  iframe.style.height = '0px';
+  // Keep a real print surface in the render tree. A 0x0 or display:none
+  // iframe makes Android Chrome open and immediately close the print UI.
+  iframe.style.width = '100mm';
+  iframe.style.height = '1200px';
   iframe.style.border = '0';
-  iframe.style.visibility = 'hidden';
+  iframe.style.visibility = 'visible';
+  iframe.style.opacity = '0';
 
   document.body.appendChild(iframe);
 
@@ -97,10 +100,14 @@ export function printElementViaIframe(
   iframeDoc.close();
 
   // Trigger print after iframe renders styles
-  setTimeout(() => {
+  setTimeout(async () => {
     try {
       if (iframe.contentWindow) {
+        if (iframe.contentWindow.document.fonts?.ready) {
+          await iframe.contentWindow.document.fonts.ready;
+        }
         iframe.contentWindow.focus();
+        iframe.contentWindow.addEventListener('afterprint', () => iframe.remove(), { once: true });
         iframe.contentWindow.print();
       } else {
         window.print();
@@ -109,5 +116,5 @@ export function printElementViaIframe(
       console.warn('Iframe print fallback to window.print:', e);
       window.print();
     }
-  }, 250);
+  }, 500);
 }
