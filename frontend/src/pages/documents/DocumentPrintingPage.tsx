@@ -67,7 +67,7 @@ export const DocumentPrintingPage: React.FC = () => {
           subOrderNumber: `${order.order_number}-${pkg.letter}`,
           packageType: pkg.package_type || 'Paket',
           plantCount: (pkg.items || []).reduce((sum, item) => sum + item.quantity, 0),
-          weightInfo: 'Berat mengikuti konfigurasi paket',
+          weightInfo: pkg.weight ? `${pkg.weight} kg` : '1 kg',
           printedNota: pkg.nota_printed,
           printedLabel: pkg.label_printed,
           photoUploaded: pkg.photo_uploaded,

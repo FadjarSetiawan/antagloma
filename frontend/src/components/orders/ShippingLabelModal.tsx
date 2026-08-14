@@ -80,6 +80,15 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         ? 'Packing Kayu'
         : rawPkgType;
 
+  const getCleanWeight = () => {
+    if (!packageInfo?.weightInfo) return '1 kg';
+    const w = packageInfo.weightInfo.trim();
+    if (w.toLowerCase().includes('mengikuti') || w.toLowerCase().includes('konfigurasi') || w.toLowerCase().includes('belum')) {
+      return '1 kg';
+    }
+    return w;
+  };
+
   const modalContent = (
     <div id="shipping-label-modal-container" className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto font-sans text-slate-900">
       <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col font-sans">
@@ -118,7 +127,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         )}
 
         {/* Printable Shipping Label Body Container */}
-        <div id="shipping-label-printable" className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs flex-1 flex flex-col justify-center">
+        <div id="shipping-label-printable" className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs flex-1 flex flex-col justify-between">
           {/* Print specific style overrides */}
           <style>{`
             @media print {
@@ -191,9 +200,9 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           `}</style>
 
           {/* Label Container Box (Clean borderless sticker layout for 10x10cm thermal paper) */}
-          <div className="p-2.5 space-y-3 font-sans bg-white text-black h-full flex flex-col justify-between">
+          <div className="p-2 space-y-2.5 font-sans bg-white text-black h-full flex flex-col justify-between">
             {/* Header Store & Order ID */}
-            <div className="flex items-start justify-between border-b-2 border-black pb-2.5 pt-0.5 gap-2">
+            <div className="flex items-start justify-between border-b-2 border-black pb-2 pt-0.5 gap-2">
               <div className="space-y-0.5 min-w-0 flex-1">
                 <h1 className="font-extrabold text-sm sm:text-base tracking-wider text-black uppercase leading-normal pt-0.5">
                   ANTAGLOMA FLORIST
@@ -217,36 +226,34 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
               </div>
             </div>
 
+            {/* Customer Recipient Section */}
+            <div className="border-b border-black pb-2 space-y-0.5">
+              <span className="text-[9.5px] font-bold uppercase text-black block tracking-wider">
+                PENERIMA / CUSTOMER:
+              </span>
+              <h2 className="text-sm sm:text-base font-extrabold text-black block leading-tight break-words">{order.customer_name}</h2>
+              <p className="text-xs sm:text-sm font-bold text-black flex items-center gap-1 mt-0.5">
+                <Phone className="w-3.5 h-3.5 text-black shrink-0" /> {order.phone}
+              </p>
+            </div>
+
             {/* Destination Address Block */}
-            <div className="space-y-2.5 flex-1 flex flex-col justify-center">
-              <div>
-                <span className="text-[9.5px] font-bold uppercase text-black block tracking-wider mb-0.5">
-                  PENERIMA / CUSTOMER:
-                </span>
-                <h2 className="text-sm sm:text-base font-extrabold text-black block leading-tight break-words">{order.customer_name}</h2>
-                <p className="text-xs sm:text-sm font-bold text-black flex items-center gap-1 mt-1">
-                  <Phone className="w-3.5 h-3.5 text-black shrink-0" /> {order.phone}
-                </p>
-              </div>
+            <div className="border-b border-black pb-2 space-y-1 flex-1">
+              <span className="text-[9.5px] font-bold uppercase text-black block tracking-wider">
+                ALAMAT PENGIRIMAN:
+              </span>
+              <p className="font-bold text-xs text-black leading-snug break-words">
+                {[order.district_name ? `Kec. ${order.district_name}` : null, order.regency_name, order.province_name].filter(Boolean).join(', ')}
+              </p>
+              <p className="text-[11px] sm:text-xs font-normal text-black leading-relaxed break-words pt-0.5">
+                {order.full_address}
+              </p>
+            </div>
 
-              <div className="pt-2 border-t border-black space-y-1">
-                <span className="text-[9.5px] font-bold uppercase text-black block tracking-wider">
-                  ALAMAT PENGIRIMAN:
-                </span>
-                <p className="font-bold text-xs text-black leading-snug break-words">
-                  {[order.district_name, order.regency_name, order.province_name].filter(Boolean).join(', ')}
-                </p>
-                <p className="text-[11px] sm:text-xs font-normal text-black leading-relaxed break-words">
-                  {order.full_address}
-                </p>
-              </div>
-
-              {packageInfo?.itemsSummary && (
-                <div className="border border-black rounded-md p-2 text-[9.5px] font-bold text-black flex items-center justify-between bg-slate-50/50 mt-1">
-                  <span>Isi Paket: {packageInfo.itemsSummary}</span>
-                  <span>Berat: {packageInfo.weightInfo}</span>
-                </div>
-              )}
+            {/* Package Summary Box */}
+            <div className="border border-black rounded-lg p-2 text-[10px] font-bold text-black flex items-center justify-between bg-slate-50/50 mt-auto shrink-0">
+              <span>Isi Paket: {packageInfo?.itemsSummary || 'Tanaman'}</span>
+              <span>Berat: {getCleanWeight()}</span>
             </div>
           </div>
         </div>
