@@ -172,7 +172,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 width: 78mm !important;
                 max-width: 78mm !important;
                 margin: 0 auto !important;
-                padding: 3.5mm 1mm 1.5mm 1mm !important;
+                padding: 4mm 1.5mm 3mm 1.5mm !important;
                 box-sizing: border-box !important;
                 background: #ffffff !important;
               }
@@ -190,12 +190,12 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           {/* Header Store Info */}
           <div className="border-b-2 border-black pb-2 pt-1 flex justify-between items-start gap-2">
             <div className="space-y-0.5 min-w-0 flex-1">
-              <h1 className="font-bold text-xs tracking-wider text-black uppercase leading-normal pt-0.5">ANTAGLOMA FLORIST</h1>
+              <h1 className="font-bold text-xs tracking-wider text-black uppercase leading-normal pt-1">ANTAGLOMA FLORIST</h1>
               <p className="text-[9.5px] font-semibold text-black leading-tight">Spesialis Adenium Bunga Tumpuk</p>
               <p className="text-[9px] font-normal text-black leading-tight">WA: 0858-9450-3333 / 0857-3333-1889</p>
             </div>
             <div className="text-right shrink-0">
-              <div className="border border-black px-2 py-1 text-[8.5px] font-bold text-black uppercase inline-flex items-center justify-center mt-1 mb-1 tracking-wider leading-none">
+              <div className="border border-black px-2 py-1 text-[8.5px] font-bold text-black uppercase inline-block mt-0.5 mb-1 tracking-wider leading-normal text-center">
                 NOTA PACKING
               </div>
               <p className="font-bold text-[11px] text-black leading-tight tracking-tight whitespace-nowrap">{order.order_number}</p>
@@ -242,15 +242,16 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 {packageItems.map((item, idx) => {
                   const itemName = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name);
                   const gradeStr = 'grade' in item ? `Grade ${item.grade || 'A'}` : '-';
+                  const notesStr = 'notes' in item && item.notes ? `(${item.notes})` : '';
 
                   return (
                     <tr key={idx}>
-                      <td className="py-1 text-center align-top font-semibold">{idx + 1}</td>
-                      <td className="py-1 pl-1 align-top break-words">
-                        <span className="uppercase block font-bold leading-tight">{itemName} ({gradeStr})</span>
+                      <td className="py-1 text-center font-bold">{idx + 1}</td>
+                      <td className="py-1 pl-1 font-bold">
+                        {itemName} ({gradeStr}) {notesStr}
                       </td>
-                      <td className="py-1 align-top text-center font-normal">Package</td>
-                      <td className="py-1 align-top text-center font-bold text-xs">{item.quantity}</td>
+                      <td className="py-1 text-center font-normal">Package</td>
+                      <td className="py-1 text-center font-bold">{item.quantity}</td>
                     </tr>
                   );
                 })}
@@ -258,12 +259,13 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
             </table>
           </div>
 
-          {/* Packing Notes Box (Editable text box for admin) */}
-          <div className="border border-black p-2 rounded-md space-y-1 bg-white">
+          {/* Packing Notes Block */}
+          <div className="border border-black rounded-lg p-2 space-y-1 bg-white my-1">
             <div className="flex items-center justify-between text-[8.5px] font-bold text-black uppercase tracking-wider">
               <span>CATATAN PENGIRIMAN / PACKING KAYU:</span>
-              <span className="text-[8px] text-slate-500 font-normal italic no-print">(Dapat diedit admin sebelum dicetak)</span>
+              <span className="text-[7.5px] font-normal italic lowercase text-slate-700 no-print">(DAPAT DIEDIT ADMIN SEBELUM DICETAK)</span>
             </div>
+
             <textarea
               value={customNotes}
               onChange={(e) => setCustomNotes(e.target.value)}
@@ -277,7 +279,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           </div>
 
           {/* Signatures Section */}
-          <div className="pt-1.5 border-t border-black grid grid-cols-3 gap-1.5 text-center text-[9px] font-normal">
+          <div className="pt-2 border-t border-black grid grid-cols-3 gap-1.5 text-center text-[9px] font-normal pb-3">
             <div>
               <span className="text-black font-semibold block mb-4">Sales</span>
               <span className="font-bold text-black block border-t border-black pt-0.5 truncate">

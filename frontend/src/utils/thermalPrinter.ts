@@ -130,7 +130,7 @@ class ThermalPrinterService {
     container.style.backgroundColor = '#ffffff';
     container.style.color = '#000000';
     container.style.boxSizing = 'border-box';
-    container.style.padding = '8px';
+    container.style.padding = '12px 8px 16px 8px';
 
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.width = '100%';
