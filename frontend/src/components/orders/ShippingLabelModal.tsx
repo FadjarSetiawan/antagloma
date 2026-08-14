@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Order } from '../../types/order';
 import { Tag, Printer, X, Phone } from 'lucide-react';
 import { printElementViaIframe } from '../../utils/printHelper';
+import { thermalPrinterService } from '../../utils/thermalPrinter';
 
 interface ShippingLabelModalProps {
   order: Order | null;
@@ -16,9 +17,73 @@ interface ShippingLabelModalProps {
 }
 
 export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, packageInfo, onClose }) => {
+  const [labelFile, setLabelFile] = useState<File | null>(null);
+  const [isPreparingLabel, setIsPreparingLabel] = useState(false);
+  const [isSharingLabel, setIsSharingLabel] = useState(false);
+
+  const subOrderNum = packageInfo?.subOrderNumber || `${order?.order_number || 'label'}-A`;
+
+  useEffect(() => {
+    if (!order) return;
+
+    let cancelled = false;
+    const prepareLabelFile = async () => {
+      setIsPreparingLabel(true);
+      setLabelFile(null);
+
+      try {
+        // Wait until the portal content has been painted before rendering it.
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+        const printableEl = document.getElementById('shipping-label-printable');
+        if (!printableEl) return;
+
+        const { canvas: renderedCanvas } = await thermalPrinterService.renderToThermalCanvas(printableEl, 800);
+        const labelCanvas = document.createElement('canvas');
+        labelCanvas.width = 800;
+        labelCanvas.height = 1200;
+
+        const context = labelCanvas.getContext('2d');
+        if (!context) throw new Error('Gagal menyiapkan gambar label.');
+
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, labelCanvas.width, labelCanvas.height);
+
+        const scale = Math.min(
+          labelCanvas.width / renderedCanvas.width,
+          labelCanvas.height / renderedCanvas.height,
+          1,
+        );
+        const outputWidth = Math.round(renderedCanvas.width * scale);
+        const outputHeight = Math.round(renderedCanvas.height * scale);
+        context.drawImage(renderedCanvas, 0, 0, outputWidth, outputHeight);
+
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          labelCanvas.toBlob((result) => {
+            if (result) resolve(result);
+            else reject(new Error('Gagal membuat file gambar label.'));
+          }, 'image/png');
+        });
+
+        if (!cancelled) {
+          const cleanSubOrder = subOrderNum.replace(/[^a-zA-Z0-9-]/g, '_');
+          setLabelFile(new File([blob], `Label_Pengiriman_${cleanSubOrder}.png`, { type: 'image/png' }));
+        }
+      } catch (error) {
+        console.error('Gagal menyiapkan label untuk 4BarCode:', error);
+      } finally {
+        if (!cancelled) setIsPreparingLabel(false);
+      }
+    };
+
+    void prepareLabelFile();
+    return () => {
+      cancelled = true;
+    };
+  }, [order, packageInfo, subOrderNum]);
+
   if (!order) return null;
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     const cleanSubOrder = (subOrderNum || 'label').replace(/[^a-zA-Z0-9-]/g, '_');
     const title = `Label_Pengiriman_${cleanSubOrder}`;
     
@@ -27,11 +92,45 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
       (document.activeElement as HTMLElement).blur();
     }
 
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const canShareLabel = Boolean(
+      labelFile
+      && typeof navigator.share === 'function'
+      && (typeof navigator.canShare !== 'function' || navigator.canShare({ files: [labelFile] })),
+    );
+
+    if (isAndroid && canShareLabel && labelFile) {
+      setIsSharingLabel(true);
+      try {
+        await navigator.share({
+          files: [labelFile],
+          title,
+          text: 'Buka dengan 4BarCode untuk mencetak ke printer XP-420B.',
+        });
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        console.error('Gagal membuka 4BarCode melalui menu bagikan:', error);
+        window.alert('Gagal membuka menu aplikasi. Silakan coba kembali.');
+      } finally {
+        setIsSharingLabel(false);
+      }
+      return;
+    }
+
+    if (isAndroid && labelFile) {
+      const downloadUrl = URL.createObjectURL(labelFile);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = labelFile.name;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+      window.alert('Gambar label sudah diunduh. Buka 4BarCode, pilih Picture Printing, lalu pilih gambar tersebut.');
+      return;
+    }
+
     printElementViaIframe('shipping-label-printable', title, 'size: 100mm 150mm;');
   };
 
-
-  const subOrderNum = packageInfo?.subOrderNumber || `${order.order_number}-A`;
   const rawPkgType = packageInfo?.packageType || order.delivery_method || 'Fullset';
   const normalizedPkgType = rawPkgType.trim().toLowerCase();
   const isWoodPacking = order.delivery_method === 'Packing Kayu' || normalizedPkgType === 'packing kayu';
@@ -210,9 +309,11 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         </div>
 
         <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
-          <button type="button" onClick={handlePrint} className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-medium flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1">
+          <button type="button" onClick={() => void handlePrint()} disabled={isPreparingLabel || isSharingLabel} className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-wait text-white rounded-xl text-xs font-medium flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1">
             <Printer className="w-4 h-4 shrink-0" />
-            <span className="whitespace-nowrap">Cetak Label</span>
+            <span className="whitespace-nowrap">
+              {isPreparingLabel ? 'Menyiapkan Label...' : isSharingLabel ? 'Membuka Aplikasi...' : 'Cetak Label'}
+            </span>
           </button>
           <button type="button" onClick={onClose} className="py-2.5 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-normal transition-colors cursor-pointer text-center shrink-0">
             Tutup
