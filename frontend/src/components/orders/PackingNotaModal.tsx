@@ -51,13 +51,14 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
   const formattedDate = order.order_date
     ? new Date(order.order_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' })
     : '-';
+  const isWoodPacking = order.delivery_method === 'Packing Kayu' || packageInfo?.package_type === 'Packing Kayu';
   const packageTypeValue = (packageInfo?.package_type || '').trim().toLowerCase();
-  const packageType = packageTypeValue === 'fullset'
-    ? 'Fullset'
-    : ['non-fullset', 'non fullset', 'non_fullset'].includes(packageTypeValue)
-      ? 'Non Fullset'
-      : packageTypeValue === 'packing kayu'
-        ? 'Packing Kayu'
+  const packageType = isWoodPacking
+    ? 'Packing Kayu'
+    : packageTypeValue === 'fullset'
+      ? 'Fullset'
+      : ['non-fullset', 'non fullset', 'non_fullset'].includes(packageTypeValue)
+        ? 'Non Fullset'
         : packageInfo?.package_type || order.delivery_method;
   const packageItems = packageInfo?.items || order.items || [];
   const packageWeight = packageInfo?.weight !== undefined && packageInfo?.weight !== null

@@ -49,14 +49,15 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
   };
 
   const subOrderNum = packageInfo?.subOrderNumber || `${order.order_number}-A`;
-  const rawPkgType = packageInfo?.packageType || 'Fullset';
+  const rawPkgType = packageInfo?.packageType || order.delivery_method || 'Fullset';
   const normalizedPkgType = rawPkgType.trim().toLowerCase();
-  const pkgType = normalizedPkgType === 'fullset'
-    ? 'Fullset'
-    : ['non-fullset', 'non fullset', 'non_fullset'].includes(normalizedPkgType)
-      ? 'Non Fullset'
-      : normalizedPkgType === 'packing kayu'
-        ? 'Packing Kayu'
+  const isWoodPacking = order.delivery_method === 'Packing Kayu' || normalizedPkgType === 'packing kayu';
+  const pkgType = isWoodPacking
+    ? 'Packing Kayu'
+    : normalizedPkgType === 'fullset'
+      ? 'Fullset'
+      : ['non-fullset', 'non fullset', 'non_fullset'].includes(normalizedPkgType)
+        ? 'Non Fullset'
         : rawPkgType;
 
   const getCleanWeight = () => {
