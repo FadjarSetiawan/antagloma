@@ -303,17 +303,17 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           </div>
         </div>
 
-        {/* Modal Footer Bar: Clean Action Buttons Row */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
-          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        {/* Modal Footer Bar: Responsive Action Buttons */}
+        <div className="p-3 bg-slate-50 border-t border-slate-200 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-2 flex-shrink-0 no-print">
+          <div className="contents sm:flex sm:items-center sm:gap-2 sm:flex-1 sm:min-w-0">
             {thermalPrinterService.isSupported() && (
               <button
                 type="button"
                 disabled={isBluetoothPrinting}
                 onClick={handleDirectBluetoothPrint}
-                className="py-2 px-2.5 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shrink-0"
+                className="py-2.5 px-3 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
               >
-                <Bluetooth className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                <Bluetooth className="w-4 h-4 text-emerald-300 shrink-0" />
                 <span className="whitespace-nowrap">{isBluetoothPrinting ? 'Proses...' : 'Bluetooth'}</span>
               </button>
             )}
@@ -321,19 +321,19 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
             <button
               type="button"
               onClick={handlePreviewThermalBitmap}
-              className="py-2 px-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
+              className="py-2.5 px-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
               title="Preview hasil raster thermal 80mm dari nota asli"
             >
-              <Download className="w-3.5 h-3.5 shrink-0 text-slate-300" />
+              <Download className="w-4 h-4 shrink-0 text-slate-300" />
               <span className="whitespace-nowrap">Preview Thermal</span>
             </button>
 
             <button
               type="button"
               onClick={handlePrint}
-              className="py-2 px-2.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
+              className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
             >
-              <Printer className="w-3.5 h-3.5 shrink-0" />
+              <Printer className="w-4 h-4 shrink-0" />
               <span className="whitespace-nowrap">Browser</span>
             </button>
           </div>
@@ -341,7 +341,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer shrink-0"
+            className="py-2.5 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center"
           >
             Tutup
           </button>
