@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Order, OrderPackage } from '../../types/order';
-import { Printer, X, Sprout, Bluetooth, AlertCircle, Download } from 'lucide-react';
+import { Printer, X, Download } from 'lucide-react';
 import { thermalPrinterService } from '../../utils/thermalPrinter';
 
 interface PackingNotaModalProps {
@@ -12,8 +12,6 @@ interface PackingNotaModalProps {
 
 export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packageInfo, onClose }) => {
   const [customNotes, setCustomNotes] = useState<string>(order?.notes || '');
-  const [isBluetoothPrinting, setIsBluetoothPrinting] = useState(false);
-  const [btError, setBtError] = useState<string | null>(null);
   const [thermalPreviewUrl, setThermalPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,24 +34,6 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     setTimeout(() => {
       document.title = originalTitle;
     }, 100);
-  };
-
-  const handleDirectBluetoothPrint = async () => {
-    setIsBluetoothPrinting(true);
-    setBtError(null);
-
-    try {
-      await thermalPrinterService.ensureConnected();
-
-      const printableEl = document.getElementById('packing-nota-printable');
-      if (!printableEl) throw new Error('Elemen pratinjau nota tidak ditemukan.');
-
-      await thermalPrinterService.printElementAsBitmap(printableEl, 576);
-    } catch (err: any) {
-      setBtError(err.message || 'Gagal cetak via Bluetooth.');
-    } finally {
-      setIsBluetoothPrinting(false);
-    }
   };
 
   const handlePreviewThermalBitmap = async () => {
@@ -110,16 +90,6 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
             <X className="w-4 h-4" />
           </button>
         </div>
-
-        {btError && (
-          <div className="p-2.5 bg-rose-50 border-b border-rose-200 text-rose-800 text-[10.5px] font-medium flex items-center justify-between no-print">
-            <div className="flex items-center gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-              <span>{btError}</span>
-            </div>
-            <button onClick={() => setBtError(null)} className="text-rose-600 font-bold ml-2">✕</button>
-          </div>
-        )}
 
         {/* Printable Nota Body Container */}
         <div id="packing-nota-printable" className="p-3 sm:p-4 overflow-y-auto space-y-2.5 print-area text-slate-900 font-sans text-xs flex-1">
@@ -311,20 +281,8 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
         </div>
 
         {/* Modal Footer Bar: Responsive Action Buttons */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-2 flex-shrink-0 no-print">
-          <div className="contents sm:flex sm:items-center sm:gap-2 sm:flex-1 sm:min-w-0">
-            {thermalPrinterService.isSupported() && (
-              <button
-                type="button"
-                disabled={isBluetoothPrinting}
-                onClick={handleDirectBluetoothPrint}
-                className="py-2.5 px-3 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-              >
-                <Bluetooth className="w-4 h-4 text-emerald-300 shrink-0" />
-                <span className="whitespace-nowrap">{isBluetoothPrinting ? 'Proses...' : 'Bluetooth'}</span>
-              </button>
-            )}
-
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <button
               type="button"
               onClick={handlePreviewThermalBitmap}
@@ -341,7 +299,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
               className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
             >
               <Printer className="w-4 h-4 shrink-0" />
-              <span className="whitespace-nowrap">Browser</span>
+              <span className="whitespace-nowrap">Cetak Nota</span>
             </button>
           </div>
 

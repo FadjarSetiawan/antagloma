@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
 import { Order } from '../../types/order';
-import { Tag, Printer, X, Sprout, Phone, Bluetooth, AlertCircle, Download } from 'lucide-react';
+import { Tag, Printer, X, Phone, Download } from 'lucide-react';
 import { thermalPrinterService } from '../../utils/thermalPrinter';
 
 interface ShippingLabelModalProps {
@@ -16,9 +16,6 @@ interface ShippingLabelModalProps {
 }
 
 export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, packageInfo, onClose }) => {
-  const [isBluetoothPrinting, setIsBluetoothPrinting] = useState(false);
-  const [btError, setBtError] = useState<string | null>(null);
-
   if (!order) return null;
 
   const handlePrint = () => {
@@ -32,24 +29,6 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
     setTimeout(() => {
       document.title = originalTitle;
     }, 100);
-  };
-
-  const handleDirectBluetoothPrint = async () => {
-    setIsBluetoothPrinting(true);
-    setBtError(null);
-
-    try {
-      await thermalPrinterService.ensureConnected();
-
-      const printableEl = document.getElementById('shipping-label-printable');
-      if (!printableEl) throw new Error('Elemen pratinjau label tidak ditemukan.');
-
-      await thermalPrinterService.printElementAsBitmap(printableEl, 576);
-    } catch (err: any) {
-      setBtError(err.message || 'Gagal cetak label via Bluetooth.');
-    } finally {
-      setIsBluetoothPrinting(false);
-    }
   };
 
   const handleDownloadThermalBitmap = async () => {
@@ -115,16 +94,6 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
             <X className="w-4 h-4" />
           </button>
         </div>
-
-        {btError && (
-          <div className="p-2.5 bg-rose-50 border-b border-rose-200 text-rose-800 text-[10.5px] font-medium flex items-center justify-between no-print">
-            <div className="flex items-center gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-              <span>{btError}</span>
-            </div>
-            <button onClick={() => setBtError(null)} className="text-rose-600 font-bold ml-2">✕</button>
-          </div>
-        )}
 
         {/* Printable Shipping Label Body Container */}
         <div id="shipping-label-printable" className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs flex-1 flex flex-col justify-between">
@@ -258,26 +227,14 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           </div>
         </div>
 
-        {/* Modal Footer Bar: Responsive Action Buttons */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-2 flex-shrink-0 no-print">
-          <div className="contents sm:flex sm:items-center sm:gap-2 sm:flex-1 sm:min-w-0">
-            {thermalPrinterService.isSupported() && (
-              <button
-                type="button"
-                disabled={isBluetoothPrinting}
-                onClick={handleDirectBluetoothPrint}
-                className="py-2.5 px-3 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-              >
-                <Bluetooth className="w-4 h-4 text-emerald-300 shrink-0" />
-                <span className="whitespace-nowrap">{isBluetoothPrinting ? 'Proses...' : 'Bluetooth'}</span>
-              </button>
-            )}
-
+        {/* Modal Footer Bar: Clean Action Buttons */}
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <button
               type="button"
               onClick={handleDownloadThermalBitmap}
               className="py-2.5 px-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
-              title="Unduh Gambar Hasil Cetak Thermal (100% Persis Hasil Cetakan Bluetooth)"
+              title="Unduh Gambar Hasil Cetak Thermal"
             >
               <Download className="w-4 h-4 shrink-0 text-slate-300" />
               <span className="whitespace-nowrap">Tes Gambar</span>
@@ -289,7 +246,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
               className="py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
             >
               <Printer className="w-4 h-4 shrink-0" />
-              <span className="whitespace-nowrap">Browser</span>
+              <span className="whitespace-nowrap">Cetak Label</span>
             </button>
           </div>
 
