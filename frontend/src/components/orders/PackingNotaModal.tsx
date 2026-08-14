@@ -43,12 +43,17 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     const cleanPkgLetter = packageInfo ? `-${packageInfo.letter}` : '';
     document.title = `Nota_Packing_${cleanOrderNumber}${cleanPkgLetter}`;
     
-    window.print();
-    
-    // Restore original document title after print dialog closes
+    // Blur active button focus to prevent Chrome Android touch event cancellation flicker
+    if (document.activeElement && 'blur' in document.activeElement) {
+      (document.activeElement as HTMLElement).blur();
+    }
+
     setTimeout(() => {
-      document.title = originalTitle;
-    }, 100);
+      window.print();
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 500);
+    }, 60);
   };
 
   const handleRawBTPrint = async () => {

@@ -53,12 +53,17 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
     const cleanSubOrder = (subOrderNum || 'label').replace(/[^a-zA-Z0-9-]/g, '_');
     document.title = `Label_Pengiriman_${cleanSubOrder}`;
     
-    window.print();
-    
-    // Restore original document title after print dialog closes
+    // Blur active button focus to prevent Chrome Android touch event cancellation flicker
+    if (document.activeElement && 'blur' in document.activeElement) {
+      (document.activeElement as HTMLElement).blur();
+    }
+
     setTimeout(() => {
-      document.title = originalTitle;
-    }, 100);
+      window.print();
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 500);
+    }, 60);
   };
 
   const handleRawBTPrint = async () => {
