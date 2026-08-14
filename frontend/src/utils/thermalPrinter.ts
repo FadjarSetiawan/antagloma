@@ -10,17 +10,20 @@ export interface BluetoothDeviceConfig {
 }
 
 class ThermalPrinterService {
+  private notaConfig: BluetoothDeviceConfig | null = null;
+  private labelConfig: BluetoothDeviceConfig | null = null;
   private deviceConfig: BluetoothDeviceConfig | null = null;
 
   public isSupported(): boolean {
     return typeof window !== 'undefined' && 'bluetooth' in navigator;
   }
 
-  public getConnectedDeviceName(): string | null {
-    return this.deviceConfig?.connected ? this.deviceConfig.name : null;
+  public getConnectedDeviceName(type: 'nota' | 'label' = 'nota'): string | null {
+    const config = type === 'label' ? this.labelConfig : this.notaConfig;
+    return config?.connected ? config.name : (this.deviceConfig?.connected ? this.deviceConfig.name : null);
   }
 
-  public async connect(): Promise<string> {
+  public async connect(type: 'nota' | 'label' = 'nota'): Promise<string> {
     if (!this.isSupported()) {
       throw new Error('Web Bluetooth API tidak didukung oleh browser ini. Gunakan Chrome/Edge di Android/Windows.');
     }
@@ -36,7 +39,7 @@ class ThermalPrinterService {
         ],
       });
 
-      return await this.setupDevice(device);
+      return await this.setupDevice(device, type);
     } catch (err: any) {
       if (err.name === 'NotFoundError') {
         throw new Error('Pencarian printer dibatalkan oleh pengguna.');
@@ -45,7 +48,7 @@ class ThermalPrinterService {
     }
   }
 
-  private async setupDevice(device: any): Promise<string> {
+  private async setupDevice(device: any, type: 'nota' | 'label' = 'nota'): Promise<string> {
     const server = await device.gatt.connect();
 
     // Find writable characteristic
@@ -67,48 +70,55 @@ class ThermalPrinterService {
       throw new Error('Tidak dapat menemukan jalur kirim data (Characteristic Write) pada printer Bluetooth ini.');
     }
 
-    this.deviceConfig = {
+    const config: BluetoothDeviceConfig = {
       device,
       server,
       characteristic,
       connected: true,
-      name: device.name || 'Printer Thermal Bluetooth',
+      name: device.name || `Printer ${type === 'label' ? 'Label 10cm' : 'Nota 8cm'}`,
     };
 
+    if (type === 'label') {
+      this.labelConfig = config;
+    } else {
+      this.notaConfig = config;
+    }
+    this.deviceConfig = config;
+
     device.addEventListener('gattserverdisconnected', () => {
-      if (this.deviceConfig) {
-        this.deviceConfig.connected = false;
-      }
+      config.connected = false;
     });
 
-    return this.deviceConfig.name;
+    return config.name;
   }
 
-  public async ensureConnected(): Promise<void> {
-    if (!this.deviceConfig || !this.deviceConfig.device) {
-      await this.connect();
+  public async ensureConnected(type: 'nota' | 'label' = 'nota'): Promise<void> {
+    const config = type === 'label' ? this.labelConfig : this.notaConfig;
+    if (!config || !config.device) {
+      await this.connect(type);
       return;
     }
 
-    if (!this.deviceConfig.device.gatt.connected) {
-      await this.setupDevice(this.deviceConfig.device);
+    if (!config.device.gatt.connected) {
+      await this.setupDevice(config.device, type);
     }
   }
 
-  public async printRaw(data: Uint8Array): Promise<void> {
-    await this.ensureConnected();
+  public async printRaw(data: Uint8Array, type: 'nota' | 'label' = 'nota'): Promise<void> {
+    await this.ensureConnected(type);
 
-    if (!this.deviceConfig || !this.deviceConfig.characteristic) {
+    const config = (type === 'label' ? this.labelConfig : this.notaConfig) || this.deviceConfig;
+    if (!config || !config.characteristic) {
       throw new Error('Printer Bluetooth belum terhubung.');
     }
 
     const CHUNK_SIZE = 512;
     for (let i = 0; i < data.length; i += CHUNK_SIZE) {
       const chunk = data.slice(i, i + CHUNK_SIZE);
-      if (this.deviceConfig.characteristic.properties.writeWithoutResponse) {
-        await this.deviceConfig.characteristic.writeValueWithoutResponse(chunk);
+      if (config.characteristic.properties.writeWithoutResponse) {
+        await config.characteristic.writeValueWithoutResponse(chunk);
       } else {
-        await this.deviceConfig.characteristic.writeValue(chunk);
+        await config.characteristic.writeValue(chunk);
       }
       await new Promise((res) => setTimeout(res, 40));
     }
