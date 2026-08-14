@@ -154,21 +154,10 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
       (document.activeElement as HTMLElement).blur();
     }
 
-    // Prefer the same browser/system print preview used by the 80 mm nota.
-    // It preserves HTML/vector text quality and lets Android's print service
-    // scale the label directly for the XP-420B 4x6-inch paper.
-    if (typeof window.print === 'function') {
-      printElementViaIframe(
-        'shipping-label-printable',
-        title,
-        'size: 4in 6in;',
-        'width: 4in !important; height: 6in !important; min-height: 6in !important; padding: 0 !important; overflow: hidden !important; box-sizing: border-box !important;',
-      );
-      return;
-    }
-
-    // Keep the prepared one-page PDF as an automatic fallback for devices
-    // where a browser/system print API is not exposed.
+    // Android must receive the 4x6 PDF through its app chooser so the Admin
+    // can explicitly select 4BarCode/XP-420B. Sending it to window.print()
+    // first makes Android route the label to the default RawBT print service,
+    // which belongs to the separate 80 mm nota printer.
     const canShareLabel = Boolean(
       labelFile
       && typeof navigator.share === 'function'
@@ -190,6 +179,18 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
       } finally {
         setIsSharingLabel(false);
       }
+      return;
+    }
+
+    // Desktop browsers generally do not support sharing a generated file.
+    // Keep the high-quality browser print preview as their fallback.
+    if (typeof window.print === 'function') {
+      printElementViaIframe(
+        'shipping-label-printable',
+        title,
+        'size: 4in 6in;',
+        'width: 4in !important; height: 6in !important; min-height: 6in !important; padding: 0 !important; overflow: hidden !important; box-sizing: border-box !important;',
+      );
       return;
     }
 
@@ -385,10 +386,10 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         </div>
 
         <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
-          <button type="button" onClick={() => void handlePrint()} disabled={isSharingLabel} className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-wait text-white rounded-xl text-xs font-medium flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1">
+          <button type="button" onClick={() => void handlePrint()} disabled={isPreparingLabel || isSharingLabel} className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-wait text-white rounded-xl text-xs font-medium flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1">
             <Printer className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap">
-              {isSharingLabel ? 'Membuka Aplikasi...' : 'Cetak Label'}
+              {isPreparingLabel ? 'Menyiapkan Label...' : isSharingLabel ? 'Membuka Aplikasi...' : 'Cetak Label'}
             </span>
           </button>
           <button type="button" onClick={onClose} className="py-2.5 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-normal transition-colors cursor-pointer text-center shrink-0">
