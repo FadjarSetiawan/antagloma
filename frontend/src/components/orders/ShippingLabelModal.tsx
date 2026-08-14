@@ -124,7 +124,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
                 Pratinjau Label Alamat Pengiriman
               </h3>
               <p className="text-[10px] text-slate-500 font-normal">
-                Format stiker 10x10 cm
+                Format stiker 10x15 cm
               </p>
             </div>
           </div>
@@ -143,7 +143,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           <style>{`
             @media print {
               @page {
-                size: 100mm 100mm;
+                size: 100mm 150mm;
                 margin: 0;
               }
 
@@ -152,7 +152,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
                 padding: 0 !important;
                 background: #ffffff !important;
                 width: 100mm !important;
-                height: 100mm !important;
+                height: 150mm !important;
                 overflow: hidden !important;
               }
 
@@ -167,7 +167,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
                 left: 0 !important;
                 top: 0 !important;
                 width: 100mm !important;
-                height: 100mm !important;
+                height: 150mm !important;
                 display: block !important;
                 align-items: flex-start !important;
                 justify-content: flex-start !important;
@@ -186,15 +186,15 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
                 margin-top: 0 !important;
                 margin-bottom: 0 !important;
                 width: 100mm !important;
-                height: 100mm !important;
+                height: 150mm !important;
               }
 
               #shipping-label-printable {
                 position: relative !important;
                 width: 96mm !important;
-                height: 96mm !important;
+                height: 146mm !important;
                 margin: 0 auto !important;
-                padding: 1.5mm !important;
+                padding: 2mm !important;
                 box-sizing: border-box !important;
                 background: #ffffff !important;
                 overflow: hidden !important;
@@ -210,61 +210,60 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
             }
           `}</style>
 
-          {/* Label Container Box (Clean borderless sticker layout for 10x10cm thermal paper) */}
-          <div className="p-2 space-y-2.5 font-sans bg-white text-black h-full flex flex-col justify-between">
+          {/* Label Container Box (Clean borderless sticker layout for 10x15cm thermal paper) */}
+          <div className="p-3 space-y-4 font-sans bg-white text-black h-full flex flex-col justify-between min-h-[420px]">
             {/* Header Store & Order ID */}
-            <div className="flex items-start justify-between border-b-2 border-black pb-2 pt-0.5 gap-2">
+            <div className="flex items-start justify-between border-b-2 border-black pb-3 pt-1 gap-2">
               <div className="space-y-0.5 min-w-0 flex-1">
-                <h1 className="font-extrabold text-sm sm:text-base tracking-wider text-black uppercase leading-normal pt-0.5">
+                <h1 className="font-extrabold text-base sm:text-lg tracking-wider text-black uppercase leading-normal pt-0.5">
                   ANTAGLOMA FLORIST
                 </h1>
-                <p className="text-[10px] font-semibold text-black leading-tight">
+                <p className="text-xs font-semibold text-black leading-tight">
                   Spesialis Adenium Bunga Tumpuk
                 </p>
-                <p className="text-[9.5px] font-normal text-black leading-tight">
+                <p className="text-[11px] font-normal text-black leading-tight">
                   WA: 0858-9450-3333 / 0857-3333-1889
                 </p>
               </div>
 
               <div className="text-right shrink-0">
-                <div className="border border-black px-2 py-1 text-[9px] font-bold text-black uppercase inline-block mt-0.5 mb-1 tracking-wider leading-normal text-center">
+                <div className="border-2 border-black px-2.5 py-1 text-[10px] font-bold text-black uppercase inline-block mt-0.5 mb-1 tracking-wider leading-normal text-center">
                   STIKER RESI
                 </div>
-                <p className="font-extrabold text-xs sm:text-sm text-black leading-tight tracking-tight whitespace-nowrap">{subOrderNum}</p>
-                <span className="font-bold text-[10px] text-black uppercase block mt-0.5">
+                <p className="font-extrabold text-sm sm:text-base text-black leading-tight tracking-tight whitespace-nowrap">{subOrderNum}</p>
+                <span className="font-bold text-xs text-black uppercase block mt-1">
                   [ {pkgType} ]
                 </span>
               </div>
             </div>
 
             {/* Customer Recipient Section */}
-            <div className="border-b border-black pb-2 space-y-0.5">
-              <span className="text-[9.5px] font-bold uppercase text-black block tracking-wider">
+            <div className="border-b-2 border-black pb-3 space-y-1">
+              <span className="text-xs font-bold uppercase text-black block tracking-wider">
                 PENERIMA / CUSTOMER:
               </span>
-              <h2 className="text-sm sm:text-base font-extrabold text-black block leading-tight break-words">{order.customer_name}</h2>
-              <p className="text-xs sm:text-sm font-bold text-black flex items-center gap-1 mt-0.5">
-                <Phone className="w-3.5 h-3.5 text-black shrink-0" /> {order.phone}
+              <h2 className="text-base sm:text-xl font-extrabold text-black block leading-tight break-words">{order.customer_name}</h2>
+              <p className="text-sm sm:text-base font-bold text-black flex items-center gap-1.5 mt-1">
+                <Phone className="w-4 h-4 text-black shrink-0" /> {order.phone}
               </p>
             </div>
 
             {/* Destination Address Block */}
-            <div className="border-b border-black pb-2 space-y-1 flex-1">
-              <span className="text-[9.5px] font-bold uppercase text-black block tracking-wider">
+            <div className="border-b-2 border-black pb-3 space-y-1.5 flex-1">
+              <span className="text-xs font-bold uppercase text-black block tracking-wider">
                 ALAMAT PENGIRIMAN:
               </span>
-              <p className="font-bold text-xs text-black leading-snug break-words">
+              <p className="font-extrabold text-sm sm:text-base text-black leading-snug break-words">
                 {[order.district_name ? `Kec. ${order.district_name}` : null, order.regency_name, order.province_name].filter(Boolean).join(', ')}
               </p>
-              <p className="text-[11px] sm:text-xs font-normal text-black leading-relaxed break-words pt-0.5">
+              <p className="text-xs sm:text-sm font-normal text-black leading-relaxed break-words pt-1">
                 {order.full_address}
               </p>
             </div>
 
-            {/* Package Summary Box */}
-            <div className="border border-black rounded-lg p-2 text-[10px] font-bold text-black flex items-center justify-between bg-slate-50/50 mt-auto shrink-0">
+            {/* Package Summary Box (No weight text as requested) */}
+            <div className="border-2 border-black rounded-lg p-2.5 text-xs font-bold text-black flex items-center justify-between bg-slate-50/50 mt-auto shrink-0">
               <span>Isi Paket: {packageInfo?.itemsSummary || 'Tanaman'}</span>
-              <span>Berat: {getCleanWeight()}</span>
             </div>
           </div>
         </div>
