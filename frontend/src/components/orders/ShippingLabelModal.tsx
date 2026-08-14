@@ -27,7 +27,8 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
       const printableEl = document.getElementById('shipping-label-printable');
       if (!printableEl) throw new Error('Elemen pratinjau label tidak ditemukan.');
 
-      await thermalPrinterService.printElementAsBitmap(printableEl, 800, 'label');
+      // Use TSPL barcode printer protocol for Xprinter XP-420B Label Printer
+      await thermalPrinterService.printElementAsTSPL(printableEl, 800, 'label');
     } catch (err: any) {
       alert(err.message || 'Gagal cetak label via Bluetooth.');
     } finally {

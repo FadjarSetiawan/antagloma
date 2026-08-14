@@ -271,6 +271,33 @@ class ThermalPrinterService {
   }
 
   /**
+   * Print directly via TSPL bitmap command (for Xprinter XP-420B / Barcode Label Printers)
+   */
+  public async printElementAsTSPL(element: HTMLElement, targetWidth = 800, type: 'label' | 'nota' = 'label'): Promise<void> {
+    const { imageBytes, width, height } = await this.renderToThermalCanvas(element, targetWidth);
+    const bytesPerLine = width / 8;
+    const widthMm = Math.round(width / 8); // 800 / 8 = 100mm
+    const heightMm = Math.round(height / 8);
+
+    const encoder = new TextEncoder();
+    const tsplHeaderStr =
+      `SIZE ${widthMm} mm,${heightMm} mm\r\n` +
+      `GAP 2 mm,0 mm\r\n` +
+      `DIRECTION 1\r\n` +
+      `CLS\r\n` +
+      `BITMAP 0,0,${bytesPerLine},${height},0,`;
+    const tsplHeader = encoder.encode(tsplHeaderStr);
+    const tsplFooter = encoder.encode(`\r\nPRINT 1,1\r\n`);
+
+    const fullBuffer = new Uint8Array(tsplHeader.length + imageBytes.length + tsplFooter.length);
+    fullBuffer.set(tsplHeader, 0);
+    fullBuffer.set(imageBytes, tsplHeader.length);
+    fullBuffer.set(tsplFooter, tsplHeader.length + imageBytes.length);
+
+    await this.printRaw(fullBuffer, type);
+  }
+
+  /**
    * Send high-clarity 1-bit thermal bitmap directly to RawBT app via Android Intent
    */
   public async sendToRawBT(element: HTMLElement, targetWidth = 576): Promise<void> {
