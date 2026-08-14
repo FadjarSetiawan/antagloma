@@ -306,43 +306,54 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           </div>
         </div>
 
-        {/* Modal Footer Bar: Clean Action Buttons */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+        {/* Modal Footer Bar: Responsive Action Buttons */}
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex-shrink-0 no-print">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-between">
             <button
               type="button"
-              onClick={handlePreviewThermalBitmap}
-              className="py-2.5 px-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
-              title="Preview simulasi hasil cetak thermal 80mm"
+              onClick={handleRawBTPrint}
+              className="py-2.5 px-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer w-full"
+              title="Kirim gambar nota 1-bit langsung ke aplikasi RawBT"
             >
-              <Download className="w-4 h-4 shrink-0 text-slate-300" />
-              <span className="whitespace-nowrap">Preview Thermal</span>
+              <Printer className="w-4 h-4 text-emerald-300 shrink-0" />
+              <span className="whitespace-nowrap">Gambar (RawBT)</span>
             </button>
 
             <button
               type="button"
               onClick={handlePrint}
-              className="py-2.5 px-4 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer flex-1 justify-center"
+              className="py-2.5 px-2 bg-[#04593f] hover:bg-teal-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer w-full"
+              title="Cetak via browser PDF / Print Service"
             >
               <Printer className="w-4 h-4 shrink-0" />
-              <span className="whitespace-nowrap">Cetak Nota</span>
+              <span className="whitespace-nowrap">Cetak Browser</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handlePreviewThermalBitmap}
+              className="py-2.5 px-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer w-full"
+              title="Preview simulasi hasil cetak & download file PNG gambar"
+            >
+              <Download className="w-4 h-4 shrink-0 text-slate-300" />
+              <span className="whitespace-nowrap">Preview / Unduh</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="py-2.5 px-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center w-full"
+            >
+              Tutup
             </button>
           </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="py-2.5 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center shrink-0"
-          >
-            Tutup
-          </button>
         </div>
       </div>
       {thermalPreviewUrl && (
         <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-slate-950/70 p-4 no-print" onClick={() => setThermalPreviewUrl(null)}>
           <div className="bg-slate-100 rounded-2xl p-4 max-h-[92vh] max-w-full overflow-auto shadow-2xl" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between gap-4 mb-3">
-              <div><p className="text-xs font-bold text-slate-900">Preview Thermal 80mm</p><p className="text-[10px] text-slate-500">Raster yang sama dengan output Bluetooth</p></div>
+              <div><p className="text-xs font-bold text-slate-900">Preview Gambar Thermal 80mm</p><p className="text-[10px] text-slate-500">File gambar 1-bit monochrome yang bisa dicetak manual via RawBT</p></div>
               <button type="button" onClick={() => setThermalPreviewUrl(null)} className="p-1.5 bg-slate-200 rounded-lg text-slate-600"><X className="w-4 h-4" /></button>
             </div>
             <div className="bg-slate-300 p-4 overflow-auto shadow-inner">
@@ -350,8 +361,8 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 <img src={thermalPreviewUrl} alt="Preview nota thermal 80mm" className="block w-full h-auto" style={{ imageRendering: 'pixelated' }} />
               </div>
             </div>
-            <p className="mt-2 text-center text-[10px] text-slate-500">80 mm paper · 576 dots · ESC/POS raster 1-bit</p>
-            <a href={thermalPreviewUrl} download={`SIMULASI_CETAK_THERMAL_80MM_${order.order_number}.png`} className="mt-3 block text-center py-2 bg-slate-800 text-white rounded-xl text-[11px] font-semibold">Download PNG</a>
+            <p className="mt-2 text-center text-[10px] text-slate-500">80 mm paper · 576 dots · Gambar Thermal 1-bit</p>
+            <a href={thermalPreviewUrl} download={`SIMULASI_CETAK_THERMAL_80MM_${order.order_number}.png`} className="mt-3 block text-center py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-[11px] font-bold">Unduh File Gambar PNG (untuk RawBT)</a>
           </div>
         </div>
       )}

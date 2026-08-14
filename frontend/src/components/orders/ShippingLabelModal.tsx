@@ -267,36 +267,47 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           </div>
         </div>
 
-        {/* Modal Footer Bar: Clean Action Buttons */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+        {/* Modal Footer Bar: Responsive Action Buttons */}
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex-shrink-0 no-print">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-between">
             <button
               type="button"
-              onClick={handlePreviewThermalBitmap}
-              className="py-2.5 px-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
-              title="Preview simulasi hasil cetak thermal stiker 100mm"
+              onClick={handleRawBTPrint}
+              className="py-2.5 px-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer w-full"
+              title="Kirim gambar stiker 1-bit langsung ke aplikasi RawBT"
             >
-              <Download className="w-4 h-4 shrink-0 text-slate-300" />
-              <span className="whitespace-nowrap">Preview Thermal</span>
+              <Printer className="w-4 h-4 text-emerald-300 shrink-0" />
+              <span className="whitespace-nowrap">Gambar (RawBT)</span>
             </button>
 
             <button
               type="button"
               onClick={handlePrint}
-              className="py-2.5 px-4 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer flex-1 justify-center"
+              className="py-2.5 px-2 bg-[#04593f] hover:bg-teal-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer w-full"
+              title="Cetak via browser PDF / Print Service"
             >
               <Printer className="w-4 h-4 shrink-0" />
-              <span className="whitespace-nowrap">Cetak Label</span>
+              <span className="whitespace-nowrap">Cetak Browser</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handlePreviewThermalBitmap}
+              className="py-2.5 px-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer w-full"
+              title="Preview simulasi hasil cetak stiker 10x15cm & download file PNG"
+            >
+              <Download className="w-4 h-4 shrink-0 text-slate-300" />
+              <span className="whitespace-nowrap">Preview / Unduh</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="py-2.5 px-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center w-full"
+            >
+              Tutup
             </button>
           </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="py-2.5 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center shrink-0"
-          >
-            Tutup
-          </button>
         </div>
       </div>
       {thermalPreviewUrl && (
@@ -305,7 +316,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
             <div className="flex items-center justify-between gap-4 mb-3">
               <div>
                 <p className="text-xs font-bold text-slate-900">Preview Stiker Thermal 10x15 cm</p>
-                <p className="text-[10px] text-slate-500">Raster 1-bit monochrome resolusi tinggi 10x15 cm (100mm x 150mm)</p>
+                <p className="text-[10px] text-slate-500">File gambar 1-bit monochrome yang bisa dicetak manual via RawBT</p>
               </div>
               <button type="button" onClick={() => setThermalPreviewUrl(null)} className="p-1.5 bg-slate-200 rounded-lg text-slate-600"><X className="w-4 h-4" /></button>
             </div>
@@ -314,8 +325,8 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
                 <img src={thermalPreviewUrl} alt="Preview stiker label thermal 10x15" className="block w-full h-auto max-h-[60vh] object-contain" style={{ imageRendering: 'pixelated' }} />
               </div>
             </div>
-            <p className="mt-2 text-center text-[10px] text-slate-500">100mm x 150mm paper · 800 x 1200 dots · 1-bit High-DPI</p>
-            <a href={thermalPreviewUrl} download={`SIMULASI_CETAK_THERMAL_STIKER_10X15_${subOrderNum}.png`} className="mt-3 block text-center py-2 bg-slate-800 text-white rounded-xl text-[11px] font-semibold">Download PNG 10x15</a>
+            <p className="mt-2 text-center text-[10px] text-slate-500">100mm x 150mm paper · 800 x 1200 dots · Gambar Thermal 1-bit</p>
+            <a href={thermalPreviewUrl} download={`SIMULASI_CETAK_THERMAL_STIKER_10X15_${subOrderNum}.png`} className="mt-3 block text-center py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-[11px] font-bold">Unduh File Gambar PNG 10x15 (untuk RawBT)</a>
           </div>
         </div>
       )}
