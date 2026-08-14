@@ -5,7 +5,8 @@
 export function printElementViaIframe(
   elementId: string,
   pageTitle: string,
-  pageSizeCss = 'size: 80mm auto;'
+  pageSizeCss = 'size: 80mm auto;',
+  printableElementCss = ''
 ): void {
   const sourceEl = document.getElementById(elementId);
   if (!sourceEl) {
@@ -86,6 +87,7 @@ export function printElementViaIframe(
         margin: 0 !important;
         overflow: visible !important;
         max-height: none !important;
+        ${printableElementCss}
       }
     }
   `;
