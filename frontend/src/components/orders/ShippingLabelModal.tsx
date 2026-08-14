@@ -17,6 +17,7 @@ interface ShippingLabelModalProps {
 
 export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, packageInfo, onClose }) => {
   const [isBluetoothPrinting, setIsBluetoothPrinting] = useState(false);
+  const [thermalPreviewUrl, setThermalPreviewUrl] = useState<string | null>(null);
 
   if (!order) return null;
 
@@ -31,6 +32,18 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
       alert(err.message || 'Gagal cetak label via Bluetooth.');
     } finally {
       setIsBluetoothPrinting(false);
+    }
+  };
+
+  const handlePreviewThermalBitmap = async () => {
+    try {
+      const printableEl = document.getElementById('shipping-label-printable');
+      if (!printableEl) throw new Error('Elemen pratinjau label tidak ditemukan.');
+
+      const dataUrl = await thermalPrinterService.generateThermalBitmapDataUrl(printableEl, 800);
+      setThermalPreviewUrl(dataUrl);
+    } catch (err: any) {
+      alert(err.message || 'Gagal membuat gambar simulasi label thermal.');
     }
   };
 
@@ -283,12 +296,12 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
 
             <button
               type="button"
-              onClick={handleDownloadThermalBitmap}
+              onClick={handlePreviewThermalBitmap}
               className="py-2.5 px-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
-              title="Unduh Gambar Hasil Cetak Thermal"
+              title="Preview simulasi raster thermal stiker 100mm 100% persis output printer"
             >
               <Download className="w-4 h-4 shrink-0 text-slate-300" />
-              <span className="whitespace-nowrap">Tes Gambar</span>
+              <span className="whitespace-nowrap">Preview</span>
             </button>
 
             <button
@@ -310,6 +323,26 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           </button>
         </div>
       </div>
+      {thermalPreviewUrl && (
+        <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-slate-950/70 p-4 no-print" onClick={() => setThermalPreviewUrl(null)}>
+          <div className="bg-slate-100 rounded-2xl p-4 max-h-[92vh] max-w-full overflow-auto shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between gap-4 mb-3">
+              <div>
+                <p className="text-xs font-bold text-slate-900">Preview Stiker Thermal 10x10 cm</p>
+                <p className="text-[10px] text-slate-500">Raster 1-bit monochrome yang dikirim via Direct Bluetooth & RawBT</p>
+              </div>
+              <button type="button" onClick={() => setThermalPreviewUrl(null)} className="p-1.5 bg-slate-200 rounded-lg text-slate-600"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="bg-slate-300 p-4 overflow-auto shadow-inner flex justify-center">
+              <div className="bg-white shadow-md p-2" style={{ width: '100mm', minWidth: '100mm' }}>
+                <img src={thermalPreviewUrl} alt="Preview stiker label thermal 10x10" className="block w-full h-auto" style={{ imageRendering: 'pixelated' }} />
+              </div>
+            </div>
+            <p className="mt-2 text-center text-[10px] text-slate-500">100 mm paper · 800 dots · ESC/POS raster 1-bit</p>
+            <a href={thermalPreviewUrl} download={`SIMULASI_CETAK_THERMAL_STIKER_10X10_${subOrderNum}.png`} className="mt-3 block text-center py-2 bg-slate-800 text-white rounded-xl text-[11px] font-semibold">Download PNG</a>
+          </div>
+        </div>
+      )}
     </div>
   );
 
