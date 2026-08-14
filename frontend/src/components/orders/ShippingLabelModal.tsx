@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
 import { Order } from '../../types/order';
-import { Tag, Printer, X, Phone, Download, Bluetooth } from 'lucide-react';
-import { thermalPrinterService } from '../../utils/thermalPrinter';
+import { Tag, Printer, X, Phone } from 'lucide-react';
 import { printElementViaIframe } from '../../utils/printHelper';
 
 interface ShippingLabelModalProps {
@@ -17,37 +16,7 @@ interface ShippingLabelModalProps {
 }
 
 export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, packageInfo, onClose }) => {
-  const [isBluetoothPrinting, setIsBluetoothPrinting] = useState(false);
-  const [thermalPreviewUrl, setThermalPreviewUrl] = useState<string | null>(null);
-
   if (!order) return null;
-
-  const handleDirectBluetoothPrint = async () => {
-    setIsBluetoothPrinting(true);
-    try {
-      const printableEl = document.getElementById('shipping-label-printable');
-      if (!printableEl) throw new Error('Elemen pratinjau label tidak ditemukan.');
-
-      // Use TSPL barcode printer protocol for Xprinter XP-420B Label Printer
-      await thermalPrinterService.printElementAsTSPL(printableEl, 800, 'label');
-    } catch (err: any) {
-      alert(err.message || 'Gagal cetak label via Bluetooth.');
-    } finally {
-      setIsBluetoothPrinting(false);
-    }
-  };
-
-  const handlePreviewThermalBitmap = async () => {
-    try {
-      const printableEl = document.getElementById('shipping-label-printable');
-      if (!printableEl) throw new Error('Elemen pratinjau label tidak ditemukan.');
-
-      const dataUrl = await thermalPrinterService.generateThermalBitmapDataUrl(printableEl, 800);
-      setThermalPreviewUrl(dataUrl);
-    } catch (err: any) {
-      alert(err.message || 'Gagal membuat gambar simulasi label thermal.');
-    }
-  };
 
   const handlePrint = () => {
     const cleanSubOrder = (subOrderNum || 'label').replace(/[^a-zA-Z0-9-]/g, '_');
@@ -61,37 +30,6 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
     printElementViaIframe('shipping-label-printable', title, 'size: 100mm 150mm;');
   };
 
-  const handleRawBTPrint = async () => {
-    try {
-      const printableEl = document.getElementById('shipping-label-printable');
-      if (!printableEl) throw new Error('Elemen pratinjau label tidak ditemukan.');
-
-      // XP-420B label output is 100mm wide at approximately 203dpi.
-      // Sending 576 dots leaves the image narrower than the configured label
-      // and can make the RawBT print preview look valid but not print at the
-      // expected label width.
-      await thermalPrinterService.sendToRawBT(printableEl, 800);
-    } catch (err: any) {
-      alert(err.message || 'Gagal mengirim label ke aplikasi RawBT.');
-    }
-  };
-
-  const handleDownloadThermalBitmap = async () => {
-    try {
-      const printableEl = document.getElementById('shipping-label-printable');
-      if (!printableEl) throw new Error('Elemen pratinjau label tidak ditemukan.');
-
-      const dataUrl = await thermalPrinterService.generateThermalBitmapDataUrl(printableEl, 800);
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `SIMULASI_CETAK_THERMAL_STIKER_10X15_${subOrderNum}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err: any) {
-      alert(err.message || 'Gagal membuat gambar simulasi label thermal.');
-    }
-  };
 
   const subOrderNum = packageInfo?.subOrderNumber || `${order.order_number}-A`;
   const rawPkgType = packageInfo?.packageType || order.delivery_method || 'Fullset';
@@ -271,32 +209,16 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           </div>
         </div>
 
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex-shrink-0 no-print">
-          <div className="grid grid-cols-2 gap-2">
-            <button type="button" onClick={handleRawBTPrint} className="py-2 px-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-[11px] font-medium flex items-center justify-center gap-1.5 cursor-pointer" title="Kirim gambar label langsung ke aplikasi RawBT">
-              <Printer className="w-3.5 h-3.5 text-emerald-200" /><span>Gambar (RawBT)</span>
-            </button>
-            <button type="button" onClick={handlePrint} className="py-2 px-2 bg-[#04593f] hover:bg-teal-900 text-white rounded-lg text-[11px] font-medium flex items-center justify-center gap-1.5 cursor-pointer" title="Cetak melalui browser atau simpan PDF">
-              <Printer className="w-3.5 h-3.5" /><span>Cetak Browser</span>
-            </button>
-            <button type="button" onClick={handlePreviewThermalBitmap} className="py-2 px-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-[11px] font-medium flex items-center justify-center gap-1.5 cursor-pointer">
-              <Download className="w-3.5 h-3.5 text-slate-300" /><span>Preview / Unduh</span>
-            </button>
-            <button type="button" onClick={onClose} className="py-2 px-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-[11px] font-medium cursor-pointer text-center">
-              Tutup
-            </button>
-          </div>
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
+          <button type="button" onClick={handlePrint} className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-medium flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1">
+            <Printer className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap">Cetak Label</span>
+          </button>
+          <button type="button" onClick={onClose} className="py-2.5 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-normal transition-colors cursor-pointer text-center shrink-0">
+            Tutup
+          </button>
         </div>
       </div>
-      {thermalPreviewUrl && (
-        <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-slate-950/70 p-4 no-print" onClick={() => setThermalPreviewUrl(null)}>
-          <div className="bg-slate-100 rounded-2xl p-4 max-h-[92vh] max-w-full overflow-auto shadow-2xl" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center justify-between gap-4 mb-3"><div><p className="text-xs font-bold text-slate-900">Preview Stiker Thermal 10x15 cm</p><p className="text-[10px] text-slate-500">Gambar 1-bit yang bisa dicetak manual melalui RawBT</p></div><button type="button" onClick={() => setThermalPreviewUrl(null)} className="p-1.5 bg-slate-200 rounded-lg text-slate-600"><X className="w-4 h-4" /></button></div>
-            <div className="bg-slate-300 p-4 overflow-auto flex justify-center"><div className="bg-white shadow-md p-2" style={{ width: '100mm', minWidth: '100mm' }}><img src={thermalPreviewUrl} alt="Preview stiker thermal 10x15" className="block w-full h-auto max-h-[60vh] object-contain" style={{ imageRendering: 'pixelated' }} /></div></div>
-            <a href={thermalPreviewUrl} download={`SIMULASI_CETAK_THERMAL_STIKER_10X15_${subOrderNum}.png`} className="mt-3 block text-center py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-[11px] font-medium">Unduh PNG untuk RawBT</a>
-          </div>
-        </div>
-      )}
     </div>
   );
 
