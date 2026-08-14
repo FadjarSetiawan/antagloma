@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Order } from '../../types/order';
 import { Tag, Printer, X, Phone, Download, Bluetooth } from 'lucide-react';
 import { thermalPrinterService } from '../../utils/thermalPrinter';
+import { printElementViaIframe } from '../../utils/printHelper';
 
 interface ShippingLabelModalProps {
   order: Order | null;
@@ -49,21 +50,15 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
   };
 
   const handlePrint = () => {
-    const originalTitle = document.title;
     const cleanSubOrder = (subOrderNum || 'label').replace(/[^a-zA-Z0-9-]/g, '_');
-    document.title = `Label_Pengiriman_${cleanSubOrder}`;
+    const title = `Label_Pengiriman_${cleanSubOrder}`;
     
     // Blur active button focus to prevent Chrome Android touch event cancellation flicker
     if (document.activeElement && 'blur' in document.activeElement) {
       (document.activeElement as HTMLElement).blur();
     }
 
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => {
-        document.title = originalTitle;
-      }, 500);
-    }, 60);
+    printElementViaIframe('shipping-label-printable', title, 'size: 100mm 150mm;');
   };
 
   const handleRawBTPrint = async () => {

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Order, OrderPackage } from '../../types/order';
 import { Printer, X, Download, Bluetooth } from 'lucide-react';
 import { thermalPrinterService } from '../../utils/thermalPrinter';
+import { printElementViaIframe } from '../../utils/printHelper';
 
 interface PackingNotaModalProps {
   order: Order | null;
@@ -38,22 +39,16 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
   };
 
   const handlePrint = () => {
-    const originalTitle = document.title;
     const cleanOrderNumber = (order.order_number || 'order').replace(/[^a-zA-Z0-9-]/g, '_');
     const cleanPkgLetter = packageInfo ? `-${packageInfo.letter}` : '';
-    document.title = `Nota_Packing_${cleanOrderNumber}${cleanPkgLetter}`;
+    const title = `Nota_Packing_${cleanOrderNumber}${cleanPkgLetter}`;
     
     // Blur active button focus to prevent Chrome Android touch event cancellation flicker
     if (document.activeElement && 'blur' in document.activeElement) {
       (document.activeElement as HTMLElement).blur();
     }
 
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => {
-        document.title = originalTitle;
-      }, 500);
-    }, 60);
+    printElementViaIframe('packing-nota-printable', title, 'size: 80mm auto;');
   };
 
   const handleRawBTPrint = async () => {

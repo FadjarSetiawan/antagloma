@@ -1,0 +1,102 @@
+/**
+ * Dedicated Print Utility for Antagloma Sales Order Management System
+ * Solves Android Chrome & Mobile Web iframe print flickering issues permanently.
+ */
+
+export function printElementViaIframe(
+  elementId: string,
+  pageTitle: string,
+  pageSizeCss = 'size: 80mm auto;'
+): void {
+  const sourceEl = document.getElementById(elementId);
+  if (!sourceEl) {
+    // Fallback to window.print if element not found
+    window.print();
+    return;
+  }
+
+  // Remove any stale print iframe from DOM
+  const existingIframe = document.getElementById('antagloma-print-iframe');
+  if (existingIframe) {
+    existingIframe.remove();
+  }
+
+  // Create isolated hidden iframe
+  const iframe = document.createElement('iframe');
+  iframe.id = 'antagloma-print-iframe';
+  iframe.style.position = 'fixed';
+  iframe.style.left = '-9999px';
+  iframe.style.top = '-9999px';
+  iframe.style.width = '0px';
+  iframe.style.height = '0px';
+  iframe.style.border = '0';
+  iframe.style.visibility = 'hidden';
+
+  document.body.appendChild(iframe);
+
+  const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+  if (!iframeDoc) {
+    window.print();
+    return;
+  }
+
+  // Extract all stylesheets & font links from parent document
+  const styleElements = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+    .map((el) => el.outerHTML)
+    .join('\n');
+
+  iframeDoc.open();
+  iframeDoc.write(`
+    <!DOCTYPE html>
+    <html lang="id">
+      <head>
+        <title>${pageTitle}</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        ${styleElements}
+        <style>
+          @page {
+            ${pageSizeCss}
+            margin: 0;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            width: 100% !important;
+            height: auto !important;
+          }
+          body {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          *, *::before, *::after {
+            box-sizing: border-box !important;
+          }
+        </style>
+      </head>
+      <body>
+        <div style="width: 100%; padding: 0; margin: 0;">
+          ${sourceEl.outerHTML}
+        </div>
+      </body>
+    </html>
+  `);
+  iframeDoc.close();
+
+  // Trigger print after iframe renders styles
+  setTimeout(() => {
+    try {
+      if (iframe.contentWindow) {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      } else {
+        window.print();
+      }
+    } catch (e) {
+      console.warn('Iframe print fallback to window.print:', e);
+      window.print();
+    }
+  }, 200);
+}
