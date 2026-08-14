@@ -104,10 +104,11 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         const printableEl = document.getElementById('shipping-label-printable');
         if (!printableEl) return;
 
-        const { canvas: renderedCanvas } = await thermalPrinterService.renderToThermalCanvas(printableEl, 800);
+        // Render at 1200px width (300 DPI for 4x6 inch thermal sticker)
+        const { canvas: renderedCanvas } = await thermalPrinterService.renderToThermalCanvas(printableEl, 1200);
         const labelCanvas = document.createElement('canvas');
-        labelCanvas.width = 800;
-        labelCanvas.height = 1200;
+        labelCanvas.width = 1200;
+        labelCanvas.height = 1800;
 
         const context = labelCanvas.getContext('2d');
         if (!context) throw new Error('Gagal menyiapkan gambar label.');
@@ -115,13 +116,11 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         context.fillStyle = '#ffffff';
         context.fillRect(0, 0, labelCanvas.width, labelCanvas.height);
 
-        const scale = Math.min(
-          labelCanvas.width / renderedCanvas.width,
-          labelCanvas.height / renderedCanvas.height,
-          1,
-        );
-        const outputWidth = Math.round(renderedCanvas.width * scale);
-        const outputHeight = Math.round(renderedCanvas.height * scale);
+        // Scale to fill full width and draw strictly from the top (offsetY = 0)
+        const scale = labelCanvas.width / renderedCanvas.width;
+        const outputWidth = labelCanvas.width;
+        const outputHeight = Math.min(Math.round(renderedCanvas.height * scale), labelCanvas.height);
+
         context.drawImage(renderedCanvas, 0, 0, outputWidth, outputHeight);
 
         const blob = await createSingleImagePdf(labelCanvas);
@@ -183,13 +182,13 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
     }
 
     // Desktop browsers generally do not support sharing a generated file.
-    // Keep the high-quality browser print preview as their fallback.
+    // Keep the high-quality isolated iframe browser print preview as their fallback.
     if (typeof window.print === 'function') {
-      printElementViaIframe(
+      void printElementViaIframe(
         'shipping-label-printable',
         title,
-        'size: 4in 6in;',
-        'width: 4in !important; height: 6in !important; min-height: 6in !important; padding: 0 !important; overflow: hidden !important; box-sizing: border-box !important;',
+        'size: 100mm 150mm;',
+        'width: 100mm !important; height: 150mm !important; min-height: 150mm !important; padding: 2mm !important; overflow: hidden !important; box-sizing: border-box !important;',
       );
       return;
     }
@@ -219,15 +218,6 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         ? 'Non Fullset'
         : rawPkgType;
 
-  const getCleanWeight = () => {
-    if (!packageInfo?.weightInfo) return '1 kg';
-    const w = packageInfo.weightInfo.trim();
-    if (w.toLowerCase().includes('mengikuti') || w.toLowerCase().includes('konfigurasi') || w.toLowerCase().includes('belum')) {
-      return '1 kg';
-    }
-    return w;
-  };
-
   const modalContent = (
     <div id="shipping-label-modal-container" className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto font-sans text-slate-900">
       <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col font-sans">
@@ -242,7 +232,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
                 Pratinjau Label Alamat Pengiriman
               </h3>
               <p className="text-[10px] text-slate-500 font-normal">
-                Format stiker 10x15 cm
+                Format stiker 10x15 cm (4x6 inch)
               </p>
             </div>
           </div>
@@ -256,143 +246,73 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         </div>
 
         {/* Printable Shipping Label Body Container */}
-        <div id="shipping-label-printable" className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs flex-1 flex flex-col justify-between">
-          {/* Print specific style overrides */}
-          <style>{`
-            @media print {
-              @page {
-                size: 100mm 150mm;
-                margin: 0;
-              }
-
-              html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                background: #ffffff !important;
-                width: 100mm !important;
-                height: 150mm !important;
-                overflow: hidden !important;
-              }
-
-              /* Hide non-printable elements completely from document flow */
-              .no-print {
-                display: none !important;
-              }
-
-              #shipping-label-modal-container {
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 100mm !important;
-                height: 150mm !important;
-                display: block !important;
-                align-items: flex-start !important;
-                justify-content: flex-start !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                background: #ffffff !important;
-                box-shadow: none !important;
-                border: none !important;
-              }
-
-              #shipping-label-modal-container > div {
-                border: none !important;
-                box-shadow: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                margin-top: 0 !important;
-                margin-bottom: 0 !important;
-                width: 100mm !important;
-                height: 150mm !important;
-              }
-
-              #shipping-label-printable {
-                position: relative !important;
-                width: 96mm !important;
-                height: 146mm !important;
-                margin: 0 auto !important;
-                padding: 2mm !important;
-                box-sizing: border-box !important;
-                background: #ffffff !important;
-                overflow: hidden !important;
-              }
-
-              /* Disable multi-page overflow breaks */
-              *, *::before, *::after {
-                page-break-inside: avoid !important;
-                page-break-after: avoid !important;
-                page-break-before: avoid !important;
-                break-inside: avoid !important;
-              }
-            }
-          `}</style>
-
-          {/* Label Container Box (Clean borderless sticker layout for 10x15cm thermal paper) */}
-          <div className="p-3 space-y-4 font-sans bg-white text-black h-full flex flex-col justify-between min-h-[420px]">
+        <div id="shipping-label-printable" className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs flex-1">
+          {/* Label Container Box (Proportional high-clarity layout for 10x15cm / 4x6 inch thermal paper) */}
+          <div className="p-3 space-y-4 font-sans bg-white text-black">
             {/* Header Store & Order ID */}
-            <div className="flex items-start justify-between border-b-2 border-black pb-3 pt-1 gap-2">
+            <div className="flex items-start justify-between border-b-[3px] border-black pb-3 pt-0.5 gap-2">
               <div className="space-y-0.5 min-w-0 flex-1">
-                <h1 className="font-extrabold text-xl tracking-wider text-black uppercase leading-normal pt-0.5">
+                <h1 className="font-black text-2xl tracking-tight text-black uppercase leading-tight">
                   ANTAGLOMA FLORIST
                 </h1>
-                <p className="text-sm font-semibold text-black leading-tight">
+                <p className="text-sm font-bold text-black leading-tight">
                   Spesialis Adenium Bunga Tumpuk
                 </p>
-                <p className="text-[13px] font-normal text-black leading-tight">
+                <p className="text-xs font-semibold text-black leading-tight">
                   WA: 0858-9450-3333 / 0857-3333-1889
                 </p>
               </div>
 
               <div className="text-right shrink-0">
-                <div className="border-2 border-black px-2.5 py-1 text-xs font-bold text-black uppercase inline-block mt-0.5 mb-1 tracking-wider leading-normal text-center">
+                <div className="border-2 border-black px-2.5 py-0.5 text-xs font-black text-black uppercase inline-block mb-1 tracking-wider leading-normal text-center">
                   STIKER RESI
                 </div>
-                <p className="font-extrabold text-base text-black leading-tight tracking-tight whitespace-nowrap">{subOrderNum}</p>
-                <span className="font-bold text-sm text-black uppercase block mt-1">
+                <p className="font-black text-xl text-black leading-tight tracking-tight whitespace-nowrap">{subOrderNum}</p>
+                <span className="font-black text-sm text-black uppercase block mt-0.5">
                   [ {pkgType} ]
                 </span>
               </div>
             </div>
 
             {/* Customer Recipient Section */}
-            <div className="border-b-2 border-black pb-3 space-y-1">
-              <span className="text-sm font-bold uppercase text-black block tracking-wider">
+            <div className="border-b-[3px] border-black pb-3 space-y-0.5">
+              <span className="text-xs font-black uppercase text-slate-800 block tracking-wider">
                 PENERIMA / CUSTOMER:
               </span>
-              <h2 className="text-xl font-extrabold text-black block leading-tight break-words">{order.customer_name}</h2>
-              <p className="text-base font-bold text-black flex items-center gap-1.5 mt-1">
-                <Phone className="w-4 h-4 text-black shrink-0" /> {order.phone}
+              <h2 className="text-3xl font-black text-black block leading-tight break-words pt-1">{order.customer_name}</h2>
+              <p className="text-xl font-black text-black flex items-center gap-2 pt-1">
+                <Phone className="w-5 h-5 text-black shrink-0" /> {order.phone}
               </p>
             </div>
 
             {/* Destination Address Block */}
-            <div className="border-b-2 border-black pb-3 space-y-1.5 flex-1">
-              <span className="text-sm font-bold uppercase text-black block tracking-wider">
+            <div className="border-b-[3px] border-black pb-3 space-y-1">
+              <span className="text-xs font-black uppercase text-slate-800 block tracking-wider">
                 ALAMAT PENGIRIMAN:
               </span>
-              <p className="font-extrabold text-base text-black leading-snug break-words">
+              <p className="font-black text-xl text-black leading-snug break-words pt-1">
                 {[order.district_name ? `Kec. ${order.district_name}` : null, order.regency_name, order.province_name].filter(Boolean).join(', ')}
               </p>
-              <p className="text-sm font-normal text-black leading-relaxed break-words pt-1">
+              <p className="text-base font-bold text-black leading-relaxed break-words pt-1">
                 {order.full_address}
               </p>
             </div>
 
-            {/* Package Summary Box (No weight text as requested) */}
-            <div className="border-2 border-black rounded-lg p-2.5 text-sm font-bold text-black flex items-center justify-between bg-slate-50/50 mt-auto shrink-0">
+            {/* Package Summary Box */}
+            <div className="border-[2.5px] border-black rounded-xl p-3.5 text-lg font-black text-black flex items-center justify-between bg-slate-50/80 mt-1">
               <span>Isi Paket: {packageInfo?.itemsSummary || 'Tanaman'}</span>
             </div>
           </div>
         </div>
 
         <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
-          <button type="button" onClick={() => void handlePrint()} disabled={isPreparingLabel || isSharingLabel} className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-wait text-white rounded-xl text-xs font-medium flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1">
+          <button type="button" onClick={() => void handlePrint()} disabled={isPreparingLabel || isSharingLabel} className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-wait text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1">
             <Printer className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap">
               {isPreparingLabel ? 'Menyiapkan Label...' : isSharingLabel ? 'Membuka Aplikasi...' : 'Cetak Label'}
             </span>
           </button>
-          <button type="button" onClick={onClose} className="py-2.5 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-normal transition-colors cursor-pointer text-center shrink-0">
+          <button type="button" onClick={onClose} className="py-2.5 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center shrink-0">
             Tutup
           </button>
         </div>
@@ -402,4 +322,3 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
 
   return createPortal(modalContent, document.body);
 };
-

@@ -130,8 +130,8 @@ class ThermalPrinterService {
    */
   public async renderToThermalCanvas(element: HTMLElement, targetWidth = 576): Promise<{ canvas: HTMLCanvasElement; imageBytes: Uint8Array; width: number; height: number }> {
     const isLabel = targetWidth >= 700;
-    const cssRenderWidth = isLabel ? 500 : 384;
-    const targetScale = 3; // 3x High-DPI scale for crystal clear vector text & crisp lines
+    const cssRenderWidth = isLabel ? 800 : 384;
+    const targetScale = isLabel ? 2 : 3; // 2x scale for 800px label = 1600px High-DPI; 3x for 384px nota = 1152px
 
     const container = document.createElement('div');
     container.style.position = 'absolute';
@@ -141,9 +141,7 @@ class ThermalPrinterService {
     container.style.backgroundColor = '#ffffff';
     container.style.color = '#000000';
     container.style.boxSizing = 'border-box';
-    // Extra trailing room keeps the final signature row inside the captured
-    // bitmap on Android/RawBT instead of clipping its lower pixels.
-    container.style.padding = isLabel ? '0' : '12px 8px 32px 8px';
+    container.style.padding = isLabel ? '24px 20px 28px 20px' : '12px 8px 32px 8px';
     container.style.fontFamily = 'Arial, Helvetica, sans-serif';
 
     const clone = element.cloneNode(true) as HTMLElement;
@@ -153,14 +151,6 @@ class ThermalPrinterService {
     clone.style.maxHeight = 'none';
     clone.style.overflow = 'visible';
     clone.style.flex = 'none';
-    if (isLabel) {
-      // The 4-inch label is 100x150 mm (2:3). Keep the cloned printable area
-      // at that full ratio so its flex layout uses the whole sticker instead
-      // of collapsing the content into the upper half of the PDF.
-      clone.style.height = '750px';
-      clone.style.minHeight = '750px';
-      clone.style.overflow = 'hidden';
-    }
     clone.style.boxShadow = 'none';
     clone.style.border = 'none';
     clone.style.borderRadius = '0';

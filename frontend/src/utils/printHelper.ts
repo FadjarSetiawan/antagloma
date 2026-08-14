@@ -1,124 +1,206 @@
 /**
- * Print one nota/label from the current page without exposing the rest of the
- * application to Android's print service.
+ * Isolated Print Utility for Antagloma Sales Order Management System
+ * Creates a truly isolated hidden iframe with its own standalone HTML document.
+ * This guarantees that Android Print Service / RawBT / Chrome Mobile prints ONLY
+ * the intended document, with zero possibility of the React dashboard or navigation leaking into the print job.
  */
-export function printElementViaIframe(
+
+export async function printElementViaIframe(
   elementId: string,
   pageTitle: string,
   pageSizeCss = 'size: 80mm auto;',
-  printableElementCss = ''
-): void {
+  customContainerCss = ''
+): Promise<void> {
   const sourceEl = document.getElementById(elementId);
   if (!sourceEl) {
     window.alert('Dokumen yang akan dicetak tidak ditemukan. Silakan buka ulang pratinjau.');
     return;
   }
 
-  document.getElementById('antagloma-print-root')?.remove();
-  document.getElementById('antagloma-print-style')?.remove();
-
+  // Clone source element & remove internal <style> blocks that might contain stale @media print rules
   const clone = sourceEl.cloneNode(true) as HTMLElement;
-  clone.querySelectorAll('style').forEach((style) => style.remove());
+  clone.querySelectorAll('style').forEach((s) => s.remove());
 
-  const printRoot = document.createElement('div');
-  printRoot.id = 'antagloma-print-root';
-  printRoot.setAttribute('aria-hidden', 'true');
-  printRoot.appendChild(clone);
+  // Remove any elements marked with .no-print in the print clone
+  clone.querySelectorAll('.no-print').forEach((el) => el.remove());
 
-  const printStyle = document.createElement('style');
-  printStyle.id = 'antagloma-print-style';
-  printStyle.textContent = `
-    @media screen {
-      #antagloma-print-root {
-        position: fixed !important;
-        left: -100000px !important;
-        top: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-      }
+  // Make sure elements marked as .thermal-print-only or print-only are visible
+  clone.querySelectorAll<HTMLElement>('.thermal-print-only, .print-only').forEach((el) => {
+    el.style.display = 'block';
+  });
+
+  // Replace textarea with plain text div for clean print rendering
+  clone.querySelectorAll<HTMLTextAreaElement>('textarea').forEach((ta) => {
+    const textVal = ta.value || ta.textContent || '';
+    const textDiv = document.createElement('div');
+    textDiv.className = 'text-xs font-medium italic text-black whitespace-pre-wrap leading-tight';
+    textDiv.textContent = textVal.trim() ? textVal : '-';
+    ta.replaceWith(textDiv);
+  });
+
+  // Remove previous print iframe if present
+  const oldIframe = document.getElementById('antagloma-print-iframe');
+  if (oldIframe) {
+    try {
+      oldIframe.remove();
+    } catch {
+      // ignore
     }
+  }
 
-    @media print {
+  // Create isolated iframe
+  const iframe = document.createElement('iframe');
+  iframe.id = 'antagloma-print-iframe';
+  iframe.setAttribute('title', 'Print Document');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  iframe.style.visibility = 'hidden';
+
+  document.body.appendChild(iframe);
+
+  const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+  if (!iframeDoc) {
+    window.alert('Gagal membuat dokumen cetak terisolasi. Silakan coba kembali.');
+    return;
+  }
+
+  // Collect active stylesheets (Tailwind, fonts) from the main document
+  const headStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style:not(#antagloma-print-style)'))
+    .map((el) => el.outerHTML)
+    .join('\n');
+
+  // Determine width based on paper size
+  const is80mm = pageSizeCss.includes('80mm');
+  const bodyWidthCss = is80mm ? 'width: 80mm !important; max-width: 80mm !important;' : 'width: 100% !important;';
+
+  const fullHtml = `<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtml(pageTitle)}</title>
+    ${headStyles}
+    <style>
       @page {
         ${pageSizeCss}
         margin: 0;
       }
-
       html, body {
         margin: 0 !important;
         padding: 0 !important;
-        width: 100% !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        ${bodyWidthCss}
         min-height: 0 !important;
         height: auto !important;
         overflow: visible !important;
-        background: #fff !important;
-        color: #000 !important;
+        font-family: Arial, Helvetica, sans-serif !important;
       }
-
       body {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-
-      body > *:not(#antagloma-print-root) {
+      *, *::before, *::after {
+        box-sizing: border-box !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
         display: none !important;
       }
-
-      #antagloma-print-root {
+      .thermal-print-only, .print-only {
         display: block !important;
-        position: static !important;
-        visibility: visible !important;
-        width: 100% !important;
-        min-height: 0 !important;
-        height: auto !important;
-        margin: 0 !important;
+      }
+      #print-isolated-wrapper {
+        margin: 0 auto !important;
         padding: 0 !important;
-        overflow: visible !important;
+        background: #ffffff !important;
+        ${bodyWidthCss}
+        ${customContainerCss}
       }
+    </style>
+  </head>
+  <body>
+    <div id="print-isolated-wrapper">
+      ${clone.outerHTML}
+    </div>
+  </body>
+</html>`;
 
-      #antagloma-print-root .no-print {
-        display: none !important;
-      }
+  iframeDoc.open();
+  iframeDoc.write(fullHtml);
+  iframeDoc.close();
 
-      #antagloma-print-root #${elementId} {
-        display: block !important;
-        position: static !important;
-        visibility: visible !important;
-        margin: 0 !important;
-        overflow: visible !important;
-        max-height: none !important;
-        ${printableElementCss}
-      }
+  // Wait for all <link rel="stylesheet"> elements inside the iframe to finish loading
+  try {
+    const linkElements = Array.from(iframeDoc.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
+    if (linkElements.length > 0) {
+      await Promise.all(
+        linkElements.map(
+          (link) =>
+            new Promise<void>((resolve) => {
+              if (link.sheet) {
+                resolve();
+                return;
+              }
+              link.addEventListener('load', () => resolve(), { once: true });
+              link.addEventListener('error', () => resolve(), { once: true });
+              setTimeout(resolve, 800);
+            })
+        )
+      );
     }
-  `;
+  } catch {
+    // ignore stylesheet wait error and proceed
+  }
 
-  const previousTitle = document.title;
-  document.title = pageTitle;
-  document.head.appendChild(printStyle);
-  document.body.appendChild(printRoot);
+  // Wait for iframe fonts to be fully ready
+  try {
+    if (iframe.contentWindow?.document?.fonts) {
+      await iframe.contentWindow.document.fonts.ready;
+    }
+  } catch {
+    // ignore
+  }
 
-  let cleanedUp = false;
-  const cleanup = () => {
-    if (cleanedUp) return;
-    cleanedUp = true;
-    document.title = previousTitle;
-    printRoot.remove();
-    printStyle.remove();
-  };
+  // Allow a short rendering tick for layout computation
+  await new Promise((resolve) => setTimeout(resolve, 150));
 
-  window.addEventListener('afterprint', cleanup, { once: true });
-
-  // Keep the print node mounted while Android's print preview is active.
-  window.setTimeout(() => {
-    try {
+  try {
+    if (iframe.contentWindow) {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } else {
       window.print();
-    } catch (error) {
-      cleanup();
-      console.error('Gagal membuka dialog cetak:', error);
-      window.alert('Gagal membuka dialog cetak. Silakan coba kembali.');
     }
-  }, 100);
+  } catch (error) {
+    console.error('Gagal menjalankan perintah cetak iframe:', error);
+    window.alert('Gagal memproses pencetakan. Silakan coba kembali.');
+  }
 
-  // Safety cleanup for browsers that never dispatch afterprint.
-  window.setTimeout(cleanup, 120000);
+  // Do NOT destroy iframe immediately on afterprint.
+  // Keep it around so Android Print Spooler has ample time to read it.
+  setTimeout(() => {
+    const el = document.getElementById('antagloma-print-iframe');
+    if (el === iframe) {
+      try {
+        el.remove();
+      } catch {
+        // ignore
+      }
+    }
+  }, 300000);
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
