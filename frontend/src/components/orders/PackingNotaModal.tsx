@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Order, OrderPackage } from '../../types/order';
-import { Printer, X, Download, Bluetooth } from 'lucide-react';
-import { thermalPrinterService } from '../../utils/thermalPrinter';
+import { Printer, X } from 'lucide-react';
 import { printElementViaIframe } from '../../utils/printHelper';
 
 interface PackingNotaModalProps {
@@ -13,8 +12,6 @@ interface PackingNotaModalProps {
 
 export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packageInfo, onClose }) => {
   const [customNotes, setCustomNotes] = useState<string>(order?.notes || '');
-  const [thermalPreviewUrl, setThermalPreviewUrl] = useState<string | null>(null);
-  const [isBluetoothPrinting, setIsBluetoothPrinting] = useState(false);
 
   useEffect(() => {
     if (order) {
@@ -24,21 +21,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
 
   if (!order) return null;
 
-  const handleDirectBluetoothPrint = async () => {
-    setIsBluetoothPrinting(true);
-    try {
-      const printableEl = document.getElementById('packing-nota-printable');
-      if (!printableEl) throw new Error('Elemen pratinjau nota tidak ditemukan.');
-
-      await thermalPrinterService.printElementAsBitmap(printableEl, 576, 'nota');
-    } catch (err: any) {
-      alert(err.message || 'Gagal cetak nota via Bluetooth.');
-    } finally {
-      setIsBluetoothPrinting(false);
-    }
-  };
-
-  const handlePrint = async () => {
+  const handlePrint = () => {
     const cleanOrderNumber = (order.order_number || 'order').replace(/[^a-zA-Z0-9-]/g, '_');
     const cleanPkgLetter = packageInfo ? `-${packageInfo.letter}` : '';
     const title = `Nota_Packing_${cleanOrderNumber}${cleanPkgLetter}`;
@@ -48,50 +31,10 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
       (document.activeElement as HTMLElement).blur();
     }
 
-    // Android's system print service can capture the whole application and
-    // queue the job until RawBT is opened. Send only the rendered nota bitmap
-    // directly to RawBT so one click opens the correct printer workflow and
-    // never includes dashboard pages.
-    if (/Android/i.test(navigator.userAgent)) {
-      setIsBluetoothPrinting(true);
-      try {
-        const printableEl = document.getElementById('packing-nota-printable');
-        if (!printableEl) throw new Error('Elemen pratinjau nota tidak ditemukan.');
-
-        await thermalPrinterService.sendToRawBT(printableEl, 576);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Gagal mengirim nota ke aplikasi RawBT.';
-        window.alert(message);
-      } finally {
-        setIsBluetoothPrinting(false);
-      }
-      return;
-    }
-
+    // Use Android/browser print preview for the 80 mm nota. The helper mounts
+    // only this nota in the print document, so the dashboard cannot become
+    // extra pages while the printer service controls paper scaling/quality.
     printElementViaIframe('packing-nota-printable', title, 'size: 80mm auto;');
-  };
-
-  const handleRawBTPrint = async () => {
-    try {
-      const printableEl = document.getElementById('packing-nota-printable');
-      if (!printableEl) throw new Error('Elemen pratinjau nota tidak ditemukan.');
-
-      await thermalPrinterService.sendToRawBT(printableEl, 576);
-    } catch (err: any) {
-      alert(err.message || 'Gagal mengirim nota ke aplikasi RawBT.');
-    }
-  };
-
-  const handlePreviewThermalBitmap = async () => {
-    try {
-      const printableEl = document.getElementById('packing-nota-printable');
-      if (!printableEl) throw new Error('Elemen pratinjau nota tidak ditemukan.');
-
-      const dataUrl = await thermalPrinterService.generateThermalBitmapDataUrl(printableEl, 576);
-      setThermalPreviewUrl(dataUrl);
-    } catch (err: any) {
-      alert(err.message || 'Gagal membuat gambar simulasi thermal.');
-    }
   };
 
   const formattedDate = order.order_date
@@ -331,11 +274,10 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           <button
             type="button"
             onClick={handlePrint}
-            disabled={isBluetoothPrinting}
-            className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 disabled:bg-emerald-700/60 disabled:cursor-wait text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1"
+            className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1"
           >
             <Printer className="w-4 h-4 shrink-0" />
-            <span className="whitespace-nowrap">{isBluetoothPrinting ? 'Menyiapkan...' : 'Cetak Nota'}</span>
+            <span className="whitespace-nowrap">Cetak Nota</span>
           </button>
 
           <button
