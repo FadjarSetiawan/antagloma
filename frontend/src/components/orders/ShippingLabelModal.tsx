@@ -16,6 +16,72 @@ interface ShippingLabelModalProps {
   onClose: () => void;
 }
 
+const createSingleImagePdf = async (canvas: HTMLCanvasElement): Promise<Blob> => {
+  const jpegBlob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((result) => {
+      if (result) resolve(result);
+      else reject(new Error('Gagal membuat gambar untuk PDF label.'));
+    }, 'image/jpeg', 0.95);
+  });
+
+  const jpegBytes = new Uint8Array(await jpegBlob.arrayBuffer());
+  const encoder = new TextEncoder();
+  const chunks: Uint8Array[] = [];
+  const offsets: number[] = [0];
+  let byteLength = 0;
+
+  const appendText = (value: string) => {
+    const bytes = encoder.encode(value);
+    chunks.push(bytes);
+    byteLength += bytes.length;
+  };
+  const appendBytes = (bytes: Uint8Array) => {
+    chunks.push(bytes);
+    byteLength += bytes.length;
+  };
+  const startObject = (objectNumber: number) => {
+    offsets[objectNumber] = byteLength;
+    appendText(`${objectNumber} 0 obj\n`);
+  };
+
+  // One 100x150 mm page. 4BarCode accepts PDF documents and routes them to
+  // the XP-420B label-printer workflow.
+  const pageWidth = '283.465';
+  const pageHeight = '425.197';
+  const contentStream = `q\n${pageWidth} 0 0 ${pageHeight} 0 0 cm\n/Im0 Do\nQ\n`;
+
+  appendText('%PDF-1.4\n');
+  startObject(1);
+  appendText('<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+  startObject(2);
+  appendText('<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
+  startObject(3);
+  appendText(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`);
+  startObject(4);
+  appendText(`<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>\nstream\n`);
+  appendBytes(jpegBytes);
+  appendText('\nendstream\nendobj\n');
+  startObject(5);
+  appendText(`<< /Length ${encoder.encode(contentStream).length} >>\nstream\n${contentStream}endstream\nendobj\n`);
+
+  const xrefOffset = byteLength;
+  appendText('xref\n0 6\n0000000000 65535 f \n');
+  for (let objectNumber = 1; objectNumber <= 5; objectNumber += 1) {
+    appendText(`${String(offsets[objectNumber]).padStart(10, '0')} 00000 n \n`);
+  }
+  appendText(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
+
+  const pdfBuffer = new ArrayBuffer(byteLength);
+  const pdfBytes = new Uint8Array(pdfBuffer);
+  let writeOffset = 0;
+  chunks.forEach((chunk) => {
+    pdfBytes.set(chunk, writeOffset);
+    writeOffset += chunk.length;
+  });
+
+  return new Blob([pdfBuffer], { type: 'application/pdf' });
+};
+
 export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, packageInfo, onClose }) => {
   const [labelFile, setLabelFile] = useState<File | null>(null);
   const [isPreparingLabel, setIsPreparingLabel] = useState(false);
@@ -57,16 +123,11 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         const outputHeight = Math.round(renderedCanvas.height * scale);
         context.drawImage(renderedCanvas, 0, 0, outputWidth, outputHeight);
 
-        const blob = await new Promise<Blob>((resolve, reject) => {
-          labelCanvas.toBlob((result) => {
-            if (result) resolve(result);
-            else reject(new Error('Gagal membuat file gambar label.'));
-          }, 'image/png');
-        });
+        const blob = await createSingleImagePdf(labelCanvas);
 
         if (!cancelled) {
           const cleanSubOrder = subOrderNum.replace(/[^a-zA-Z0-9-]/g, '_');
-          setLabelFile(new File([blob], `Label_Pengiriman_${cleanSubOrder}.png`, { type: 'image/png' }));
+          setLabelFile(new File([blob], `Label_Pengiriman_${cleanSubOrder}.pdf`, { type: 'application/pdf' }));
         }
       } catch (error) {
         console.error('Gagal menyiapkan label untuk 4BarCode:', error);
@@ -105,7 +166,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         await navigator.share({
           files: [labelFile],
           title,
-          text: 'Buka dengan 4BarCode untuk mencetak ke printer XP-420B.',
+          text: 'Buka PDF ini dengan 4BarCode untuk mencetak ke printer XP-420B.',
         });
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return;
@@ -124,7 +185,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
       link.download = labelFile.name;
       link.click();
       window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
-      window.alert('Gambar label sudah diunduh. Buka 4BarCode, pilih Picture Printing, lalu pilih gambar tersebut.');
+      window.alert('PDF label sudah diunduh. Buka file tersebut dari folder Download, lalu pilih 4BarCode.');
       return;
     }
 
