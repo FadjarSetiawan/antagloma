@@ -213,28 +213,28 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           {/* Header Store Info */}
           <div className="border-b-2 border-black pb-2 pt-1 flex justify-between items-start gap-2">
             <div className="space-y-0.5 min-w-0 flex-1">
-              <h1 className="font-bold text-xs tracking-wider text-black uppercase leading-normal pt-1">ANTAGLOMA FLORIST</h1>
-              <p className="text-[9.5px] font-semibold text-black leading-tight">Spesialis Adenium Bunga Tumpuk</p>
-              <p className="text-[9px] font-normal text-black leading-tight">WA: 0858-9450-3333 / 0857-3333-1889</p>
+              <h1 className="font-bold text-sm tracking-wider text-black uppercase leading-normal pt-1">ANTAGLOMA FLORIST</h1>
+              <p className="text-[11px] font-semibold text-black leading-tight">Spesialis Adenium Bunga Tumpuk</p>
+              <p className="text-[10.5px] font-normal text-black leading-tight">WA: 0858-9450-3333 / 0857-3333-1889</p>
             </div>
             <div className="text-right shrink-0">
-              <div className="border border-black px-2 py-1 text-[8.5px] font-bold text-black uppercase inline-block mt-0.5 mb-1 tracking-wider leading-normal text-center">
+              <div className="border border-black px-2 py-1 text-[10px] font-bold text-black uppercase inline-block mt-0.5 mb-1 tracking-wider leading-normal text-center">
                 NOTA PACKING
               </div>
-              <p className="font-bold text-[11px] text-black leading-tight tracking-tight whitespace-nowrap">{order.order_number}</p>
-              <p className="text-[9px] font-normal text-black leading-tight">Tgl: {formattedDate}</p>
+              <p className="font-bold text-[13px] text-black leading-tight tracking-tight whitespace-nowrap">{order.order_number}</p>
+              <p className="text-[10.5px] font-normal text-black leading-tight">Tgl: {formattedDate}</p>
               {packageInfo && (
-                <p className="text-[9.5px] font-bold text-black leading-tight mt-0.5">Paket {packageInfo.letter}</p>
+                <p className="text-[11px] font-bold text-black leading-tight mt-0.5">Paket {packageInfo.letter}</p>
               )}
             </div>
           </div>
 
           {/* Receiver Info */}
           <div className="border-b border-black pb-2 space-y-1">
-            <p className="text-[9px] font-bold text-black uppercase tracking-wider">PENERIMA / CUSTOMER:</p>
-            <p className="font-bold text-xs text-black leading-tight break-words">{order.customer_name}</p>
-            <p className="text-[10.5px] font-semibold text-black leading-tight">{order.phone}</p>
-            <div className="pt-0.5 text-[9.5px] font-bold text-black">
+            <p className="text-[10.5px] font-bold text-black uppercase tracking-wider">PENERIMA / CUSTOMER:</p>
+            <p className="font-bold text-sm text-black leading-tight break-words">{order.customer_name}</p>
+            <p className="text-xs font-semibold text-black leading-tight">{order.phone}</p>
+            <div className="pt-0.5 text-[11px] font-bold text-black">
               <span>[ {packageType.toUpperCase()} ]</span>
               <span className="ml-2 font-normal text-black">Berat: {packageWeight}</span>
             </div>
@@ -242,17 +242,17 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
 
           {/* Destination Address */}
           <div className="border-b-2 border-black pb-2 space-y-0.5">
-            <p className="text-[9px] font-bold text-black uppercase tracking-wider">ALAMAT PENGIRIMAN:</p>
-            <p className="font-bold text-[10px] text-black leading-snug break-words">
+            <p className="text-[10.5px] font-bold text-black uppercase tracking-wider">ALAMAT PENGIRIMAN:</p>
+            <p className="font-bold text-xs text-black leading-snug break-words">
               {[order.district_name, order.regency_name, order.province_name].filter(Boolean).join(', ')}
             </p>
-            <p className="text-[10px] font-normal text-black leading-snug break-words">{order.full_address}</p>
+            <p className="text-[11px] font-normal text-black leading-snug break-words">{order.full_address}</p>
           </div>
 
           {/* Plant Items Table */}
           <div className="space-y-1">
-            <p className="text-[9px] font-bold text-black uppercase tracking-wider">ITEM TANAMAN & BONSAI POT</p>
-            <table className="w-full text-left text-[9.5px] border-collapse table-fixed">
+            <p className="text-[10.5px] font-bold text-black uppercase tracking-wider">ITEM TANAMAN & BONSAI POT</p>
+            <table className="w-full text-left text-[11px] border-collapse table-fixed">
               <thead>
                 <tr className="border-y border-black font-bold text-black uppercase tracking-wider">
                   <th className="py-1 w-5 text-center">NO</th>
@@ -284,7 +284,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
 
           {/* Packing Notes Block */}
           <div className="border border-black rounded-lg p-2 space-y-1 bg-white my-1">
-            <div className="flex items-center justify-between text-[8.5px] font-bold text-black uppercase tracking-wider">
+            <div className="flex items-center justify-between text-[10px] font-bold text-black uppercase tracking-wider">
               <span>CATATAN PENGIRIMAN / PACKING KAYU:</span>
               <span className="text-[7.5px] font-normal italic lowercase text-slate-700 no-print">(DAPAT DIEDIT ADMIN SEBELUM DICETAK)</span>
             </div>
@@ -296,13 +296,13 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
               rows={2}
               className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-800 rounded p-1.5 text-[10px] font-medium italic text-black focus:outline-none focus:ring-1 focus:ring-emerald-700 resize-y no-print leading-relaxed"
             />
-            <div className="hidden print:block text-[10px] font-medium italic text-black whitespace-pre-wrap leading-tight">
+            <div className="hidden print:block text-[11px] font-medium italic text-black whitespace-pre-wrap leading-tight">
               {customNotes.trim() ? customNotes : '-'}
             </div>
           </div>
 
           {/* Signatures Section */}
-          <div className="pt-2 border-t border-black grid grid-cols-3 gap-1.5 text-center text-[9px] font-normal pb-3">
+          <div className="pt-2 border-t border-black grid grid-cols-3 gap-1.5 text-center text-[10.5px] font-normal pb-3">
             <div>
               <span className="text-black font-semibold block mb-4">Sales</span>
               <span className="font-bold text-black block border-t border-black pt-0.5 truncate">

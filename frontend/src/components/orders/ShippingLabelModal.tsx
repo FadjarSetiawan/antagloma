@@ -316,23 +316,23 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
             {/* Header Store & Order ID */}
             <div className="flex items-start justify-between border-b-2 border-black pb-3 pt-1 gap-2">
               <div className="space-y-0.5 min-w-0 flex-1">
-                <h1 className="font-extrabold text-base sm:text-lg tracking-wider text-black uppercase leading-normal pt-0.5">
+                <h1 className="font-extrabold text-xl tracking-wider text-black uppercase leading-normal pt-0.5">
                   ANTAGLOMA FLORIST
                 </h1>
-                <p className="text-xs font-semibold text-black leading-tight">
+                <p className="text-sm font-semibold text-black leading-tight">
                   Spesialis Adenium Bunga Tumpuk
                 </p>
-                <p className="text-[11px] font-normal text-black leading-tight">
+                <p className="text-[13px] font-normal text-black leading-tight">
                   WA: 0858-9450-3333 / 0857-3333-1889
                 </p>
               </div>
 
               <div className="text-right shrink-0">
-                <div className="border-2 border-black px-2.5 py-1 text-[10px] font-bold text-black uppercase inline-block mt-0.5 mb-1 tracking-wider leading-normal text-center">
+                <div className="border-2 border-black px-2.5 py-1 text-xs font-bold text-black uppercase inline-block mt-0.5 mb-1 tracking-wider leading-normal text-center">
                   STIKER RESI
                 </div>
-                <p className="font-extrabold text-sm sm:text-base text-black leading-tight tracking-tight whitespace-nowrap">{subOrderNum}</p>
-                <span className="font-bold text-xs text-black uppercase block mt-1">
+                <p className="font-extrabold text-base text-black leading-tight tracking-tight whitespace-nowrap">{subOrderNum}</p>
+                <span className="font-bold text-sm text-black uppercase block mt-1">
                   [ {pkgType} ]
                 </span>
               </div>
@@ -340,30 +340,30 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
 
             {/* Customer Recipient Section */}
             <div className="border-b-2 border-black pb-3 space-y-1">
-              <span className="text-xs font-bold uppercase text-black block tracking-wider">
+              <span className="text-sm font-bold uppercase text-black block tracking-wider">
                 PENERIMA / CUSTOMER:
               </span>
-              <h2 className="text-base sm:text-xl font-extrabold text-black block leading-tight break-words">{order.customer_name}</h2>
-              <p className="text-sm sm:text-base font-bold text-black flex items-center gap-1.5 mt-1">
+              <h2 className="text-xl font-extrabold text-black block leading-tight break-words">{order.customer_name}</h2>
+              <p className="text-base font-bold text-black flex items-center gap-1.5 mt-1">
                 <Phone className="w-4 h-4 text-black shrink-0" /> {order.phone}
               </p>
             </div>
 
             {/* Destination Address Block */}
             <div className="border-b-2 border-black pb-3 space-y-1.5 flex-1">
-              <span className="text-xs font-bold uppercase text-black block tracking-wider">
+              <span className="text-sm font-bold uppercase text-black block tracking-wider">
                 ALAMAT PENGIRIMAN:
               </span>
-              <p className="font-extrabold text-sm sm:text-base text-black leading-snug break-words">
+              <p className="font-extrabold text-base text-black leading-snug break-words">
                 {[order.district_name ? `Kec. ${order.district_name}` : null, order.regency_name, order.province_name].filter(Boolean).join(', ')}
               </p>
-              <p className="text-xs sm:text-sm font-normal text-black leading-relaxed break-words pt-1">
+              <p className="text-sm font-normal text-black leading-relaxed break-words pt-1">
                 {order.full_address}
               </p>
             </div>
 
             {/* Package Summary Box (No weight text as requested) */}
-            <div className="border-2 border-black rounded-lg p-2.5 text-xs font-bold text-black flex items-center justify-between bg-slate-50/50 mt-auto shrink-0">
+            <div className="border-2 border-black rounded-lg p-2.5 text-sm font-bold text-black flex items-center justify-between bg-slate-50/50 mt-auto shrink-0">
               <span>Isi Paket: {packageInfo?.itemsSummary || 'Tanaman'}</span>
             </div>
           </div>
