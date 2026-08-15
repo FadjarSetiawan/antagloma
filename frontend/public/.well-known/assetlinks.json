@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.antagloma.printbridge",
+      "sha256_cert_fingerprints": ["7A:90:1B:AD:57:0F:80:4F:75:26:16:32:16:E6:68:6C:0B:0B:97:F6:F5:D7:B5:9E:91:91:B4:8E:0F:15:63:8E"]
+    }
+  }
+]
