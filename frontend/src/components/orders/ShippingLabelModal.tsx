@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Order } from '../../types/order';
-import { Tag, Printer, X, Phone } from 'lucide-react';
+import { Tag, Printer, X } from 'lucide-react';
 import { printElementViaIframe } from '../../utils/printHelper';
-import { thermalPrinterService } from '../../utils/thermalPrinter';
+import { createShippingLabelCanvas } from '../../utils/shippingLabelCanvas';
 
 interface ShippingLabelModalProps {
   order: Order | null;
@@ -85,64 +85,11 @@ const createSingleImagePdf = async (canvas: HTMLCanvasElement): Promise<Blob> =>
 
 export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, packageInfo, onClose }) => {
   const [labelFile, setLabelFile] = useState<File | null>(null);
+  const [labelPreviewUrl, setLabelPreviewUrl] = useState<string>('');
   const [isPreparingLabel, setIsPreparingLabel] = useState(false);
   const [isSharingLabel, setIsSharingLabel] = useState(false);
 
   const subOrderNum = packageInfo?.subOrderNumber || `${order?.order_number || 'label'}-A`;
-
-  useEffect(() => {
-    if (!order) return;
-
-    let cancelled = false;
-    const prepareLabelFile = async () => {
-      setIsPreparingLabel(true);
-      setLabelFile(null);
-
-      try {
-        // Wait until the portal content has been painted before rendering it.
-        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-        const printableEl = document.getElementById('shipping-label-printable');
-        if (!printableEl) return;
-
-        // Render at 1200px width (300 DPI for 4x6 inch thermal sticker)
-        const { canvas: renderedCanvas } = await thermalPrinterService.renderToThermalCanvas(printableEl, 1200);
-        const labelCanvas = document.createElement('canvas');
-        labelCanvas.width = 1200;
-        labelCanvas.height = 1800;
-
-        const context = labelCanvas.getContext('2d');
-        if (!context) throw new Error('Gagal menyiapkan gambar label.');
-
-        context.fillStyle = '#ffffff';
-        context.fillRect(0, 0, labelCanvas.width, labelCanvas.height);
-
-        // Scale to fill full width and draw strictly from the top (offsetY = 0)
-        const scale = labelCanvas.width / renderedCanvas.width;
-        const outputWidth = labelCanvas.width;
-        const outputHeight = Math.min(Math.round(renderedCanvas.height * scale), labelCanvas.height);
-
-        context.drawImage(renderedCanvas, 0, 0, outputWidth, outputHeight);
-
-        const blob = await createSingleImagePdf(labelCanvas);
-
-        if (!cancelled) {
-          const cleanSubOrder = subOrderNum.replace(/[^a-zA-Z0-9-]/g, '_');
-          setLabelFile(new File([blob], `Label_Pengiriman_${cleanSubOrder}.pdf`, { type: 'application/pdf' }));
-        }
-      } catch (error) {
-        console.error('Gagal menyiapkan label untuk 4BarCode:', error);
-      } finally {
-        if (!cancelled) setIsPreparingLabel(false);
-      }
-    };
-
-    void prepareLabelFile();
-    return () => {
-      cancelled = true;
-    };
-  }, [order, packageInfo, subOrderNum]);
-
-  if (!order) return null;
 
   const handlePrint = async () => {
     const cleanSubOrder = (subOrderNum || 'label').replace(/[^a-zA-Z0-9-]/g, '_');
@@ -207,9 +154,9 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
     window.alert('Browser tidak menyediakan fitur cetak dan PDF label belum siap. Silakan coba kembali.');
   };
 
-  const rawPkgType = packageInfo?.packageType || order.delivery_method || 'Fullset';
+  const rawPkgType = packageInfo?.packageType || order?.delivery_method || 'Fullset';
   const normalizedPkgType = rawPkgType.trim().toLowerCase();
-  const isWoodPacking = order.delivery_method === 'Packing Kayu' || normalizedPkgType === 'packing kayu';
+  const isWoodPacking = order?.delivery_method === 'Packing Kayu' || normalizedPkgType === 'packing kayu';
   const pkgType = isWoodPacking
     ? 'Packing Kayu'
     : normalizedPkgType === 'fullset'
@@ -217,6 +164,55 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
       : ['non-fullset', 'non fullset', 'non_fullset'].includes(normalizedPkgType)
         ? 'Non Fullset'
         : rawPkgType;
+
+  useEffect(() => {
+    if (!order) return;
+
+    let cancelled = false;
+    let previewUrl = '';
+
+    const prepareLabelFile = async () => {
+      setIsPreparingLabel(true);
+      setLabelFile(null);
+      setLabelPreviewUrl('');
+
+      try {
+        const destinationArea = [
+          order.district_name ? `Kec. ${order.district_name}` : null,
+          order.regency_name,
+          order.province_name,
+        ].filter(Boolean).join(', ');
+        const labelCanvas = createShippingLabelCanvas({
+          subOrderNumber: subOrderNum,
+          packageType: pkgType,
+          customerName: order.customer_name || '-',
+          customerPhone: order.phone || '-',
+          destinationArea: destinationArea || '-',
+          fullAddress: order.full_address || '-',
+          itemsSummary: packageInfo?.itemsSummary || 'Tanaman',
+        });
+        const blob = await createSingleImagePdf(labelCanvas);
+        previewUrl = labelCanvas.toDataURL('image/png');
+
+        if (!cancelled) {
+          const cleanSubOrder = subOrderNum.replace(/[^a-zA-Z0-9-]/g, '_');
+          setLabelPreviewUrl(previewUrl);
+          setLabelFile(new File([blob], `Label_Pengiriman_${cleanSubOrder}.pdf`, { type: 'application/pdf' }));
+        }
+      } catch (error) {
+        console.error('Gagal menyiapkan label 10x15:', error);
+      } finally {
+        if (!cancelled) setIsPreparingLabel(false);
+      }
+    };
+
+    void prepareLabelFile();
+    return () => {
+      cancelled = true;
+    };
+  }, [order, packageInfo?.itemsSummary, pkgType, subOrderNum]);
+
+  if (!order) return null;
 
   const modalContent = (
     <div id="shipping-label-modal-container" className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto font-sans text-slate-900">
@@ -246,62 +242,20 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         </div>
 
         {/* Printable Shipping Label Body Container */}
-        <div id="shipping-label-printable" className="p-3 sm:p-4 overflow-y-auto print-area text-slate-900 font-sans text-xs flex-1">
-          {/* Label Container Box (Proportional high-clarity layout for 10x15cm / 4x6 inch thermal paper) */}
-          <div className="p-3 space-y-4 font-sans bg-white text-black">
-            {/* Header Store & Order ID */}
-            <div className="flex items-start justify-between border-b-[3px] border-black pb-3 pt-0.5 gap-2">
-              <div className="space-y-0.5 min-w-0 flex-1">
-                <h1 className="font-black text-2xl tracking-tight text-black uppercase leading-tight">
-                  ANTAGLOMA FLORIST
-                </h1>
-                <p className="text-sm font-bold text-black leading-tight">
-                  Spesialis Adenium Bunga Tumpuk
-                </p>
-                <p className="text-xs font-semibold text-black leading-tight">
-                  WA: 0858-9450-3333 / 0857-3333-1889
-                </p>
+        <div className="p-3 overflow-y-auto print-area flex-1 bg-slate-100">
+          <div className="mx-auto w-full max-w-[340px] bg-white border border-slate-300 shadow-sm">
+            {labelPreviewUrl ? (
+              <img
+                id="shipping-label-printable"
+                src={labelPreviewUrl}
+                alt={`Label pengiriman ${subOrderNum}`}
+                className="block w-full h-auto bg-white"
+              />
+            ) : (
+              <div className="aspect-[2/3] flex items-center justify-center text-xs text-slate-500">
+                Menyiapkan pratinjau label...
               </div>
-
-              <div className="text-right shrink-0">
-                <div className="border-2 border-black px-2.5 py-0.5 text-xs font-black text-black uppercase inline-block mb-1 tracking-wider leading-normal text-center">
-                  STIKER RESI
-                </div>
-                <p className="font-black text-xl text-black leading-tight tracking-tight whitespace-nowrap">{subOrderNum}</p>
-                <span className="font-black text-sm text-black uppercase block mt-0.5">
-                  [ {pkgType} ]
-                </span>
-              </div>
-            </div>
-
-            {/* Customer Recipient Section */}
-            <div className="border-b-[3px] border-black pb-3 space-y-0.5">
-              <span className="text-xs font-black uppercase text-slate-800 block tracking-wider">
-                PENERIMA / CUSTOMER:
-              </span>
-              <h2 className="text-3xl font-black text-black block leading-tight break-words pt-1">{order.customer_name}</h2>
-              <p className="text-xl font-black text-black flex items-center gap-2 pt-1">
-                <Phone className="w-5 h-5 text-black shrink-0" /> {order.phone}
-              </p>
-            </div>
-
-            {/* Destination Address Block */}
-            <div className="border-b-[3px] border-black pb-3 space-y-1">
-              <span className="text-xs font-black uppercase text-slate-800 block tracking-wider">
-                ALAMAT PENGIRIMAN:
-              </span>
-              <p className="font-black text-xl text-black leading-snug break-words pt-1">
-                {[order.district_name ? `Kec. ${order.district_name}` : null, order.regency_name, order.province_name].filter(Boolean).join(', ')}
-              </p>
-              <p className="text-base font-bold text-black leading-relaxed break-words pt-1">
-                {order.full_address}
-              </p>
-            </div>
-
-            {/* Package Summary Box */}
-            <div className="border-[2.5px] border-black rounded-xl p-3.5 text-lg font-black text-black flex items-center justify-between bg-slate-50/80 mt-1">
-              <span>Isi Paket: {packageInfo?.itemsSummary || 'Tanaman'}</span>
-            </div>
+            )}
           </div>
         </div>
 
