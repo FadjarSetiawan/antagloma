@@ -22,6 +22,7 @@ export const DocumentPrintingPage: React.FC = () => {
       subOrderNumber: string;
       packageType: string;
       itemsSummary: string;
+      itemLines: string[];
       weightInfo: string;
     };
   } | null>(null);
@@ -66,6 +67,7 @@ export const DocumentPrintingPage: React.FC = () => {
           subOrderNumber: `${order.order_number}-${pkg.letter}`,
           packageType: pkg.package_type || 'Paket',
           plantCount: (pkg.items || []).reduce((sum, item) => sum + item.quantity, 0),
+          itemLines: (pkg.items || []).map((item) => item.product_name || 'Tanaman'),
           weightInfo: pkg.weight ? `${pkg.weight} kg` : '1 kg',
           printedNota: pkg.nota_printed,
           printedLabel: pkg.label_printed,
@@ -128,8 +130,9 @@ export const DocumentPrintingPage: React.FC = () => {
       packageInfo: {
         id: pkgCard.packageId,
         subOrderNumber: pkgCard.subOrderNumber,
-      packageType: pkgCard.packageType,
+        packageType: pkgCard.packageType,
         itemsSummary: `${pkgCard.plantCount} tanaman`,
+        itemLines: pkgCard.itemLines,
         weightInfo: pkgCard.weightInfo,
       },
     });

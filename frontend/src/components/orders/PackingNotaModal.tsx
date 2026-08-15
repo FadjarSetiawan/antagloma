@@ -146,9 +146,9 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
           {/* Header Store Info */}
           <div className="border-b-2 border-black pb-2 pt-1 flex justify-between items-start gap-2">
             <div className="space-y-0.5 min-w-0 flex-1">
-              <h1 className="font-bold text-[15px] tracking-normal text-black uppercase leading-normal pt-1 whitespace-nowrap">ANTAGLOMA FLORIST</h1>
-              <p className="text-xs font-semibold text-black leading-tight">Spesialis Adenium Bunga Tumpuk</p>
-              <p className="text-[11.5px] font-normal text-black leading-tight">WA: 0858-9450-3333 / 0857-3333-1889</p>
+              <h1 className="font-bold text-[16px] tracking-normal text-black uppercase leading-normal pt-1 whitespace-nowrap">ANTALOGMA FLORIST</h1>
+              <p className="text-[13px] font-semibold text-black leading-tight">Spesialis Adenium Bunga Tumpuk</p>
+              <p className="text-xs font-normal text-black leading-tight">WA: 0858-9450-3333 / 0857-3333-1889</p>
             </div>
             <div className="text-right shrink-0">
               <div className="border border-black px-2 py-1 text-[11px] font-bold text-black uppercase inline-block mt-0.5 mb-1 tracking-wider leading-normal text-center">
@@ -184,8 +184,8 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
 
           {/* Plant Items Table */}
           <div className="space-y-1">
-            <p className="text-xs font-bold text-black uppercase tracking-wider">ITEM TANAMAN & BONSAI POT</p>
-            <table className="w-full text-left text-xs border-collapse table-fixed">
+            <p className="text-[13px] font-bold text-black uppercase tracking-wider">ITEM TANAMAN & BONSAI POT</p>
+            <table className="w-full text-left text-[13px] border-collapse table-fixed">
               <thead>
                 <tr className="border-y border-black font-bold text-black uppercase tracking-wider">
                   <th className="py-1 w-5 text-center">NO</th>

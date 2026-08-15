@@ -13,6 +13,7 @@ interface ShippingLabelModalProps {
     subOrderNumber: string;
     packageType: string;
     itemsSummary: string;
+    itemLines?: string[];
     weightInfo: string;
   } | null;
   onClose: () => void;
@@ -193,12 +194,12 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
         ].filter(Boolean).join(', ');
         const labelCanvas = createShippingLabelCanvas({
           subOrderNumber: subOrderNum,
-          packageType: pkgType,
           customerName: order.customer_name || '-',
           customerPhone: order.phone || '-',
           destinationArea: destinationArea || '-',
           fullAddress: order.full_address || '-',
           itemsSummary: packageInfo?.itemsSummary || 'Tanaman',
+          itemLines: packageInfo?.itemLines || [],
         });
         const blob = await createSingleImagePdf(labelCanvas);
         previewUrl = labelCanvas.toDataURL('image/png');

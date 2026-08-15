@@ -1,232 +1,87 @@
 export interface ShippingLabelCanvasData {
   subOrderNumber: string;
-  packageType: string;
   customerName: string;
   customerPhone: string;
   destinationArea: string;
   fullAddress: string;
   itemsSummary: string;
+  itemLines?: string[];
 }
 
-const LABEL_WIDTH = 1200;
-const LABEL_HEIGHT = 1800;
-const MARGIN = 64;
-const CONTENT_WIDTH = LABEL_WIDTH - (MARGIN * 2);
+// Keep this canvas at the identical XP-420B target resolution used by Android:
+// 100 mm x 150 mm at 203 DPI = approximately 800 x 1200 dots.
+const WIDTH = 800;
+const HEIGHT = 1198;
+const black = '#000000';
 
-const setFont = (
-  context: CanvasRenderingContext2D,
-  size: number,
-  weight: 'normal' | '600' | '700' | '800' = 'normal',
-) => {
-  context.font = `${weight} ${size}px Arial, Helvetica, sans-serif`;
+const font = (c: CanvasRenderingContext2D, size: number, bold = false) => {
+  c.font = `${bold ? '700' : '400'} ${size}px Arial, Helvetica, sans-serif`;
 };
 
-const fitFontSize = (
-  context: CanvasRenderingContext2D,
-  text: string,
-  maxWidth: number,
-  preferredSize: number,
-  minimumSize: number,
-  weight: 'normal' | '600' | '700' | '800' = '700',
-) => {
-  let size = preferredSize;
-  setFont(context, size, weight);
-  while (size > minimumSize && context.measureText(text).width > maxWidth) {
-    size -= 1;
-    setFont(context, size, weight);
-  }
-  return size;
+const roundRect = (c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
+  c.beginPath();
+  c.roundRect(x, y, w, h, r);
 };
 
-const splitLongWord = (
-  context: CanvasRenderingContext2D,
-  word: string,
-  maxWidth: number,
-) => {
-  const chunks: string[] = [];
-  let current = '';
-
-  Array.from(word).forEach((character) => {
-    const candidate = `${current}${character}`;
-    if (current && context.measureText(candidate).width > maxWidth) {
-      chunks.push(current);
-      current = character;
-    } else {
-      current = candidate;
-    }
-  });
-
-  if (current) chunks.push(current);
-  return chunks;
-};
-
-const drawWrappedText = (
-  context: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  startY: number,
-  maxWidth: number,
-  lineHeight: number,
-  maxLines = 4,
-) => {
-  const normalized = text.trim() || '-';
-  const sourceWords = normalized.split(/\s+/);
-  const words = sourceWords.flatMap((word) => (
-    context.measureText(word).width > maxWidth
-      ? splitLongWord(context, word, maxWidth)
-      : [word]
-  ));
+// Android uses deterministic word wrapping by character count. Reproduce it here
+// rather than relying on the responsive browser width.
+const wrap = (value: string, maxChars: number) => {
   const lines: string[] = [];
-  let currentLine = '';
-
-  words.forEach((word) => {
-    const candidate = currentLine ? `${currentLine} ${word}` : word;
-    if (currentLine && context.measureText(candidate).width > maxWidth) {
-      lines.push(currentLine);
-      currentLine = word;
-    } else {
-      currentLine = candidate;
-    }
+  (value.trim().split(/\s+/).filter(Boolean)).forEach((word) => {
+    const last = lines[lines.length - 1];
+    if (!last || `${last} ${word}`.length > maxChars) lines.push(word);
+    else lines[lines.length - 1] = `${last} ${word}`;
   });
-  if (currentLine) lines.push(currentLine);
-
-  const visibleLines = lines.slice(0, maxLines);
-  if (lines.length > maxLines && visibleLines.length > 0) {
-    let lastLine = visibleLines[visibleLines.length - 1];
-    while (lastLine.length > 1 && context.measureText(`${lastLine}...`).width > maxWidth) {
-      lastLine = lastLine.slice(0, -1);
-    }
-    visibleLines[visibleLines.length - 1] = `${lastLine.trim()}...`;
-  }
-
-  visibleLines.forEach((line, index) => {
-    context.fillText(line, x, startY + (index * lineHeight));
-  });
-
-  return startY + (visibleLines.length * lineHeight);
+  return lines.length ? lines : ['-'];
 };
 
-const drawDivider = (context: CanvasRenderingContext2D, y: number) => {
-  context.beginPath();
-  context.moveTo(MARGIN, y);
-  context.lineTo(LABEL_WIDTH - MARGIN, y);
-  context.lineWidth = 6;
-  context.strokeStyle = '#000000';
-  context.stroke();
-};
+const dateToday = () => new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date());
 
-const drawRoundedRectangle = (
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number,
-) => {
-  const safeRadius = Math.min(radius, width / 2, height / 2);
-  context.beginPath();
-  context.moveTo(x + safeRadius, y);
-  context.lineTo(x + width - safeRadius, y);
-  context.quadraticCurveTo(x + width, y, x + width, y + safeRadius);
-  context.lineTo(x + width, y + height - safeRadius);
-  context.quadraticCurveTo(x + width, y + height, x + width - safeRadius, y + height);
-  context.lineTo(x + safeRadius, y + height);
-  context.quadraticCurveTo(x, y + height, x, y + height - safeRadius);
-  context.lineTo(x, y + safeRadius);
-  context.quadraticCurveTo(x, y, x + safeRadius, y);
-  context.closePath();
+const plant = (c: CanvasRenderingContext2D) => {
+  c.fillStyle = black;
+  c.fillRect(93, 78, 6, 45);
+  c.beginPath(); c.moveTo(94, 105); c.bezierCurveTo(70, 103, 61, 82, 70, 68); c.bezierCurveTo(88, 70, 95, 87, 94, 105); c.fill();
+  c.beginPath(); c.moveTo(98, 105); c.bezierCurveTo(122, 103, 131, 82, 122, 68); c.bezierCurveTo(104, 70, 97, 87, 98, 105); c.fill();
+  c.beginPath(); c.moveTo(96, 92); c.bezierCurveTo(82, 77, 87, 56, 96, 48); c.bezierCurveTo(105, 56, 110, 77, 96, 92); c.fill();
+  roundRect(c, 70, 116, 52, 8, 2); c.fill();
+  c.beginPath(); c.moveTo(74, 125); c.lineTo(118, 125); c.lineTo(112, 147); c.lineTo(80, 147); c.closePath(); c.fill();
 };
 
 export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   const canvas = document.createElement('canvas');
-  canvas.width = LABEL_WIDTH;
-  canvas.height = LABEL_HEIGHT;
-
-  const context = canvas.getContext('2d');
-  if (!context) throw new Error('Gagal menyiapkan canvas label.');
-
-  context.fillStyle = '#ffffff';
-  context.fillRect(0, 0, LABEL_WIDTH, LABEL_HEIGHT);
-  context.fillStyle = '#000000';
-  context.textBaseline = 'top';
-
-  const rightX = 675;
-  const rightWidth = LABEL_WIDTH - MARGIN - rightX;
-
-  setFont(context, 54, '800');
-  context.fillText('ANTAGLOMA FLORIST', MARGIN, 68);
-  setFont(context, 31, '700');
-  context.fillText('Spesialis Adenium Bunga Tumpuk', MARGIN, 136);
-  setFont(context, 28, '600');
-  context.fillText('0858-9450-3333', MARGIN, 184);
-  context.fillText('0857-3333-1889', MARGIN, 224);
-
-  const badgeWidth = 270;
-  const badgeHeight = 62;
-  const badgeX = LABEL_WIDTH - MARGIN - badgeWidth;
-  context.strokeStyle = '#000000';
-  context.lineWidth = 5;
-  context.strokeRect(badgeX, 62, badgeWidth, badgeHeight);
-  setFont(context, 28, '800');
-  context.textAlign = 'center';
-  context.fillText('STIKER RESI', badgeX + (badgeWidth / 2), 78);
-
-  context.textAlign = 'right';
-  fitFontSize(context, data.subOrderNumber, rightWidth, 38, 27, '800');
-  context.fillText(data.subOrderNumber, LABEL_WIDTH - MARGIN, 150);
-  fitFontSize(context, `[ ${data.packageType.toUpperCase()} ]`, rightWidth, 32, 24, '800');
-  context.fillText(`[ ${data.packageType.toUpperCase()} ]`, LABEL_WIDTH - MARGIN, 204);
-  context.textAlign = 'left';
-
-  // Keep the fixed header columns independent. This is deliberately not based
-  // on the responsive modal DOM, so a narrow Android viewport cannot collapse
-  // the sender text into the order number.
-  drawDivider(context, 300);
-
-  setFont(context, 29, '800');
-  context.fillText('PENERIMA / CUSTOMER:', MARGIN, 340);
-  setFont(context, 58, '800');
-  const customerY = drawWrappedText(context, data.customerName, MARGIN, 388, CONTENT_WIDTH, 66, 2);
-  setFont(context, 43, '700');
-  context.fillText(data.customerPhone || '-', MARGIN, customerY + 6);
-  const recipientDividerY = customerY + 74;
-  drawDivider(context, recipientDividerY);
-
-  setFont(context, 29, '800');
-  context.fillText('ALAMAT PENGIRIMAN:', MARGIN, recipientDividerY + 38);
-  setFont(context, 43, '800');
-  const areaEndY = drawWrappedText(
-    context,
-    data.destinationArea,
-    MARGIN,
-    recipientDividerY + 88,
-    CONTENT_WIDTH,
-    53,
-    3,
-  );
-  setFont(context, 34, '600');
-  const addressEndY = drawWrappedText(
-    context,
-    data.fullAddress,
-    MARGIN,
-    areaEndY + 13,
-    CONTENT_WIDTH,
-    44,
-    3,
-  );
-
-  const addressDividerY = Math.min(Math.max(addressEndY + 35, 950), 1220);
-  drawDivider(context, addressDividerY);
-
-  const boxY = Math.max(addressDividerY + 48, 1320);
-  const boxHeight = 120;
-  context.strokeStyle = '#000000';
-  context.lineWidth = 5;
-  const radius = 20;
-  drawRoundedRectangle(context, MARGIN, boxY, CONTENT_WIDTH, boxHeight, radius);
-  context.stroke();
-  setFont(context, 36, '800');
-  context.fillText(`Isi Paket: ${data.itemsSummary || 'Tanaman'}`, MARGIN + 30, boxY + 38);
-
+  canvas.width = WIDTH;
+  canvas.height = HEIGHT;
+  const c = canvas.getContext('2d');
+  if (!c) throw new Error('Gagal menyiapkan canvas label.');
+  c.fillStyle = '#ffffff'; c.fillRect(0, 0, WIDTH, HEIGHT); c.fillStyle = black; c.strokeStyle = black; c.textBaseline = 'alphabetic';
+  c.lineWidth = 5; roundRect(c, 24, 24, WIDTH - 48, HEIGHT - 48, 22); c.stroke();
+  plant(c);
+  font(c, 35, true); c.fillText('ANTALOGMA FLORIST', 148, 88);
+  font(c, 21, true); c.fillText('SPESIALIS ADENIUM BUNGA TUMPUK', 148, 122);
+  roundRect(c, WIDTH - 235, 54, 181, 64, 12); c.fill(); c.fillStyle = '#ffffff'; font(c, 25, true); c.textAlign = 'center'; c.fillText('STIKER RESI', WIDTH - 145, 97); c.textAlign = 'left'; c.fillStyle = black;
+  font(c, 31, true); c.fillText(`ORDER:   ${data.subOrderNumber}`, 68, 205); c.beginPath(); c.moveTo(52, 235); c.lineTo(WIDTH - 52, 235); c.stroke();
+  roundRect(c, 66, 264, 164, 52, 10); c.fill(); c.fillStyle = '#ffffff'; font(c, 23, true); c.textAlign = 'center'; c.fillText('PENERIMA', 148, 299); c.textAlign = 'left'; c.fillStyle = black;
+  font(c, 72, true); c.fillText(data.customerName || '-', 68, 407);
+  font(c, 37, true); c.fillText(`TEL: ${data.customerPhone || '-'}`, 68, 483);
+  roundRect(c, 66, 526, 328, 52, 10); c.fill(); c.fillStyle = '#ffffff'; font(c, 22, true); c.textAlign = 'center'; c.fillText('ALAMAT PENGIRIMAN', 230, 561); c.textAlign = 'left'; c.fillStyle = black;
+  const address = `${data.destinationArea || ''}, ${data.fullAddress || ''}`.replace(/^, |, $/g, '');
+  let y = 642;
+  wrap(address, 39).slice(0, 3).forEach((line, index) => { font(c, index === 0 ? 31 : 29, true); c.fillText(line, 68, y); y += 40; });
+  y = Math.max(y + 4, 710);
+  c.lineWidth = 5; roundRect(c, 64, y, WIDTH - 128, 190, 20); c.stroke();
+  font(c, 28, true); c.fillText('ISI PAKET', 98, y + 48);
+  font(c, 43, true); c.fillText(data.itemsSummary || 'Tanaman', 98, y + 105);
+  c.lineWidth = 3; c.beginPath(); c.moveTo(84, y + 126); c.lineTo(WIDTH - 84, y + 126); c.stroke();
+  let itemY = y + 153;
+  (data.itemLines?.length ? data.itemLines : ['Tanaman']).slice(0, 2).forEach((item) => { font(c, 20, true); c.fillText(`• ${item}`, 98, itemY); itemY += 25; });
+  const senderY = y + 212;
+  c.fillStyle = black; roundRect(c, 64, senderY, 166, 38, 9); c.fill(); c.fillStyle = '#ffffff'; font(c, 18, true); c.textAlign = 'center'; c.fillText('PENGIRIM', 147, senderY + 27); c.textAlign = 'left'; c.fillStyle = black;
+  font(c, 24, true); c.fillText('ANTALOGMA FLORIST', 74, senderY + 70);
+  font(c, 18, true); c.fillText('TEL: 0858-9450-3333 / 0857-3333-1889', 74, senderY + 101);
+  const footerY = senderY + 120; c.lineWidth = 5; c.beginPath(); c.moveTo(52, footerY); c.lineTo(WIDTH - 52, footerY); c.stroke();
+  font(c, 16, true); c.fillText('TANGGAL CETAK', 74, footerY + 34); c.fillText('ADMIN', WIDTH * .56, footerY + 34);
+  font(c, 18); c.fillText(dateToday(), 74, footerY + 58); c.fillText('Admin Operasional', WIDTH * .56, footerY + 58);
+  const closingY = footerY + 74; c.lineWidth = 3; c.beginPath(); c.moveTo(52, closingY); c.lineTo(WIDTH - 52, closingY); c.stroke();
+  font(c, 19, true); c.textAlign = 'center'; c.fillText('Terimakasih telah berbelanja di Antalogma Florist', WIDTH / 2, closingY + 33); c.textAlign = 'left';
   return canvas;
 };
