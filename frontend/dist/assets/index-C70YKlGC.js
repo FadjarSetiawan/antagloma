@@ -584,10 +584,10 @@ endobj
 stream
 ${p}endstream
 endobj
-`);const b=i;o(`xref
-0 6
-0000000000 65535 f 
-`);for(let u=1;u<=5;u+=1)o(`${String(l[u]).padStart(10,"0")} 00000 n 
+`);const b=i;o(`xref\r
+0 6\r
+0000000000 65535 f\r
+`);for(let u=1;u<=5;u+=1)o(`${String(l[u]).padStart(10,"0")} 00000 n\r
 `);o(`trailer
 << /Size 6 /Root 1 0 R >>
 startxref

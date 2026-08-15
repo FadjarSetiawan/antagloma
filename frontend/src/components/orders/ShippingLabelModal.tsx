@@ -66,9 +66,9 @@ const createSingleImagePdf = async (canvas: HTMLCanvasElement): Promise<Blob> =>
   appendText(`<< /Length ${encoder.encode(contentStream).length} >>\nstream\n${contentStream}endstream\nendobj\n`);
 
   const xrefOffset = byteLength;
-  appendText('xref\n0 6\n0000000000 65535 f \n');
+  appendText('xref\r\n0 6\r\n0000000000 65535 f\r\n');
   for (let objectNumber = 1; objectNumber <= 5; objectNumber += 1) {
-    appendText(`${String(offsets[objectNumber]).padStart(10, '0')} 00000 n \n`);
+    appendText(`${String(offsets[objectNumber]).padStart(10, '0')} 00000 n\r\n`);
   }
   appendText(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
 
