@@ -6,5 +6,8 @@ deployment:
     - /bin/cp -R backend/* $DEPLOYPATH/
     - /bin/mkdir -p $DEPLOYPATH/public
     - /bin/cp -R frontend/dist/* $DEPLOYPATH/public/
+    # Shell glob (*) does not include dot-directories. App Links verification depends on this exact file.
+    - /bin/mkdir -p $DEPLOYPATH/public/.well-known
+    - /bin/cp -R frontend/dist/.well-known/* $DEPLOYPATH/public/.well-known/
     - /bin/chmod -R 775 $DEPLOYPATH/storage
     - /bin/chmod -R 775 $DEPLOYPATH/bootstrap/cache
