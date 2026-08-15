@@ -4,10 +4,12 @@ import { Order } from '../../types/order';
 import { Tag, Printer, X } from 'lucide-react';
 import { printElementViaIframe } from '../../utils/printHelper';
 import { createShippingLabelCanvas } from '../../utils/shippingLabelCanvas';
+import { openPrintBridge } from '../../services/printBridgeService';
 
 interface ShippingLabelModalProps {
   order: Order | null;
   packageInfo?: {
+    id?: number;
     subOrderNumber: string;
     packageType: string;
     itemsSummary: string;
@@ -91,7 +93,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
 
   const subOrderNum = packageInfo?.subOrderNumber || `${order?.order_number || 'label'}-A`;
 
-  const handlePrint = async () => {
+  const handleLegacyPrint = async () => {
     const cleanSubOrder = (subOrderNum || 'label').replace(/[^a-zA-Z0-9-]/g, '_');
     const title = `Label_Pengiriman_${cleanSubOrder}`;
     
@@ -152,6 +154,13 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
     }
 
     window.alert('Browser tidak menyediakan fitur cetak dan PDF label belum siap. Silakan coba kembali.');
+  };
+
+  const handlePrint = async () => {
+    const packageId = packageInfo?.id;
+    if (!packageId) { window.alert('Pilih paket terlebih dahulu sebelum mencetak Label.'); return; }
+    try { await openPrintBridge(packageId, 'SHIPPING_LABEL'); }
+    catch (error) { window.alert(error instanceof Error ? error.message : 'Gagal membuka Antagloma Print Bridge.'); }
   };
 
   const rawPkgType = packageInfo?.packageType || order?.delivery_method || 'Fullset';

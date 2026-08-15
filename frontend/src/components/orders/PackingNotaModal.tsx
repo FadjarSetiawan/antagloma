@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Order, OrderPackage } from '../../types/order';
 import { Printer, X } from 'lucide-react';
-import { printElementViaIframe } from '../../utils/printHelper';
+import { openPrintBridge } from '../../services/printBridgeService';
 
 interface PackingNotaModalProps {
   order: Order | null;
@@ -21,20 +21,10 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
 
   if (!order) return null;
 
-  const handlePrint = () => {
-    const cleanOrderNumber = (order.order_number || 'order').replace(/[^a-zA-Z0-9-]/g, '_');
-    const cleanPkgLetter = packageInfo ? `-${packageInfo.letter}` : '';
-    const title = `Nota_Packing_${cleanOrderNumber}${cleanPkgLetter}`;
-    
-    // Blur active button focus to prevent Chrome Android touch event cancellation flicker
-    if (document.activeElement && 'blur' in document.activeElement) {
-      (document.activeElement as HTMLElement).blur();
-    }
-
-    // Use Android/browser print preview for the 80 mm nota. The helper mounts
-    // only this nota in the print document, so the dashboard cannot become
-    // extra pages while the printer service controls paper scaling/quality.
-    printElementViaIframe('packing-nota-printable', title, 'size: 80mm auto;');
+  const handlePrint = async () => {
+    if (!packageInfo?.id) { window.alert('Pilih paket terlebih dahulu sebelum mencetak Nota.'); return; }
+    try { await openPrintBridge(packageInfo.id, 'NOTA'); }
+    catch (error) { window.alert(error instanceof Error ? error.message : 'Gagal membuka Antagloma Print Bridge.'); }
   };
 
   const formattedDate = order.order_date
@@ -273,7 +263,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
         <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0 no-print">
           <button
             type="button"
-            onClick={handlePrint}
+            onClick={() => void handlePrint()}
             className="py-2.5 px-5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer flex-1"
           >
             <Printer className="w-4 h-4 shrink-0" />

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\MasterDataController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PackingController;
+use App\Http\Controllers\Api\PrintJobController;
 use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SalesPackingController;
@@ -71,6 +72,9 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::post('/packages/{package}/shipment', [PackingController::class, 'completePackageShipment']);
     });
 
+    // Web creates a short-lived, one-time job; no customer data is placed in the App Link.
+    Route::post('/print-jobs', [PrintJobController::class, 'create']);
+
     // Read-only package progress for Sales (Admin/Owner are also allowed by OrderPolicy::viewAny).
     Route::get('/sales/packing-progress', [SalesPackingController::class, 'progress']);
 
@@ -101,4 +105,10 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::post('/read-all', [NotificationController::class, 'markAllAsRead']);
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
     });
+});
+
+// The bridge authenticates these endpoints with the job's one-time bearer token, not a user session.
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/print-jobs/{jobId}', [PrintJobController::class, 'show']);
+    Route::post('/print-jobs/{jobId}/result', [PrintJobController::class, 'result']);
 });

@@ -18,6 +18,7 @@ export const DocumentPrintingPage: React.FC = () => {
   const [selectedLabelOrder, setSelectedLabelOrder] = useState<{
     order: Order;
     packageInfo: {
+      id: number;
       subOrderNumber: string;
       packageType: string;
       itemsSummary: string;
@@ -125,6 +126,7 @@ export const DocumentPrintingPage: React.FC = () => {
     setSelectedLabelOrder({
       order: pkgCard.order,
       packageInfo: {
+        id: pkgCard.packageId,
         subOrderNumber: pkgCard.subOrderNumber,
       packageType: pkgCard.packageType,
         itemsSummary: `${pkgCard.plantCount} tanaman`,
