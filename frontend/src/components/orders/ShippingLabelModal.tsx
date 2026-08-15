@@ -188,7 +188,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
 
       try {
         const destinationArea = [
-          order.district_name ? `Kec. ${order.district_name}` : null,
+          order.district_name ? `KEC. ${order.district_name}` : null,
           order.regency_name,
           order.province_name,
         ].filter(Boolean).join(', ');
