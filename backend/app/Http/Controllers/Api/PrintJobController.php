@@ -13,6 +13,9 @@ use Illuminate\Support\Str;
 
 class PrintJobController extends Controller
 {
+    /** Android App Link host. API hosting intentionally uses a different domain. */
+    private const APP_LINK_BASE_URL = 'https://floristyan.web.id';
+
     public function create(Request $request): JsonResponse
     {
         $data = $request->validate(['document_type' => ['required', 'in:NOTA,SHIPPING_LABEL'], 'package_id' => ['required', 'integer', 'exists:order_packages,id']]);
@@ -21,7 +24,9 @@ class PrintJobController extends Controller
         $plainToken = Str::random(64);
         // Column is UUID-sized (36 chars). Keep the public `pj_` prefix while staying below that limit.
         $job = PrintJob::create(['public_id' => 'pj_'.Str::lower(Str::random(27)), 'order_package_id' => $package->id, 'document_type' => $data['document_type'], 'token_hash' => hash('sha256', $plainToken), 'expires_at' => now()->addMinutes(5)]);
-        $base = rtrim(config('app.url'), '/');
+        // Do not use APP_URL here: this Laravel backend is hosted at florist.kaizoratech.com,
+        // while Android App Links are verified by the customer-facing floristyan.web.id domain.
+        $base = self::APP_LINK_BASE_URL;
         return response()->json(['success' => true, 'data' => ['job_id' => $job->public_id, 'token' => $plainToken, 'expires_at' => $job->expires_at->toIso8601String(), 'app_link' => "$base/print-jobs/{$job->public_id}?token=$plainToken"]], 201);
     }
 
