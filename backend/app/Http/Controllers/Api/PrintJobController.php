@@ -19,7 +19,8 @@ class PrintJobController extends Controller
         $package = OrderPackage::with(['order', 'items.item'])->findOrFail($data['package_id']);
         Gate::authorize('approve', $package->order);
         $plainToken = Str::random(64);
-        $job = PrintJob::create(['public_id' => 'pj_'.Str::lower((string) Str::uuid()), 'order_package_id' => $package->id, 'document_type' => $data['document_type'], 'token_hash' => hash('sha256', $plainToken), 'expires_at' => now()->addMinutes(5)]);
+        // Column is UUID-sized (36 chars). Keep the public `pj_` prefix while staying below that limit.
+        $job = PrintJob::create(['public_id' => 'pj_'.Str::lower(Str::random(27)), 'order_package_id' => $package->id, 'document_type' => $data['document_type'], 'token_hash' => hash('sha256', $plainToken), 'expires_at' => now()->addMinutes(5)]);
         $base = rtrim(config('app.url'), '/');
         return response()->json(['success' => true, 'data' => ['job_id' => $job->public_id, 'token' => $plainToken, 'expires_at' => $job->expires_at->toIso8601String(), 'app_link' => "$base/print-jobs/{$job->public_id}?token=$plainToken"]], 201);
     }
