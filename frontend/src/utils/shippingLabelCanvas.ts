@@ -47,6 +47,12 @@ const plant = (c: CanvasRenderingContext2D) => {
   c.beginPath(); c.moveTo(74, 125); c.lineTo(118, 125); c.lineTo(112, 147); c.lineTo(80, 147); c.closePath(); c.fill();
 };
 
+const whatsapp = (c: CanvasRenderingContext2D, x: number, centerY: number, radius: number) => {
+  c.strokeStyle = black; c.lineWidth = radius * .18; c.beginPath(); c.arc(x + radius, centerY, radius, 0, Math.PI * 2); c.stroke();
+  c.beginPath(); c.moveTo(x + radius * .72, centerY + radius * .12); c.lineTo(x + radius * 1.22, centerY - radius * .32); c.moveTo(x + radius * .78, centerY + radius * .34); c.lineTo(x + radius * 1.14, centerY + radius * .60); c.stroke();
+  c.fillStyle = black; c.beginPath(); c.moveTo(x + radius * .38, centerY + radius * .72); c.lineTo(x + radius * .46, centerY + radius * 1.25); c.lineTo(x + radius * .82, centerY + radius * .88); c.closePath(); c.fill();
+};
+
 export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   const canvas = document.createElement('canvas');
   canvas.width = WIDTH;
@@ -77,7 +83,7 @@ export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   const senderY = y + 184;
   c.fillStyle = black; roundRect(c, 64, senderY, 166, 36, 9); c.fill(); c.fillStyle = '#ffffff'; font(c, 18, true); c.textAlign = 'center'; c.fillText('PENGIRIM', 147, senderY + 25); c.textAlign = 'left'; c.fillStyle = black;
   font(c, 23, true); c.fillText('ANTALOGMA FLORIST', 74, senderY + 64);
-  font(c, 17, true); c.fillText('TELP: 0858-9450-3333 / 0857-3333-1889', 74, senderY + 93);
+  whatsapp(c, 74, senderY + 85, 10); font(c, 17, true); c.fillText('0858-9450-3333 / 0857-3333-1889', 99, senderY + 93);
   const footerY = senderY + 110; c.lineWidth = 5; c.beginPath(); c.moveTo(52, footerY); c.lineTo(WIDTH - 52, footerY); c.stroke();
   font(c, 16, true); c.fillText('TANGGAL CETAK', 74, footerY + 32); c.fillText('ADMIN', WIDTH * .56, footerY + 32);
   font(c, 18); c.fillText(dateToday(), 74, footerY + 55); c.fillText('Admin Operasional', WIDTH * .56, footerY + 55);

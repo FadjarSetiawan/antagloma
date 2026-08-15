@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Order, OrderPackage } from '../../types/order';
-import { Printer, X } from 'lucide-react';
+import { MessageCircle, Printer, X } from 'lucide-react';
 import { openPrintBridge } from '../../services/printBridgeService';
 
 interface PackingNotaModalProps {
@@ -148,7 +148,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
             <div className="space-y-0.5 min-w-0 flex-1">
               <h1 className="font-bold text-[16px] tracking-normal text-black uppercase leading-normal pt-1 whitespace-nowrap">ANTALOGMA FLORIST</h1>
               <p className="text-[13px] font-semibold text-black leading-tight">Spesialis Adenium Bunga Tumpuk</p>
-              <p className="text-xs font-normal text-black leading-tight">WA: 0858-9450-3333 / 0857-3333-1889</p>
+              <p className="text-xs font-normal text-black leading-tight flex items-center gap-1"><MessageCircle className="w-3 h-3 shrink-0" strokeWidth={2.5} />0858-9450-3333 / 0857-3333-1889</p>
             </div>
             <div className="text-right shrink-0">
               <div className="border border-black px-2 py-1 text-[11px] font-bold text-black uppercase inline-block mt-0.5 mb-1 tracking-wider leading-normal text-center">
@@ -190,8 +190,8 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 <tr className="border-y border-black font-bold text-black uppercase tracking-wider">
                   <th className="py-1 w-5 text-center">NO</th>
                   <th className="py-1 pl-1">VARIAN ADENIUM</th>
-                  <th className="py-1 text-center w-14">UKURAN</th>
-                  <th className="py-1 text-center w-6">QTY</th>
+                  <th className="py-1 text-center w-16 pr-1">UKURAN</th>
+                  <th className="py-1 text-center w-10 pl-1">QTY</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-300 font-normal text-black">
