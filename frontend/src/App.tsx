@@ -18,6 +18,7 @@ import { SalesCommissionPage } from './pages/sales/SalesCommissionPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
 import { UserManagementPage } from './pages/users/UserManagementPage';
 import { ManagementPage } from './pages/owner/ManagementPage';
+import { PrintBridgeFallbackPage } from './pages/documents/PrintBridgeFallbackPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,6 +44,7 @@ export const App: React.FC = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/print-jobs/:jobId" element={<PrintBridgeFallbackPage />} />
             <Route path="/" element={<DashboardLayout />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<RoleDashboardRouter />} />
