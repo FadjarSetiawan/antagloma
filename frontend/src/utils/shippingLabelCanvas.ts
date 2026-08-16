@@ -49,7 +49,9 @@ const plant = (c: CanvasRenderingContext2D) => {
 
 const whatsapp = (c: CanvasRenderingContext2D, x: number, centerY: number, radius: number) => {
   c.fillStyle = black; c.beginPath(); c.arc(x + radius, centerY, radius, 0, Math.PI * 2); c.fill();
-  c.fillStyle = '#ffffff'; font(c, radius * 1.05, true); c.textAlign = 'center'; c.fillText('WA', x + radius, centerY + radius * .38); c.textAlign = 'left'; c.fillStyle = black;
+  c.strokeStyle = '#ffffff'; c.lineCap = 'round'; c.lineWidth = radius * .38; c.beginPath(); c.moveTo(x + radius * .68, centerY - radius * .18); c.lineTo(x + radius * 1.23, centerY + radius * .30); c.stroke();
+  c.lineWidth = radius * .30; c.beginPath(); c.moveTo(x + radius * .55, centerY - radius * .40); c.lineTo(x + radius * .77, centerY - radius * .18); c.moveTo(x + radius * 1.16, centerY + radius * .28); c.lineTo(x + radius * 1.38, centerY + radius * .49); c.stroke();
+  c.fillStyle = black; c.beginPath(); c.moveTo(x + radius * .35, centerY + radius * .62); c.lineTo(x + radius * .44, centerY + radius * 1.15); c.lineTo(x + radius * .82, centerY + radius * .80); c.closePath(); c.fill(); c.lineCap = 'butt';
 };
 
 export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
