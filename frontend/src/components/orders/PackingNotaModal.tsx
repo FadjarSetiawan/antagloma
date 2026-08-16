@@ -201,7 +201,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
             <p className="font-bold text-base text-black leading-tight break-words">{order.customer_name}</p>
             <p className="text-sm font-semibold text-black leading-tight">{order.phone}</p>
             <div className="pt-0.5 text-xs font-bold text-black">
-              <span>[ {packageType.toUpperCase()} ]</span>
+              <span>[ {(packageType || 'Non Fullset').toUpperCase()} ]</span>
               <span className="ml-2 font-normal text-black">Berat: {packageWeight}</span>
             </div>
           </div>
