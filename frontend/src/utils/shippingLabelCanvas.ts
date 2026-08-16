@@ -49,10 +49,12 @@ const plant = (c: CanvasRenderingContext2D) => {
 };
 
 const whatsapp = (c: CanvasRenderingContext2D, x: number, centerY: number, radius: number) => {
-  c.fillStyle = black; c.beginPath(); c.arc(x + radius, centerY, radius, 0, Math.PI * 2); c.fill();
-  c.strokeStyle = '#ffffff'; c.lineCap = 'round'; c.lineWidth = radius * .38; c.beginPath(); c.moveTo(x + radius * .68, centerY - radius * .18); c.lineTo(x + radius * 1.23, centerY + radius * .30); c.stroke();
-  c.lineWidth = radius * .30; c.beginPath(); c.moveTo(x + radius * .55, centerY - radius * .40); c.lineTo(x + radius * .77, centerY - radius * .18); c.moveTo(x + radius * 1.16, centerY + radius * .28); c.lineTo(x + radius * 1.38, centerY + radius * .49); c.stroke();
-  c.fillStyle = black; c.beginPath(); c.moveTo(x + radius * .35, centerY + radius * .62); c.lineTo(x + radius * .44, centerY + radius * 1.15); c.lineTo(x + radius * .82, centerY + radius * .80); c.closePath(); c.fill(); c.lineCap = 'butt';
+  // Match the line-art WhatsApp mark used by the Android bitmap: outline,
+  // speech tail, then handset. The previous solid disc looked like a phone dot.
+  c.save(); c.strokeStyle = black; c.fillStyle = black; c.lineCap = 'round'; c.lineJoin = 'round';
+  c.lineWidth = Math.max(3, radius * .13); c.beginPath(); c.arc(x + radius, centerY, radius * .82, 0, Math.PI * 2); c.stroke();
+  c.beginPath(); c.moveTo(x + radius * .40, centerY + radius * .56); c.lineTo(x + radius * .25, centerY + radius * 1.05); c.lineTo(x + radius * .72, centerY + radius * .80); c.stroke();
+  c.lineWidth = Math.max(3, radius * .25); c.beginPath(); c.moveTo(x + radius * .66, centerY - radius * .32); c.quadraticCurveTo(x + radius * .98, centerY + radius * .25, x + radius * 1.38, centerY + radius * .38); c.stroke(); c.restore();
 };
 
 export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
@@ -80,7 +82,9 @@ export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   let y = 570;
   wrap(address, 39).slice(0, 3).forEach((line, index) => { font(c, scale('address', index === 0 ? 28 : 26), true); c.fillText(line, x('address', 68), yFor('address', y)); y += 30; });
   y = Math.max(y + 2, 660);
-  c.lineWidth = 5; roundRect(c, 64, y, WIDTH - 128, 210, 20); c.stroke();
+  // Explicit section card/borders. Keep these strokes independent of text so
+  // the web preview preserves the same visual separators as the APK bitmap.
+  c.strokeStyle = black; c.lineWidth = 5; roundRect(c, 64, y, WIDTH - 128, 210, 20); c.stroke();
   font(c, 29, true); c.fillText('ISI PAKET', 98, y + 50);
   font(c, 47, true); c.fillText(data.itemsSummary || 'Tanaman', 98, y + 112);
   c.lineWidth = 3; c.beginPath(); c.moveTo(84, y + 138); c.lineTo(WIDTH - 84, y + 138); c.stroke();
@@ -90,10 +94,10 @@ export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   c.fillStyle = black; roundRect(c, 64, senderY, 166, 36, 9); c.fill(); c.fillStyle = '#ffffff'; font(c, 18, true); c.textAlign = 'center'; c.fillText('PENGIRIM', 147, senderY + 25); c.textAlign = 'left'; c.fillStyle = black;
   font(c, 23, true); c.fillText('ANTAGLOMA FLORIST', 74, senderY + 64);
   whatsapp(c, 74, senderY + 85, 11); font(c, 17, true); c.fillText('0858-9450-3333 / 0857-3333-1889', 102, senderY + 93);
-  const footerY = senderY + 110; c.lineWidth = 5; c.beginPath(); c.moveTo(52, footerY); c.lineTo(WIDTH - 52, footerY); c.stroke();
+  const footerY = senderY + 110; c.strokeStyle = black; c.lineWidth = 5; c.beginPath(); c.moveTo(52, footerY); c.lineTo(WIDTH - 52, footerY); c.stroke();
   font(c, 16, true); c.fillText('TANGGAL CETAK', 74, footerY + 32); c.fillText('ADMIN', WIDTH * .56, footerY + 32);
   font(c, 18); c.fillText(dateToday(), 74, footerY + 55); c.fillText('Admin Operasional', WIDTH * .56, footerY + 55);
-  const closingY = footerY + 68; c.lineWidth = 3; c.beginPath(); c.moveTo(52, closingY); c.lineTo(WIDTH - 52, closingY); c.stroke();
+  const closingY = footerY + 68; c.strokeStyle = black; c.lineWidth = 3; c.beginPath(); c.moveTo(52, closingY); c.lineTo(WIDTH - 52, closingY); c.stroke();
   font(c, scale('footer_message', 19), true); c.textAlign = 'center'; c.fillText('Terimakasih telah berbelanja di Antagloma Florist ♡', x('footer_message', WIDTH / 2), yFor('footer_message', closingY + 55)); c.textAlign = 'left';
   return canvas;
 };
