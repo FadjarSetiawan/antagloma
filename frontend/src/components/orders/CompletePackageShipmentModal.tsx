@@ -13,6 +13,8 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
   const [trackingNumber, setTrackingNumber] = useState('');
   const [shippingCost, setShippingCost] = useState('0');
   const [error, setError] = useState('');
+  const [scanMessage, setScanMessage] = useState('');
+  const [scanSucceeded, setScanSucceeded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [duplicate, setDuplicate] = useState<{ tracking_number?: string; order_number?: string; customer?: string } | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -24,6 +26,8 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
     setTrackingNumber(pkg?.tracking_number || '');
     setShippingCost(String(pkg?.shipping_cost || 0));
     setError('');
+    setScanMessage('');
+    setScanSucceeded(false);
   }, [pkg]);
   useEffect(() => () => streamRef.current?.getTracks().forEach((track) => track.stop()), []);
 
@@ -51,8 +55,19 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
     for (let i = 0; i < pixels.length; i += 4) { const gray = Math.max(0, Math.min(255, ((pixels[i] * .299 + pixels[i + 1] * .587 + pixels[i + 2] * .114) - 128) * 1.45 + 128)); pixels[i] = pixels[i + 1] = pixels[i + 2] = gray; }
     ctx.putImageData(image, 0, 0); return await new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Gagal memproses gambar')), 'image/jpeg', .92));
   };
+  const extractTrackingFromOcr = (text: string) => {
+    const normalized = text.toUpperCase().replace(/[|]/g, 'I').replace(/\s*-\s*/g, '-');
+    const labelled = normalized.match(/(?:NO\.?\s*RESI|NOMOR\s*RESI|TRACKING(?:\s*NUMBER)?)\s*[:#-]?\s*([A-Z0-9-]{8,})/);
+    if (labelled?.[1]) return labelled[1];
+
+    // Common Indonesian courier patterns, including J&T (JD...) and route-style
+    // codes such as 410-SRG11-03B. Phone numbers do not match these patterns.
+    const candidates = normalized.match(/\b(?:[A-Z]{1,4}\d{7,}[A-Z0-9-]*|\d{3}-[A-Z]{2,8}\d{1,}-\d{2,}[A-Z]?)\b/g) || [];
+    return candidates.find((value) => !value.startsWith('IDR') && !value.startsWith('RP')) || '';
+  };
+
   const scanPhoto = async (file: File) => {
-    setScanning(true); setError('Membaca barcode dan nominal ongkir dari foto…');
+    setScanning(true); setError(''); setScanSucceeded(false); setScanMessage('Membaca barcode dan nominal ongkir dari foto…');
     try {
       const Detector = (window as any).BarcodeDetector;
       const barcodeTask = Detector
@@ -62,22 +77,23 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
       // value: admin can correct it before saving.
       const processed = await preprocess(file); const ocrTask = recognize(processed, 'eng').then(({ data }) => data.text);
       const [barcodeResult, ocrResult] = await Promise.all([barcodeTask, ocrTask]);
-      if (barcodeResult) setTrackingNumber(String(barcodeResult).trim());
+      const detectedTracking = String(barcodeResult || extractTrackingFromOcr(String(ocrResult))).trim();
+      if (detectedTracking) setTrackingNumber(detectedTracking);
       const money = String(ocrResult).match(/(?:IDR|RP\.?)[\s:]*([0-9][0-9.,\s]*)/i);
       if (money) {
         const amount = money[1].replace(/\D/g, '');
         if (amount) setShippingCost(amount);
       }
-      if (barcodeResult && money) setError('Barcode dan ongkir terdeteksi. Periksa hasil sebelum menyimpan.');
-      else if (barcodeResult) setError('Barcode terdeteksi. Nominal ongkir belum terbaca, silakan isi atau foto ulang.');
-      else if (money) setError('Ongkir terdeteksi. Barcode belum terbaca, silakan isi nomor resi atau foto ulang.');
+      if (detectedTracking && money) { setScanSucceeded(true); setScanMessage('Nomor resi dan ongkir terdeteksi. Periksa hasil sebelum menyimpan.'); }
+      else if (detectedTracking) setScanMessage('Nomor resi terdeteksi. Nominal ongkir belum terbaca, silakan isi atau foto ulang.');
+      else if (money) setScanMessage('Ongkir terdeteksi. Nomor resi belum terbaca, silakan isi atau foto ulang.');
       else setError('Belum terbaca. Pastikan label terang, tidak blur, dan barcode terlihat penuh.');
-    } catch { setError('Gagal membaca foto. Coba foto lebih dekat dengan pencahayaan yang cukup.'); }
+    } catch { setScanMessage(''); setError('Gagal membaca foto. Coba foto lebih dekat dengan pencahayaan yang cukup.'); }
     finally { setScanning(false); }
   };
   const openCamera = async () => {
     try { const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }); streamRef.current = stream; setCameraOpen(true); setTimeout(() => { if (videoRef.current) videoRef.current.srcObject = stream; }, 0); }
-    catch { setError('Kamera tidak dapat dibuka. Pastikan izin kamera diberikan atau gunakan tombol Scan foto.'); }
+    catch { setScanMessage(''); setError('Kamera tidak dapat dibuka. Pastikan izin kamera diberikan atau gunakan Ambil Foto / Pilih Gambar.'); }
   };
   const closeCamera = () => { streamRef.current?.getTracks().forEach((track) => track.stop()); streamRef.current = null; setCameraOpen(false); };
   const captureCamera = async () => { const video = videoRef.current; if (!video || !video.videoWidth) return; const canvas = document.createElement('canvas'); canvas.width = video.videoWidth; canvas.height = video.videoHeight; canvas.getContext('2d')!.drawImage(video, 0, 0); const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(), 'image/jpeg', .95)); closeCamera(); await scanPhoto(new File([blob], 'scan-resi.jpg', { type: 'image/jpeg' })); };
@@ -130,6 +146,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
             className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 px-3.5 text-xs font-extrabold focus:outline-none focus:border-emerald-700"
           />
         </label>
+        {scanMessage && <p className={`text-xs font-bold ${scanSucceeded ? 'text-emerald-700' : 'text-amber-700'}`}>{scanMessage}</p>}
         {error && <p className="text-xs font-bold text-rose-600">{error}</p>}
         <div className="grid grid-cols-2 gap-2.5 pt-1">
           <button type="button" onClick={onClose} className="min-h-11 rounded-2xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors cursor-pointer">Batal</button>

@@ -15,6 +15,7 @@ use App\Services\PackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Database\QueryException;
 
 class PackingController extends Controller
 {
@@ -131,7 +132,22 @@ class PackingController extends Controller
         if ($used) return response()->json(['message' => 'Nomor resi sudah digunakan.', 'duplicate' => ['tracking_number' => $trackingNumber, 'order_number' => $used->order?->order_number, 'customer' => $used->order?->customer_name]], 422);
         $orderStatus = $package->order->status instanceof \BackedEnum ? $package->order->status->value : (string) $package->order->status;
         abort_unless($orderStatus === 'PACKING_COMPLETED', 422, 'Package belum berada pada tahap siap input resi.');
-        $package->update(['tracking_number'=>$trackingNumber, 'shipping_cost'=>$data['shipping_cost'], 'completed_at'=>now()]);
+        try {
+            $package->update(['tracking_number'=>$trackingNumber, 'shipping_cost'=>$data['shipping_cost'], 'completed_at'=>now()]);
+        } catch (QueryException $exception) {
+            // The pre-check gives a helpful response in normal use. This second
+            // check handles two admins saving the same scanned resi concurrently.
+            if ((string) $exception->getCode() !== '23000') {
+                throw $exception;
+            }
+
+            $used = OrderPackage::with('order')->where('tracking_number', $trackingNumber)->first();
+            return response()->json(['message' => 'Nomor resi sudah digunakan.', 'duplicate' => [
+                'tracking_number' => $trackingNumber,
+                'order_number' => $used?->order?->order_number,
+                'customer' => $used?->order?->customer_name,
+            ]], 422);
+        }
         return response()->json(['success'=>true,'data'=>$package->fresh()]);
     }
 
