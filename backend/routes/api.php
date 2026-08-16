@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PackingController;
 use App\Http\Controllers\Api\PrintJobController;
+use App\Http\Controllers\Api\PrintLayoutProfileController;
 use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SalesPackingController;
@@ -74,6 +75,8 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
 
     // Web creates a short-lived, one-time job; no customer data is placed in the App Link.
     Route::post('/print-jobs', [PrintJobController::class, 'create']);
+    Route::get('/print-layout-profiles/{documentType}', [PrintLayoutProfileController::class, 'show']);
+    Route::put('/print-layout-profiles/{documentType}', [PrintLayoutProfileController::class, 'update']);
 
     // Read-only package progress for Sales (Admin/Owner are also allowed by OrderPolicy::viewAny).
     Route::get('/sales/packing-progress', [SalesPackingController::class, 'progress']);
@@ -111,4 +114,5 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
 Route::middleware('throttle:30,1')->group(function () {
     Route::get('/print-jobs/{jobId}', [PrintJobController::class, 'show']);
     Route::post('/print-jobs/{jobId}/result', [PrintJobController::class, 'result']);
+    Route::put('/print-jobs/{jobId}/layout', [PrintJobController::class, 'layout']);
 });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\OrderPackage;
 use App\Models\PrintJob;
+use App\Models\PrintLayoutProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +35,7 @@ class PrintJobController extends Controller
     {
         $job = $this->authorizeToken($request, $jobId, true);
         $package = $job->package()->with(['order.creator', 'order.verifier', 'items.item'])->firstOrFail(); $order = $package->order;
-        return response()->json(['job_id' => $job->public_id, 'document_type' => $job->document_type, 'order_number' => $order->order_number.'-'.$package->letter, 'package_letter' => $package->letter, 'package_type' => $package->package_type, 'customer' => $order->customer_name, 'phone' => $order->phone, 'address' => collect([$order->district_name, $order->regency_name, $order->province_name, $order->full_address])->filter()->implode(', '), 'package_items' => $package->items->map(fn ($item) => ['name' => $item->item?->product_name ?? 'Tanaman', 'quantity' => $item->quantity])->values(), 'notes' => $order->notes ?? '', 'sales' => $order->creator?->name, 'admin' => $order->verifier?->name]);
+        return response()->json(['job_id' => $job->public_id, 'document_type' => $job->document_type, 'order_number' => $order->order_number.'-'.$package->letter, 'package_letter' => $package->letter, 'package_type' => $package->package_type, 'customer' => $order->customer_name, 'phone' => $order->phone, 'address' => collect([$order->district_name, $order->regency_name, $order->province_name, $order->full_address])->filter()->implode(', '), 'package_items' => $package->items->map(fn ($item) => ['name' => $item->item?->product_name ?? 'Tanaman', 'quantity' => $item->quantity])->values(), 'notes' => $order->notes ?? '', 'sales' => $order->creator?->name, 'admin' => $order->verifier?->name, 'layout_profile' => PrintLayoutProfile::where('document_type', $job->document_type)->value('layout') ?? []]);
     }
 
     public function result(Request $request, string $jobId): JsonResponse
@@ -43,6 +44,15 @@ class PrintJobController extends Controller
         $job = $this->authorizeToken($request, $jobId, false);
         DB::transaction(function () use ($job, $data) { $job->update(['printed_at' => $data['status'] === 'PRINTED' ? now() : null, 'printer' => $data['printer'] ?? null, 'result' => $data]); if ($data['status'] === 'PRINTED') { $field = $job->document_type === 'NOTA' ? 'nota_printed' : 'label_printed'; $at = $field.'_at'; $job->package->update([$field => true, $at => now()]); } });
         return response()->json(['success' => true]);
+    }
+
+    /** Scoped to the short-lived print-job token; no general public layout write exists. */
+    public function layout(Request $request, string $jobId): JsonResponse
+    {
+        $data = $request->validate(['layout' => ['required', 'array'], 'layout.*.x' => ['nullable', 'integer', 'between:-120,120'], 'layout.*.y' => ['nullable', 'integer', 'between:-120,120'], 'layout.*.scale' => ['nullable', 'numeric', 'between:0.75,1.35']]);
+        $job = $this->authorizeToken($request, $jobId, false);
+        $profile = PrintLayoutProfile::updateOrCreate(['document_type' => $job->document_type], ['layout' => $data['layout']]);
+        return response()->json(['success' => true, 'layout' => $profile->layout]);
     }
 
     private function authorizeToken(Request $request, string $jobId, bool $consume): PrintJob
