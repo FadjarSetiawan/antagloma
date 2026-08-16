@@ -6,6 +6,7 @@ export interface ShippingLabelCanvasData {
   fullAddress: string;
   itemsSummary: string;
   itemLines?: string[];
+  layout?: Record<string, { x?: number; y?: number; scale?: number }>;
 }
 
 // Keep this canvas at the identical XP-420B target resolution used by Android:
@@ -61,19 +62,23 @@ export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   const c = canvas.getContext('2d');
   if (!c) throw new Error('Gagal menyiapkan canvas label.');
   c.fillStyle = '#ffffff'; c.fillRect(0, 0, WIDTH, HEIGHT); c.fillStyle = black; c.strokeStyle = black; c.textBaseline = 'alphabetic';
+  const adjustment = (element: string) => data.layout?.[element] || {};
+  const x = (element: string, value: number) => value + (adjustment(element).x || 0);
+  const yFor = (element: string, value: number) => value + (adjustment(element).y || 0);
+  const scale = (element: string, value: number) => value * (adjustment(element).scale || 1);
   c.lineWidth = 5; roundRect(c, 24, 24, WIDTH - 48, HEIGHT - 48, 22); c.stroke();
   plant(c);
-  font(c, 35, true); c.fillText('ANTAGLOMA FLORIST', 148, 88);
-  font(c, 21, true); c.fillText('SPESIALIS ADENIUM BUNGA TUMPUK', 148, 122);
+  font(c, scale('brand', 35), true); c.fillText('ANTAGLOMA FLORIST', x('brand', 148), yFor('brand', 88));
+  font(c, scale('brand', 21), true); c.fillText('SPESIALIS ADENIUM BUNGA TUMPUK', x('brand', 148), yFor('brand', 122));
   roundRect(c, WIDTH - 235, 54, 181, 64, 12); c.fill(); c.fillStyle = '#ffffff'; font(c, 25, true); c.textAlign = 'center'; c.fillText('STIKER RESI', WIDTH - 145, 97); c.textAlign = 'left'; c.fillStyle = black;
-  font(c, 31, true); c.fillText(`ORDER:   ${data.subOrderNumber}`, 68, 205); c.beginPath(); c.moveTo(52, 235); c.lineTo(WIDTH - 52, 235); c.stroke();
+  font(c, scale('order', 31), true); c.fillText(`ORDER:   ${data.subOrderNumber}`, x('order', 68), yFor('order', 205)); c.beginPath(); c.moveTo(52, yFor('order', 235)); c.lineTo(WIDTH - 52, yFor('order', 235)); c.stroke();
   roundRect(c, 66, 260, 164, 48, 10); c.fill(); c.fillStyle = '#ffffff'; font(c, 22, true); c.textAlign = 'center'; c.fillText('PENERIMA', 148, 293); c.textAlign = 'left'; c.fillStyle = black;
-  font(c, 68, true); c.fillText(data.customerName || '-', 68, 380);
-  whatsapp(c, 68, 423, 28); font(c, 37, true); c.fillText(data.customerPhone || '-', 136, 445);
+  font(c, scale('recipient', 68), true); c.fillText(data.customerName || '-', x('recipient', 68), yFor('recipient', 380));
+  whatsapp(c, x('recipient', 68), yFor('recipient', 423), scale('recipient', 28)); font(c, scale('recipient', 37), true); c.fillText(data.customerPhone || '-', x('recipient', 136), yFor('recipient', 445));
   roundRect(c, 66, 470, 328, 48, 10); c.fill(); c.fillStyle = '#ffffff'; font(c, 21, true); c.textAlign = 'center'; c.fillText('ALAMAT PENGIRIMAN', 230, 503); c.textAlign = 'left'; c.fillStyle = black;
   const address = `${data.destinationArea || ''}, ${data.fullAddress || ''}`.replace(/^, |, $/g, '').replace(/^Kec\./i, 'KEC.');
   let y = 570;
-  wrap(address, 39).slice(0, 3).forEach((line, index) => { font(c, index === 0 ? 28 : 26, true); c.fillText(line, 68, y); y += 30; });
+  wrap(address, 39).slice(0, 3).forEach((line, index) => { font(c, scale('address', index === 0 ? 28 : 26), true); c.fillText(line, x('address', 68), yFor('address', y)); y += 30; });
   y = Math.max(y + 2, 660);
   c.lineWidth = 5; roundRect(c, 64, y, WIDTH - 128, 210, 20); c.stroke();
   font(c, 29, true); c.fillText('ISI PAKET', 98, y + 50);
@@ -89,6 +94,6 @@ export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   font(c, 16, true); c.fillText('TANGGAL CETAK', 74, footerY + 32); c.fillText('ADMIN', WIDTH * .56, footerY + 32);
   font(c, 18); c.fillText(dateToday(), 74, footerY + 55); c.fillText('Admin Operasional', WIDTH * .56, footerY + 55);
   const closingY = footerY + 68; c.lineWidth = 3; c.beginPath(); c.moveTo(52, closingY); c.lineTo(WIDTH - 52, closingY); c.stroke();
-  font(c, 19, true); c.textAlign = 'center'; c.fillText('Terimakasih telah berbelanja di Antagloma Florist ♡', WIDTH / 2, closingY + 55); c.textAlign = 'left';
+  font(c, scale('footer_message', 19), true); c.textAlign = 'center'; c.fillText('Terimakasih telah berbelanja di Antagloma Florist ♡', x('footer_message', WIDTH / 2), yFor('footer_message', closingY + 55)); c.textAlign = 'left';
   return canvas;
 };

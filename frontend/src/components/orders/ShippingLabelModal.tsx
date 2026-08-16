@@ -5,6 +5,7 @@ import { Tag, Printer, X } from 'lucide-react';
 import { printElementViaIframe } from '../../utils/printHelper';
 import { createShippingLabelCanvas } from '../../utils/shippingLabelCanvas';
 import { openPrintBridge } from '../../services/printBridgeService';
+import { api } from '../../services/api';
 
 interface ShippingLabelModalProps {
   order: Order | null;
@@ -91,6 +92,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
   const [labelPreviewUrl, setLabelPreviewUrl] = useState<string>('');
   const [isPreparingLabel, setIsPreparingLabel] = useState(false);
   const [isSharingLabel, setIsSharingLabel] = useState(false);
+  const [layoutProfile, setLayoutProfile] = useState<Record<string, { x?: number; y?: number; scale?: number }>>({});
 
   const subOrderNum = packageInfo?.subOrderNumber || `${order?.order_number || 'label'}-A`;
 
@@ -192,6 +194,8 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           order.regency_name,
           order.province_name,
         ].filter(Boolean).join(', ');
+        const profile = await api.get('/print-layout-profiles/SHIPPING_LABEL').then((response) => response.data?.layout || {}).catch(() => ({}));
+        setLayoutProfile(profile);
         const labelCanvas = createShippingLabelCanvas({
           subOrderNumber: subOrderNum,
           customerName: order.customer_name || '-',
@@ -200,6 +204,7 @@ export const ShippingLabelModal: React.FC<ShippingLabelModalProps> = ({ order, p
           fullAddress: order.full_address || '-',
           itemsSummary: packageInfo?.itemsSummary || 'Tanaman',
           itemLines: packageInfo?.itemLines || [],
+          layout: profile,
         });
         const blob = await createSingleImagePdf(labelCanvas);
         previewUrl = labelCanvas.toDataURL('image/png');
