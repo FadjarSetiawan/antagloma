@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Camera, X } from 'lucide-react';
+import { recognize } from 'tesseract.js';
 import { OrderPackage } from '../../types/order';
 
 interface Props {
@@ -14,6 +15,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [duplicate, setDuplicate] = useState<{ tracking_number?: string; order_number?: string; customer?: string } | null>(null);
+  const [scanning, setScanning] = useState(false);
 
   useEffect(() => {
     setTrackingNumber(pkg?.tracking_number || '');
@@ -38,13 +40,28 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
 
   const isValid = trackingNumber.trim().length > 0 && Number(shippingCost) > 0;
   const scanPhoto = async (file: File) => {
+    setScanning(true); setError('Membaca barcode dan nominal ongkir dari foto…');
     try {
       const Detector = (window as any).BarcodeDetector;
-      if (!Detector) { setError('Browser ini belum mendukung scan otomatis. Gunakan Chrome terbaru atau input resi manual.'); return; }
-      const bitmap = await createImageBitmap(file); const codes = await new Detector({ formats: ['qr_code', 'code_128', 'code_39', 'ean_13'] }).detect(bitmap);
-      const value = codes?.[0]?.rawValue; if (!value) { setError('Barcode tidak terbaca. Coba foto lebih dekat atau input manual.'); return; }
-      setTrackingNumber(value); setError('');
-    } catch { setError('Gagal membaca barcode. Coba ulangi atau input manual.'); }
+      const barcodeTask = Detector
+        ? createImageBitmap(file).then((bitmap) => new Detector({ formats: ['qr_code', 'code_128', 'code_39', 'ean_13'] }).detect(bitmap)).then((codes: any[]) => codes?.[0]?.rawValue || '')
+        : Promise.resolve('');
+      // OCR stays on the device/browser. It is deliberately only a suggested
+      // value: admin can correct it before saving.
+      const ocrTask = recognize(file, 'eng').then(({ data }) => data.text);
+      const [barcodeResult, ocrResult] = await Promise.all([barcodeTask, ocrTask]);
+      if (barcodeResult) setTrackingNumber(String(barcodeResult).trim());
+      const money = String(ocrResult).match(/(?:IDR|RP\.?)[\s:]*([0-9][0-9.,\s]*)/i);
+      if (money) {
+        const amount = money[1].replace(/\D/g, '');
+        if (amount) setShippingCost(amount);
+      }
+      if (barcodeResult && money) setError('Barcode dan ongkir terdeteksi. Periksa hasil sebelum menyimpan.');
+      else if (barcodeResult) setError('Barcode terdeteksi. Nominal ongkir belum terbaca, silakan isi atau foto ulang.');
+      else if (money) setError('Ongkir terdeteksi. Barcode belum terbaca, silakan isi nomor resi atau foto ulang.');
+      else setError('Belum terbaca. Pastikan label terang, tidak blur, dan barcode terlihat penuh.');
+    } catch { setError('Gagal membaca foto. Coba foto lebih dekat dengan pencahayaan yang cukup.'); }
+    finally { setScanning(false); }
   };
 
   return (
@@ -59,7 +76,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
           {pkg.items?.map((item) => <p key={item.order_item_id} className="font-medium text-slate-700">• {item.product_name || 'Tanaman'} ×{item.quantity}</p>)}
           <p className="pt-1 font-bold text-emerald-800">Foto: {pkg.photo_uploaded ? 'Sudah ada' : 'Belum ada'}</p>
         </div>
-        <div className="grid grid-cols-[1fr_auto] gap-2 items-end"><label className="block text-xs font-bold text-slate-800">Nomor Resi *<input placeholder="Masukkan nomor resi..." value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 px-3.5 text-xs font-bold focus:outline-none focus:border-emerald-700" /></label><label className="min-h-11 rounded-2xl bg-emerald-50 text-[#04593f] px-3 flex items-center gap-1.5 text-xs font-extrabold cursor-pointer"><Camera className="w-4 h-4"/>Scan<input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && scanPhoto(e.target.files[0])}/></label></div>
+        <div className="grid grid-cols-[1fr_auto] gap-2 items-end"><label className="block text-xs font-bold text-slate-800">Nomor Resi *<input placeholder="Masukkan nomor resi..." value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 px-3.5 text-xs font-bold focus:outline-none focus:border-emerald-700" /></label><label className="min-h-11 rounded-2xl bg-emerald-50 text-[#04593f] px-3 flex items-center gap-1.5 text-xs font-extrabold cursor-pointer">{scanning ? 'Membaca…' : <><Camera className="w-4 h-4"/>Scan</>}<input disabled={scanning} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && scanPhoto(e.target.files[0])}/></label></div>
         <label className="block text-xs font-bold text-slate-800">Ongkir Ekspedisi (Rp) *
           <input
             type="text"
