@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { Camera, X } from 'lucide-react';
 import { OrderPackage } from '../../types/order';
 
 interface Props {
@@ -13,6 +13,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
   const [shippingCost, setShippingCost] = useState('0');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [duplicate, setDuplicate] = useState<{ tracking_number?: string; order_number?: string; customer?: string } | null>(null);
 
   useEffect(() => {
     setTrackingNumber(pkg?.tracking_number || '');
@@ -30,11 +31,21 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
       await onConfirm(pkg.id, { tracking_number: trackingNumber.trim(), shipping_cost: Number(shippingCost) || 0 });
       onClose();
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'Gagal menyimpan resi package.');
+      if (e?.response?.data?.duplicate) setDuplicate(e.response.data.duplicate);
+      else setError(e?.response?.data?.message || 'Gagal menyimpan resi package.');
     } finally { setSaving(false); }
   };
 
   const isValid = trackingNumber.trim().length > 0 && Number(shippingCost) > 0;
+  const scanPhoto = async (file: File) => {
+    try {
+      const Detector = (window as any).BarcodeDetector;
+      if (!Detector) { setError('Browser ini belum mendukung scan otomatis. Gunakan Chrome terbaru atau input resi manual.'); return; }
+      const bitmap = await createImageBitmap(file); const codes = await new Detector({ formats: ['qr_code', 'code_128', 'code_39', 'ean_13'] }).detect(bitmap);
+      const value = codes?.[0]?.rawValue; if (!value) { setError('Barcode tidak terbaca. Coba foto lebih dekat atau input manual.'); return; }
+      setTrackingNumber(value); setError('');
+    } catch { setError('Gagal membaca barcode. Coba ulangi atau input manual.'); }
+  };
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 p-4 font-sans">
@@ -48,7 +59,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
           {pkg.items?.map((item) => <p key={item.order_item_id} className="font-medium text-slate-700">• {item.product_name || 'Tanaman'} ×{item.quantity}</p>)}
           <p className="pt-1 font-bold text-emerald-800">Foto: {pkg.photo_uploaded ? 'Sudah ada' : 'Belum ada'}</p>
         </div>
-        <label className="block text-xs font-bold text-slate-800">Nomor Resi *<input placeholder="Masukkan nomor resi..." value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 px-3.5 text-xs font-bold focus:outline-none focus:border-emerald-700" /></label>
+        <div className="grid grid-cols-[1fr_auto] gap-2 items-end"><label className="block text-xs font-bold text-slate-800">Nomor Resi *<input placeholder="Masukkan nomor resi..." value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 px-3.5 text-xs font-bold focus:outline-none focus:border-emerald-700" /></label><label className="min-h-11 rounded-2xl bg-emerald-50 text-[#04593f] px-3 flex items-center gap-1.5 text-xs font-extrabold cursor-pointer"><Camera className="w-4 h-4"/>Scan<input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && scanPhoto(e.target.files[0])}/></label></div>
         <label className="block text-xs font-bold text-slate-800">Ongkir Ekspedisi (Rp) *
           <input
             type="text"
@@ -76,6 +87,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
           </button>
         </div>
       </form>
+      {duplicate && <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-slate-900/55 p-4"><div className="w-full max-w-xs rounded-3xl bg-white p-6 text-center shadow-2xl space-y-3"><div className="text-4xl text-rose-600">!</div><h3 className="font-extrabold text-rose-700">Nomor resi sudah digunakan</h3><b>{duplicate.tracking_number}</b><div className="text-left text-xs text-slate-600 space-y-1"><p>Order</p><b className="text-slate-900">{duplicate.order_number}</b><p className="pt-2">Penerima</p><b className="text-slate-900">{duplicate.customer}</b></div><div className="grid grid-cols-2 gap-2 pt-2"><button onClick={() => { setDuplicate(null); setTrackingNumber(''); }} className="min-h-11 rounded-xl bg-slate-100 font-bold">Scan Lagi</button><button onClick={() => setDuplicate(null)} className="min-h-11 rounded-xl bg-rose-600 text-white font-bold">Tutup</button></div></div></div>}
     </div>
   );
 };

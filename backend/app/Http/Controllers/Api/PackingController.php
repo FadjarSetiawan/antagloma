@@ -126,9 +126,12 @@ class PackingController extends Controller
     {
         Gate::authorize('completeShipment', $package->order);
         $data = $request->validate(['tracking_number'=>'required|string|max:255','shipping_cost'=>'required|numeric|min:0']);
+        $trackingNumber = strtoupper(trim(strip_tags($data['tracking_number'])));
+        $used = OrderPackage::with('order')->where('tracking_number', $trackingNumber)->whereKeyNot($package->id)->first();
+        if ($used) return response()->json(['message' => 'Nomor resi sudah digunakan.', 'duplicate' => ['tracking_number' => $trackingNumber, 'order_number' => $used->order?->order_number, 'customer' => $used->order?->customer_name]], 422);
         $orderStatus = $package->order->status instanceof \BackedEnum ? $package->order->status->value : (string) $package->order->status;
         abort_unless($orderStatus === 'PACKING_COMPLETED', 422, 'Package belum berada pada tahap siap input resi.');
-        $package->update(['tracking_number'=>strip_tags($data['tracking_number']), 'shipping_cost'=>$data['shipping_cost'], 'completed_at'=>now()]);
+        $package->update(['tracking_number'=>$trackingNumber, 'shipping_cost'=>$data['shipping_cost'], 'completed_at'=>now()]);
         return response()->json(['success'=>true,'data'=>$package->fresh()]);
     }
 
