@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Order, OrderPackage } from '../../types/order';
 import { MessageCircle, Printer, X } from 'lucide-react';
 import { openPrintBridge } from '../../services/printBridgeService';
+import { createPackingNotaCanvas } from '../../utils/packingNotaCanvas';
 
 interface PackingNotaModalProps {
   order: Order | null;
@@ -12,6 +13,7 @@ interface PackingNotaModalProps {
 
 export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packageInfo, onClose }) => {
   const [customNotes, setCustomNotes] = useState<string>(order?.notes || '');
+  const [notaPreviewUrl, setNotaPreviewUrl] = useState('');
 
   useEffect(() => {
     if (order) {
@@ -44,6 +46,24 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     ? `${packageInfo.weight} kg`
     : 'Belum tersedia';
 
+  // The web preview is a 576-dot canvas, matching the bitmap renderer used by
+  // the bridge for RPP02N. It deliberately is not a responsive HTML receipt.
+  useEffect(() => {
+    const items = packageItems.map((item) => {
+      const name = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name || 'Tanaman');
+      const grade = 'grade' in item ? `Grade ${item.grade || 'A'}` : '-';
+      const notes = 'notes' in item && item.notes ? ` (${item.notes})` : '';
+      return { name: `${name} (${grade})${notes}`, quantity: item.quantity || 0 };
+    });
+    const address = [[order.district_name, order.regency_name, order.province_name].filter(Boolean).join(', '), order.full_address].filter(Boolean).join(', ');
+    setNotaPreviewUrl(createPackingNotaCanvas({
+      orderNumber: order.order_number,
+      customerName: order.customer_name || '-', customerPhone: order.phone || '-', packageType: packageType || 'Non Fullset',
+      address, items, note: customNotes || '-', packageLetter: packageInfo?.letter || 'A',
+      salesName: order.creator?.name || 'Sales Staff', adminName: order.verifier?.name || 'Admin Operasional',
+    }).toDataURL('image/png'));
+  }, [order, packageInfo, packageItems, packageType, customNotes]);
+
   const modalContent = (
     <div id="packing-nota-modal-container" className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto font-sans">
       <div className="bg-white rounded-2xl border border-slate-200 w-[95%] max-w-sm sm:max-w-md shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col font-sans">
@@ -72,7 +92,17 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
         </div>
 
         {/* Printable Nota Body Container */}
-        <div id="packing-nota-printable" className="p-3 sm:p-4 overflow-y-auto space-y-2.5 print-area text-slate-900 font-sans text-xs flex-1">
+        <div className="p-3 overflow-y-auto print-area flex-1 bg-slate-100">
+          <div id="packing-nota-printable" className="mx-auto w-full max-w-[340px] bg-white border border-slate-300 shadow-sm">
+            {notaPreviewUrl ? (
+              <img src={notaPreviewUrl} alt={`Nota packing ${order.order_number}`} className="block w-full h-auto bg-white" />
+            ) : (
+              <div className="aspect-[2/3] flex items-center justify-center text-xs text-slate-500">Menyiapkan pratinjau nota...</div>
+            )}
+          </div>
+          {/* Kept temporarily for legacy browser-print fallback only. The visible
+              preview above is the deterministic bridge bitmap. */}
+          <div className="hidden">
           {/* Print specific style overrides */}
           <style>{`
             @media print {
@@ -256,6 +286,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
                 ( Staff )
               </span>
             </div>
+          </div>
           </div>
         </div>
 
