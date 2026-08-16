@@ -89,6 +89,6 @@ export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   font(c, 16, true); c.fillText('TANGGAL CETAK', 74, footerY + 32); c.fillText('ADMIN', WIDTH * .56, footerY + 32);
   font(c, 18); c.fillText(dateToday(), 74, footerY + 55); c.fillText('Admin Operasional', WIDTH * .56, footerY + 55);
   const closingY = footerY + 68; c.lineWidth = 3; c.beginPath(); c.moveTo(52, closingY); c.lineTo(WIDTH - 52, closingY); c.stroke();
-  font(c, 19, true); c.textAlign = 'center'; c.fillText('Terimakasih telah berbelanja di Antagloma Florist ♡', WIDTH / 2, closingY + 30); c.textAlign = 'left';
+  font(c, 19, true); c.textAlign = 'center'; c.fillText('Terimakasih telah berbelanja di Antagloma Florist ♡', WIDTH / 2, closingY + 55); c.textAlign = 'left';
   return canvas;
 };
