@@ -69,7 +69,7 @@ export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   font(c, 31, true); c.fillText(`ORDER:   ${data.subOrderNumber}`, 68, 205); c.beginPath(); c.moveTo(52, 235); c.lineTo(WIDTH - 52, 235); c.stroke();
   roundRect(c, 66, 260, 164, 48, 10); c.fill(); c.fillStyle = '#ffffff'; font(c, 22, true); c.textAlign = 'center'; c.fillText('PENERIMA', 148, 293); c.textAlign = 'left'; c.fillStyle = black;
   font(c, 68, true); c.fillText(data.customerName || '-', 68, 380);
-  font(c, 35, true); c.fillText(`TELP: ${data.customerPhone || '-'}`, 68, 445);
+  whatsapp(c, 68, 423, 28); font(c, 37, true); c.fillText(data.customerPhone || '-', 136, 445);
   roundRect(c, 66, 470, 328, 48, 10); c.fill(); c.fillStyle = '#ffffff'; font(c, 21, true); c.textAlign = 'center'; c.fillText('ALAMAT PENGIRIMAN', 230, 503); c.textAlign = 'left'; c.fillStyle = black;
   const address = `${data.destinationArea || ''}, ${data.fullAddress || ''}`.replace(/^, |, $/g, '').replace(/^Kec\./i, 'KEC.');
   let y = 570;
@@ -89,6 +89,6 @@ export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   font(c, 16, true); c.fillText('TANGGAL CETAK', 74, footerY + 32); c.fillText('ADMIN', WIDTH * .56, footerY + 32);
   font(c, 18); c.fillText(dateToday(), 74, footerY + 55); c.fillText('Admin Operasional', WIDTH * .56, footerY + 55);
   const closingY = footerY + 68; c.lineWidth = 3; c.beginPath(); c.moveTo(52, closingY); c.lineTo(WIDTH - 52, closingY); c.stroke();
-  font(c, 19, true); c.textAlign = 'center'; c.fillText('Terimakasih telah berbelanja di Antagloma Florist', WIDTH / 2, closingY + 30); c.textAlign = 'left';
+  font(c, 19, true); c.textAlign = 'center'; c.fillText('Terimakasih telah berbelanja di Antagloma Florist ♡', WIDTH / 2, closingY + 30); c.textAlign = 'left';
   return canvas;
 };
