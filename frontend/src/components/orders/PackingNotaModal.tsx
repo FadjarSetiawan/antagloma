@@ -21,18 +21,16 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
     }
   }, [order]);
 
-  if (!order) return null;
-
   const handlePrint = async () => {
     if (!packageInfo?.id) { window.alert('Pilih paket terlebih dahulu sebelum mencetak Nota.'); return; }
     try { await openPrintBridge(packageInfo.id, 'NOTA'); }
     catch (error) { window.alert(error instanceof Error ? error.message : 'Gagal membuka Antagloma Print Bridge.'); }
   };
 
-  const formattedDate = order.order_date
+  const formattedDate = order?.order_date
     ? new Date(order.order_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' })
     : '-';
-  const isWoodPacking = order.delivery_method === 'Packing Kayu' || packageInfo?.package_type === 'Packing Kayu';
+  const isWoodPacking = order?.delivery_method === 'Packing Kayu' || packageInfo?.package_type === 'Packing Kayu';
   const packageTypeValue = (packageInfo?.package_type || '').trim().toLowerCase();
   const packageType = isWoodPacking
     ? 'Packing Kayu'
@@ -40,8 +38,8 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
       ? 'Fullset'
       : ['non-fullset', 'non fullset', 'non_fullset'].includes(packageTypeValue)
         ? 'Non Fullset'
-        : packageInfo?.package_type || order.delivery_method;
-  const packageItems = packageInfo?.items || order.items || [];
+        : packageInfo?.package_type || order?.delivery_method;
+  const packageItems = packageInfo?.items || order?.items || [];
   const packageWeight = packageInfo?.weight !== undefined && packageInfo?.weight !== null
     ? `${packageInfo.weight} kg`
     : 'Belum tersedia';
@@ -49,6 +47,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
   // The web preview is a 576-dot canvas, matching the bitmap renderer used by
   // the bridge for RPP02N. It deliberately is not a responsive HTML receipt.
   useEffect(() => {
+    if (!order) { setNotaPreviewUrl(''); return; }
     const items = packageItems.map((item) => {
       const name = 'order_item_id' in item ? (item.product_name || 'Tanaman') : (item.tree_name || item.product_name || 'Tanaman');
       const grade = 'grade' in item ? `Grade ${item.grade || 'A'}` : '-';
@@ -63,6 +62,10 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
       salesName: order.creator?.name || 'Sales Staff', adminName: order.verifier?.name || 'Admin Operasional',
     }).toDataURL('image/png'));
   }, [order, packageInfo, packageItems, packageType, customNotes]);
+
+  // All hooks above run for every render. Only the visual modal needs an order.
+  // This prevents React's "Rendered more hooks" crash when order data arrives.
+  if (!order) return null;
 
   const modalContent = (
     <div id="packing-nota-modal-container" className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-5 w-full h-full overflow-y-auto font-sans">
