@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Camera, X } from 'lucide-react';
+import { Camera, ImagePlus, Upload, X } from 'lucide-react';
 import { recognize } from 'tesseract.js';
 import { OrderPackage } from '../../types/order';
 
@@ -94,7 +94,23 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
           {pkg.items?.map((item) => <p key={item.order_item_id} className="font-medium text-slate-700">• {item.product_name || 'Tanaman'} ×{item.quantity}</p>)}
           <p className="pt-1 font-bold text-emerald-800">Foto: {pkg.photo_uploaded ? 'Sudah ada' : 'Belum ada'}</p>
         </div>
-        <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end"><label className="block text-xs font-bold text-slate-800">Nomor Resi *<input placeholder="Masukkan nomor resi..." value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 px-3.5 text-xs font-bold focus:outline-none focus:border-emerald-700" /></label><button type="button" onClick={openCamera} className="min-h-11 rounded-2xl bg-[#04593f] text-white px-3 text-xs font-extrabold">Webcam</button><label className="min-h-11 rounded-2xl bg-emerald-50 text-[#04593f] px-3 flex items-center gap-1.5 text-xs font-extrabold cursor-pointer">{scanning ? 'Membaca…' : <><Camera className="w-4 h-4"/>Foto</>}<input disabled={scanning} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && scanPhoto(e.target.files[0])}/></label></div>
+        <div className="space-y-2">
+          <label className="block text-xs font-bold text-slate-800">Nomor Resi *
+            <input placeholder="Masukkan nomor resi..." value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 px-3.5 text-xs font-bold focus:outline-none focus:border-emerald-700" />
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            <button type="button" disabled={scanning} onClick={openCamera} className="min-h-11 rounded-2xl bg-[#04593f] text-white px-2 text-[11px] font-extrabold disabled:opacity-50">Webcam</button>
+            <label className="min-h-11 rounded-2xl bg-emerald-50 text-[#04593f] px-2 flex items-center justify-center gap-1 text-[11px] font-extrabold cursor-pointer disabled:opacity-50">
+              <Camera className="w-3.5 h-3.5" />{scanning ? 'Membaca…' : 'Ambil Foto'}
+              <input disabled={scanning} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) scanPhoto(file); e.currentTarget.value = ''; }} />
+            </label>
+            <label className="min-h-11 rounded-2xl border border-emerald-100 bg-white text-[#04593f] px-2 flex items-center justify-center gap-1 text-[11px] font-extrabold cursor-pointer disabled:opacity-50">
+              <ImagePlus className="w-3.5 h-3.5" />Pilih Gambar
+              <input disabled={scanning} type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) scanPhoto(file); e.currentTarget.value = ''; }} />
+            </label>
+          </div>
+          <p className="text-[10px] leading-relaxed text-slate-500"><Upload className="mr-1 inline h-3 w-3" />Pilih Gambar membuka galeri/file. Webcam untuk kamera komputer; Ambil Foto untuk kamera HP.</p>
+        </div>
         <label className="block text-xs font-bold text-slate-800">Ongkir Ekspedisi (Rp) *
           <input
             type="text"
