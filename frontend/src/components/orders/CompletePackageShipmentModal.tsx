@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Camera, X } from 'lucide-react';
 import { recognize } from 'tesseract.js';
 import { OrderPackage } from '../../types/order';
@@ -16,12 +16,16 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
   const [saving, setSaving] = useState(false);
   const [duplicate, setDuplicate] = useState<{ tracking_number?: string; order_number?: string; customer?: string } | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     setTrackingNumber(pkg?.tracking_number || '');
     setShippingCost(String(pkg?.shipping_cost || 0));
     setError('');
   }, [pkg]);
+  useEffect(() => () => streamRef.current?.getTracks().forEach((track) => track.stop()), []);
 
   if (!pkg) return null;
 
@@ -39,6 +43,14 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
   };
 
   const isValid = trackingNumber.trim().length > 0 && Number(shippingCost) > 0;
+  const preprocess = async (source: Blob) => {
+    const bitmap = await createImageBitmap(source); const ratio = Math.min(1.8, 1800 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas'); canvas.width = Math.round(bitmap.width * ratio); canvas.height = Math.round(bitmap.height * ratio);
+    const ctx = canvas.getContext('2d')!; ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const image = ctx.getImageData(0, 0, canvas.width, canvas.height); const pixels = image.data;
+    for (let i = 0; i < pixels.length; i += 4) { const gray = Math.max(0, Math.min(255, ((pixels[i] * .299 + pixels[i + 1] * .587 + pixels[i + 2] * .114) - 128) * 1.45 + 128)); pixels[i] = pixels[i + 1] = pixels[i + 2] = gray; }
+    ctx.putImageData(image, 0, 0); return await new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Gagal memproses gambar')), 'image/jpeg', .92));
+  };
   const scanPhoto = async (file: File) => {
     setScanning(true); setError('Membaca barcode dan nominal ongkir dari foto…');
     try {
@@ -48,7 +60,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
         : Promise.resolve('');
       // OCR stays on the device/browser. It is deliberately only a suggested
       // value: admin can correct it before saving.
-      const ocrTask = recognize(file, 'eng').then(({ data }) => data.text);
+      const processed = await preprocess(file); const ocrTask = recognize(processed, 'eng').then(({ data }) => data.text);
       const [barcodeResult, ocrResult] = await Promise.all([barcodeTask, ocrTask]);
       if (barcodeResult) setTrackingNumber(String(barcodeResult).trim());
       const money = String(ocrResult).match(/(?:IDR|RP\.?)[\s:]*([0-9][0-9.,\s]*)/i);
@@ -63,6 +75,12 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
     } catch { setError('Gagal membaca foto. Coba foto lebih dekat dengan pencahayaan yang cukup.'); }
     finally { setScanning(false); }
   };
+  const openCamera = async () => {
+    try { const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }); streamRef.current = stream; setCameraOpen(true); setTimeout(() => { if (videoRef.current) videoRef.current.srcObject = stream; }, 0); }
+    catch { setError('Kamera tidak dapat dibuka. Pastikan izin kamera diberikan atau gunakan tombol Scan foto.'); }
+  };
+  const closeCamera = () => { streamRef.current?.getTracks().forEach((track) => track.stop()); streamRef.current = null; setCameraOpen(false); };
+  const captureCamera = async () => { const video = videoRef.current; if (!video || !video.videoWidth) return; const canvas = document.createElement('canvas'); canvas.width = video.videoWidth; canvas.height = video.videoHeight; canvas.getContext('2d')!.drawImage(video, 0, 0); const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(), 'image/jpeg', .95)); closeCamera(); await scanPhoto(new File([blob], 'scan-resi.jpg', { type: 'image/jpeg' })); };
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 p-4 font-sans">
@@ -76,7 +94,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
           {pkg.items?.map((item) => <p key={item.order_item_id} className="font-medium text-slate-700">• {item.product_name || 'Tanaman'} ×{item.quantity}</p>)}
           <p className="pt-1 font-bold text-emerald-800">Foto: {pkg.photo_uploaded ? 'Sudah ada' : 'Belum ada'}</p>
         </div>
-        <div className="grid grid-cols-[1fr_auto] gap-2 items-end"><label className="block text-xs font-bold text-slate-800">Nomor Resi *<input placeholder="Masukkan nomor resi..." value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 px-3.5 text-xs font-bold focus:outline-none focus:border-emerald-700" /></label><label className="min-h-11 rounded-2xl bg-emerald-50 text-[#04593f] px-3 flex items-center gap-1.5 text-xs font-extrabold cursor-pointer">{scanning ? 'Membaca…' : <><Camera className="w-4 h-4"/>Scan</>}<input disabled={scanning} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && scanPhoto(e.target.files[0])}/></label></div>
+        <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end"><label className="block text-xs font-bold text-slate-800">Nomor Resi *<input placeholder="Masukkan nomor resi..." value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 px-3.5 text-xs font-bold focus:outline-none focus:border-emerald-700" /></label><button type="button" onClick={openCamera} className="min-h-11 rounded-2xl bg-[#04593f] text-white px-3 text-xs font-extrabold">Webcam</button><label className="min-h-11 rounded-2xl bg-emerald-50 text-[#04593f] px-3 flex items-center gap-1.5 text-xs font-extrabold cursor-pointer">{scanning ? 'Membaca…' : <><Camera className="w-4 h-4"/>Foto</>}<input disabled={scanning} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && scanPhoto(e.target.files[0])}/></label></div>
         <label className="block text-xs font-bold text-slate-800">Ongkir Ekspedisi (Rp) *
           <input
             type="text"
@@ -104,6 +122,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
           </button>
         </div>
       </form>
+      {cameraOpen && <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-slate-950/80 p-4"><div className="w-full max-w-lg rounded-3xl bg-white p-4 space-y-3"><video ref={videoRef} autoPlay playsInline className="w-full rounded-2xl bg-black"/><p className="text-xs text-slate-600">Arahkan barcode dan nominal ongkir ke kamera, lalu ambil foto.</p><div className="grid grid-cols-2 gap-2"><button type="button" onClick={closeCamera} className="min-h-11 rounded-xl bg-slate-100 font-bold">Batal</button><button type="button" onClick={captureCamera} className="min-h-11 rounded-xl bg-[#04593f] text-white font-bold">Ambil & Baca</button></div></div></div>}
       {duplicate && <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-slate-900/55 p-4"><div className="w-full max-w-xs rounded-3xl bg-white p-6 text-center shadow-2xl space-y-3"><div className="text-4xl text-rose-600">!</div><h3 className="font-extrabold text-rose-700">Nomor resi sudah digunakan</h3><b>{duplicate.tracking_number}</b><div className="text-left text-xs text-slate-600 space-y-1"><p>Order</p><b className="text-slate-900">{duplicate.order_number}</b><p className="pt-2">Penerima</p><b className="text-slate-900">{duplicate.customer}</b></div><div className="grid grid-cols-2 gap-2 pt-2"><button onClick={() => { setDuplicate(null); setTrackingNumber(''); }} className="min-h-11 rounded-xl bg-slate-100 font-bold">Scan Lagi</button><button onClick={() => setDuplicate(null)} className="min-h-11 rounded-xl bg-rose-600 text-white font-bold">Tutup</button></div></div></div>}
     </div>
   );
