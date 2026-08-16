@@ -48,9 +48,8 @@ const plant = (c: CanvasRenderingContext2D) => {
 };
 
 const whatsapp = (c: CanvasRenderingContext2D, x: number, centerY: number, radius: number) => {
-  c.strokeStyle = black; c.lineWidth = radius * .18; c.beginPath(); c.arc(x + radius, centerY, radius, 0, Math.PI * 2); c.stroke();
-  c.beginPath(); c.moveTo(x + radius * .72, centerY + radius * .12); c.lineTo(x + radius * 1.22, centerY - radius * .32); c.moveTo(x + radius * .78, centerY + radius * .34); c.lineTo(x + radius * 1.14, centerY + radius * .60); c.stroke();
-  c.fillStyle = black; c.beginPath(); c.moveTo(x + radius * .38, centerY + radius * .72); c.lineTo(x + radius * .46, centerY + radius * 1.25); c.lineTo(x + radius * .82, centerY + radius * .88); c.closePath(); c.fill();
+  c.fillStyle = black; c.beginPath(); c.arc(x + radius, centerY, radius, 0, Math.PI * 2); c.fill();
+  c.fillStyle = '#ffffff'; font(c, radius * 1.05, true); c.textAlign = 'center'; c.fillText('WA', x + radius, centerY + radius * .38); c.textAlign = 'left'; c.fillStyle = black;
 };
 
 export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
@@ -62,7 +61,7 @@ export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   c.fillStyle = '#ffffff'; c.fillRect(0, 0, WIDTH, HEIGHT); c.fillStyle = black; c.strokeStyle = black; c.textBaseline = 'alphabetic';
   c.lineWidth = 5; roundRect(c, 24, 24, WIDTH - 48, HEIGHT - 48, 22); c.stroke();
   plant(c);
-  font(c, 35, true); c.fillText('ANTALOGMA FLORIST', 148, 88);
+  font(c, 35, true); c.fillText('ANTAGLOMA FLORIST', 148, 88);
   font(c, 21, true); c.fillText('SPESIALIS ADENIUM BUNGA TUMPUK', 148, 122);
   roundRect(c, WIDTH - 235, 54, 181, 64, 12); c.fill(); c.fillStyle = '#ffffff'; font(c, 25, true); c.textAlign = 'center'; c.fillText('STIKER RESI', WIDTH - 145, 97); c.textAlign = 'left'; c.fillStyle = black;
   font(c, 31, true); c.fillText(`ORDER:   ${data.subOrderNumber}`, 68, 205); c.beginPath(); c.moveTo(52, 235); c.lineTo(WIDTH - 52, 235); c.stroke();
@@ -82,12 +81,12 @@ export const createShippingLabelCanvas = (data: ShippingLabelCanvasData) => {
   (data.itemLines?.length ? data.itemLines : ['Tanaman']).slice(0, 2).forEach((item) => { font(c, 19, true); c.fillText(`• ${item}`, 98, itemY); itemY += 22; });
   const senderY = y + 184;
   c.fillStyle = black; roundRect(c, 64, senderY, 166, 36, 9); c.fill(); c.fillStyle = '#ffffff'; font(c, 18, true); c.textAlign = 'center'; c.fillText('PENGIRIM', 147, senderY + 25); c.textAlign = 'left'; c.fillStyle = black;
-  font(c, 23, true); c.fillText('ANTALOGMA FLORIST', 74, senderY + 64);
-  whatsapp(c, 74, senderY + 85, 10); font(c, 17, true); c.fillText('0858-9450-3333 / 0857-3333-1889', 99, senderY + 93);
+  font(c, 23, true); c.fillText('ANTAGLOMA FLORIST', 74, senderY + 64);
+  whatsapp(c, 74, senderY + 85, 11); font(c, 17, true); c.fillText('0858-9450-3333 / 0857-3333-1889', 102, senderY + 93);
   const footerY = senderY + 110; c.lineWidth = 5; c.beginPath(); c.moveTo(52, footerY); c.lineTo(WIDTH - 52, footerY); c.stroke();
   font(c, 16, true); c.fillText('TANGGAL CETAK', 74, footerY + 32); c.fillText('ADMIN', WIDTH * .56, footerY + 32);
   font(c, 18); c.fillText(dateToday(), 74, footerY + 55); c.fillText('Admin Operasional', WIDTH * .56, footerY + 55);
   const closingY = footerY + 68; c.lineWidth = 3; c.beginPath(); c.moveTo(52, closingY); c.lineTo(WIDTH - 52, closingY); c.stroke();
-  font(c, 19, true); c.textAlign = 'center'; c.fillText('Terimakasih telah berbelanja di Antalogma Florist', WIDTH / 2, closingY + 30); c.textAlign = 'left';
+  font(c, 19, true); c.textAlign = 'center'; c.fillText('Terimakasih telah berbelanja di Antagloma Florist', WIDTH / 2, closingY + 30); c.textAlign = 'left';
   return canvas;
 };
