@@ -19,6 +19,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
   const [selectedGrade, setSelectedGrade] = useState<string>('');
   const [quantity, setQuantity] = useState<number | ''>(1);
   const [price, setPrice] = useState<number | ''>(0);
+  const [isPriceManuallyEdited, setIsPriceManuallyEdited] = useState(false);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
@@ -44,14 +45,12 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
   const standardPrice = chosenGradeObj ? chosenGradeObj.standard_price : 0;
   const numQty = Number(quantity) || 1;
 
-  // Default total selling price when a grade is selected; quantity changes do not multiply this total
+  // The selling total follows the grade's unit price × quantity until Sales
+  // intentionally replaces it for a discount or another agreed adjustment.
   useEffect(() => {
-    if (chosenGradeObj) {
-      if (chosenGradeObj.grade !== 'J+') {
-        setPrice(chosenGradeObj.standard_price * numQty);
-      }
-    }
-  }, [selectedGrade]);
+    if (!isOpen || !chosenGradeObj || chosenGradeObj.grade === 'J+' || isPriceManuallyEdited) return;
+    setPrice(chosenGradeObj.standard_price * numQty);
+  }, [isOpen, selectedGrade, standardPrice, numQty, isPriceManuallyEdited]);
 
   const numPrice = Number(price) || 0;
   const totalStandardForQty = standardPrice * numQty;
@@ -102,6 +101,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
     setSelectedGrade('');
     setQuantity(1);
     setPrice(0);
+    setIsPriceManuallyEdited(false);
   };
 
   const treeOptions = trees.map((t) => ({
@@ -162,7 +162,11 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
             <CustomSelect
               options={gradeOptions}
               value={selectedGrade}
-              onChange={(val) => setSelectedGrade(val)}
+              onChange={(val) => {
+                // A new grade starts from its standard calculated total.
+                setIsPriceManuallyEdited(false);
+                setSelectedGrade(val);
+              }}
               placeholder="-- Pilih Grade --"
               disabled={isLoadingMaster}
             />
@@ -210,6 +214,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
                 onFocus={(e) => e.target.select()}
                 onChange={(e) => {
                   const cleanValue = e.target.value.replace(/\./g, '');
+                  setIsPriceManuallyEdited(true);
                   if (cleanValue === '') {
                     setPrice('');
                   } else if (/^\d+$/.test(cleanValue)) {
@@ -218,6 +223,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({ isOpen, onClose, o
                 }}
                 className="w-full px-3.5 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900"
               />
+              <p className="mt-1 text-[10px] font-medium text-slate-500">Otomatis dari harga standar × qty, lalu dapat diedit bila perlu.</p>
             </div>
 
             <div>
