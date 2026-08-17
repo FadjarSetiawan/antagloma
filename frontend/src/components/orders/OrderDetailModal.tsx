@@ -62,8 +62,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     (sum, pkg) => sum + (pkg.items || []).reduce((itemSum, item) => itemSum + (Number(item.quantity) || 0), 0),
     0,
   );
-  const isSalesPartialConfiguration =
-    role === 'sales' &&
+  const isPartialConfiguration =
     order.status === 'WAITING_PACKING' &&
     configuredItemQuantity > 0 &&
     configuredItemQuantity < totalItemQuantity;
@@ -94,7 +93,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm sm:text-base font-bold text-slate-900">{order.order_number}</h3>
-                {isSalesPartialConfiguration ? (
+                {isPartialConfiguration ? (
                   <span className="rounded-xl border border-amber-300 bg-amber-100 px-2.5 py-1 text-[10px] font-black text-amber-950">
                     Sedang Diatur ({configuredItemQuantity}/{totalItemQuantity})
                   </span>
@@ -118,10 +117,10 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               <div className="p-3 bg-emerald-50 border border-emerald-200/90 rounded-xl space-y-0.5 text-xs text-emerald-950 shadow-2xs">
                 <span className="font-bold text-[#04593f] flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4 text-[#04593f]" />
-                  <span>{isSalesPartialConfiguration ? `Paket sedang diatur (${configuredItemQuantity}/${totalItemQuantity})` : 'Pembayaran terverifikasi, menunggu buat paket'}</span>
+                  <span>{isPartialConfiguration ? `Paket sedang diatur (${configuredItemQuantity}/${totalItemQuantity})` : 'Pembayaran terverifikasi, menunggu buat paket'}</span>
                 </span>
                 <p className="text-[11px] text-slate-600 font-medium pl-5.5">
-                  {isSalesPartialConfiguration
+                  {isPartialConfiguration
                     ? `${configuredItemQuantity} dari ${totalItemQuantity} tanaman sudah dialokasikan. Admin masih mengatur sisa paket pengiriman.`
                     : 'Pembayaran order telah disetujui admin. Saat ini menunggu pembuatan paket pengiriman oleh admin.'}
                 </p>
