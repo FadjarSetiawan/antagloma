@@ -208,15 +208,13 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                         </span>
                         <span className="text-[11px] text-emerald-100 font-medium mt-0.5 block">
                           {order.status === 'WAITING_PROCESS'
-                            ? `Otomatis dihitung ${rate}% dari Total Harga Tanaman setelah diverifikasi Admin.`
+                            ? `Estimasi ${rate}% dari Total Harga Tanaman. Menjadi komisi final setelah diverifikasi Admin.`
                             : `Hitungan: Rp ${plantTotalPrice.toLocaleString('id-ID')} × ${rate}%`}
                         </span>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <span className="font-black text-white text-base block">
-                          {order.status === 'WAITING_PROCESS'
-                            ? 'Rp 0'
-                            : `Rp ${commissionAmount.toLocaleString('id-ID')}`}
+                          Rp {commissionAmount.toLocaleString('id-ID')}
                         </span>
                         <span className={`text-[9px] font-bold px-2 py-0.5 rounded inline-block mt-0.5 ${
                           order.status === 'WAITING_PROCESS'
