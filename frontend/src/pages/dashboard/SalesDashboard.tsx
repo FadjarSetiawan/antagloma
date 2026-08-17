@@ -46,7 +46,17 @@ export const SalesDashboard: React.FC = () => {
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
   const todayCount = orders.filter(o => o.order_date === today).length;
   const waitingVerification = orders.filter(o => o.status === 'WAITING_PROCESS');
-  const waitingConfigure = orders.filter(o => o.status === 'WAITING_PACKING' && !o.packages?.length);
+  // Keep the card active until every ordered plant has been allocated. An
+  // order with one package is not necessarily fully configured yet.
+  const waitingConfigure = orders.filter((order) => {
+    if (order.status !== 'WAITING_PACKING') return false;
+    const orderedQuantity = (order.items || []).reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+    const allocatedQuantity = (order.packages || []).reduce(
+      (sum, pkg) => sum + (pkg.items || []).reduce((itemSum, item) => itemSum + (Number(item.quantity) || 0), 0),
+      0,
+    );
+    return allocatedQuantity < orderedQuantity;
+  });
   const waitingPackingOrders = orders.filter(o => o.status === 'WAITING_PACKING' && !!o.packages?.length);
   const waitingPackingPackageCount = waitingPackingOrders.reduce((sum, order) => sum + (order.packages?.length || 0), 0);
   const completedPackageCount = completed.reduce((sum, order) => sum + (order.packages?.length || 0), 0);
@@ -55,7 +65,7 @@ export const SalesDashboard: React.FC = () => {
 
   const summaryCards = [
     { title: 'Menunggu Verifikasi', count: waitingVerification.length, detail: 'Semua verifikasi', icon: <Clock className="w-5 h-5" />, action: 'Lihat Order', onClick: () => window.location.assign('/orders?status=WAITING_PROCESS') },
-    { title: 'Menunggu Atur Paket', count: waitingConfigure.length, detail: `${waitingConfigure.length} paket siap diatur`, icon: <Package className="w-5 h-5" />, action: 'Cek Status', onClick: () => window.location.assign('/orders?status=WAITING_PACKING') },
+    { title: 'Menunggu Atur Paket', count: waitingConfigure.length, detail: waitingConfigure.length ? `${waitingConfigure.length} order belum selesai diatur` : 'Semua paket sudah diatur', icon: <Package className="w-5 h-5" />, action: 'Cek Status', onClick: () => window.location.assign('/orders?status=WAITING_PACKING') },
     { title: 'Menunggu Packing', count: waitingPackingPackageCount, detail: `${waitingPackingPackageCount} sedang dikemas`, icon: <Package className="w-5 h-5" />, action: showWaitingPacking ? 'Tutup Antrian' : 'Cek Antrian', onClick: () => setShowWaitingPacking(v => !v) },
     { title: 'Packing Selesai', count: completedPackageCount, detail: `${completedPackageCount} foto paket dikirim`, icon: <CheckCircle2 className="w-5 h-5" />, action: showPackingSelesai ? 'Tutup Daftar' : 'Lihat Selesai', onClick: () => setShowPackingSelesai(v => !v) },
   ];  const plants = (o: Order) => o.items?.map(i => `${i.product_name} ×${i.quantity}`) || [];
