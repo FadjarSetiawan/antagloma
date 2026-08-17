@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Camera, ImagePlus, Upload, X } from 'lucide-react';
+import { AlertTriangle, Camera, ImagePlus, Upload, X } from 'lucide-react';
 import { recognize } from 'tesseract.js';
 import { OrderPackage } from '../../types/order';
 
@@ -19,6 +19,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
   const [duplicate, setDuplicate] = useState<{ tracking_number?: string; order_number?: string; customer?: string } | null>(null);
   const [scanning, setScanning] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -28,14 +29,22 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
     setError('');
     setScanMessage('');
     setScanSucceeded(false);
+    setShowSaveConfirmation(false);
   }, [pkg]);
   useEffect(() => () => streamRef.current?.getTracks().forEach((track) => track.stop()), []);
 
   if (!pkg) return null;
 
-  const submit = async (event: React.FormEvent) => {
+  const requestSaveConfirmation = (event: React.FormEvent) => {
     event.preventDefault();
     if (!trackingNumber.trim()) { setError('Nomor resi wajib diisi.'); return; }
+    if (!Number(shippingCost) || Number(shippingCost) <= 0) { setError('Ongkir ekspedisi wajib diisi.'); return; }
+    setError('');
+    setShowSaveConfirmation(true);
+  };
+
+  const submit = async () => {
+    setShowSaveConfirmation(false);
     setSaving(true); setError('');
     try {
       await onConfirm(pkg.id, { tracking_number: trackingNumber.trim(), shipping_cost: Number(shippingCost) || 0 });
@@ -100,7 +109,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 p-4 font-sans">
-      <form onSubmit={submit} className="w-full max-w-sm rounded-3xl bg-white p-6 space-y-4 shadow-2xl border border-slate-200">
+      <form onSubmit={requestSaveConfirmation} className="w-full max-w-sm rounded-3xl bg-white p-6 space-y-4 shadow-2xl border border-slate-200">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div><h2 className="text-base font-extrabold text-slate-900">Input Resi Paket {pkg.letter}</h2><p className="text-xs text-slate-500 font-semibold">{pkg.package_type || 'Package'}</p></div>
           <button type="button" onClick={onClose} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><X className="w-5 h-5" /></button>
@@ -156,6 +165,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
         </div>
       </form>
       {cameraOpen && <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-slate-950/80 p-4"><div className="w-full max-w-lg rounded-3xl bg-white p-4 space-y-3"><video ref={videoRef} autoPlay playsInline className="w-full rounded-2xl bg-black"/><p className="text-xs text-slate-600">Arahkan barcode dan nominal ongkir ke kamera, lalu ambil foto.</p><div className="grid grid-cols-2 gap-2"><button type="button" onClick={closeCamera} className="min-h-11 rounded-xl bg-slate-100 font-bold">Batal</button><button type="button" onClick={captureCamera} className="min-h-11 rounded-xl bg-[#04593f] text-white font-bold">Ambil & Baca</button></div></div></div>}
+      {showSaveConfirmation && <div className="fixed inset-0 z-[10002] flex items-center justify-center bg-slate-900/60 p-4"><div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl space-y-4"><div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-4 border-amber-300 bg-amber-50 text-amber-500"><AlertTriangle className="h-8 w-8" /></div><div className="space-y-2"><h3 className="text-xl font-extrabold text-slate-900">Konfirmasi Simpan</h3><p className="text-sm leading-relaxed text-slate-600">Setelah disimpan, nomor resi dan ongkir <span className="font-extrabold text-rose-600">tidak dapat diubah</span>. Lanjutkan?</p></div><div className="grid grid-cols-2 gap-3 pt-1"><button type="button" onClick={() => setShowSaveConfirmation(false)} className="min-h-12 rounded-2xl bg-slate-100 text-sm font-extrabold text-slate-700">Batal</button><button type="button" onClick={submit} disabled={saving} className="min-h-12 rounded-2xl bg-[#04593f] text-sm font-extrabold text-white shadow-sm disabled:opacity-50">{saving ? 'Menyimpan...' : 'Ya, Simpan'}</button></div></div></div>}
       {duplicate && <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-slate-900/55 p-4"><div className="w-full max-w-xs rounded-3xl bg-white p-6 text-center shadow-2xl space-y-3"><div className="text-4xl text-rose-600">!</div><h3 className="font-extrabold text-rose-700">Nomor resi sudah digunakan</h3><b>{duplicate.tracking_number}</b><div className="text-left text-xs text-slate-600 space-y-1"><p>Order</p><b className="text-slate-900">{duplicate.order_number}</b><p className="pt-2">Penerima</p><b className="text-slate-900">{duplicate.customer}</b></div><div className="grid grid-cols-2 gap-2 pt-2"><button onClick={() => { setDuplicate(null); setTrackingNumber(''); }} className="min-h-11 rounded-xl bg-slate-100 font-bold">Scan Lagi</button><button onClick={() => setDuplicate(null)} className="min-h-11 rounded-xl bg-rose-600 text-white font-bold">Tutup</button></div></div></div>}
     </div>
   );
