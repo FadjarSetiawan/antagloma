@@ -21,6 +21,7 @@ import {
   PackageCheck,
   Calendar,
   Phone,
+  User,
   Truck,
   Lightbulb,
   FileText,
@@ -324,6 +325,12 @@ export const OrderListPage: React.FC = () => {
                       <span className="text-slate-500 font-medium">Customer:</span>
                       <span className="font-bold text-slate-900">{order.customer_name} ({order.phone})</span>
                     </div>
+                    {(role === 'admin' || role === 'owner') && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">Sales:</span>
+                        <span className="font-bold text-[#04593f]">{order.creator?.name || 'Tidak diketahui'}</span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 font-medium">Metode Pengiriman:</span>
                       <span className="font-bold text-emerald-800 flex items-center gap-1">
@@ -432,6 +439,11 @@ export const OrderListPage: React.FC = () => {
                       <Phone className="w-3 h-3 text-slate-400" />
                       {order.phone}
                     </span>
+                    {(role === 'admin' || role === 'owner') && (
+                      <span className="mt-1.5 flex items-center gap-1 text-[11px] font-bold text-[#04593f]">
+                        <User className="h-3 w-3" /> Sales: {order.creator?.name || 'Tidak diketahui'}
+                      </span>
+                    )}
                   </div>
 
                   <div>

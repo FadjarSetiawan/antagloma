@@ -141,6 +141,12 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     <Phone className="w-3.5 h-3.5 text-[#04593f] flex-shrink-0" />
                     <span>{order.phone}</span>
                   </div>
+                  {isOwnerOrAdmin && (
+                    <div className="mt-2 flex items-center gap-1.5 rounded-lg border border-emerald-100 bg-emerald-50 px-2 py-1.5 text-[11px] font-bold text-emerald-900">
+                      <User className="w-3.5 h-3.5 text-[#04593f] flex-shrink-0" />
+                      <span>Sales pembuat order: {order.creator?.name || 'Tidak diketahui'}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-1">
