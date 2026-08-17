@@ -293,9 +293,12 @@ export const OrderListPage: React.FC = () => {
             const canViewTracking = (order.status === 'PACKING_COMPLETED' || order.status === 'COMPLETED') && hasCompletedTracking;
             const canInputTracking = order.status === 'PACKING_COMPLETED' && !hasCompletedTracking;
 
-            // ALLOW EDIT & DELETE FOR SALES ONLY WHEN UNVERIFIED (WAITING_PROCESS). AUTOMATICALLY HIDE WHEN VERIFIED BY ADMIN.
-            const isSalesOrderOwner = role === 'sales' && order.created_by === user?.id;
-            const canModifySalesOrder = role === 'admin' || role === 'owner';
+            // Admin/owner may make corrections only until the package is waiting
+            // for a photo. Once packing is complete or delivery is complete,
+            // the order must remain immutable and the pencil is hidden.
+            const canModifySalesOrder =
+              (role === 'admin' || role === 'owner') &&
+              ['WAITING_PROCESS', 'WAITING_PACKING'].includes(order.status);
             const canDeleteOrder = role === 'owner';
 
             if (order.status === 'CANCELLED') {

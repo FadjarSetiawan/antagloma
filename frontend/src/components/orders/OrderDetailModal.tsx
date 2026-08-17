@@ -116,7 +116,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
                   INFORMASI PEMESAN & PENGIRIMAN
                 </span>
-                {isOwnerOrAdmin && onEdit && (
+                {isOwnerOrAdmin && onEdit && ['WAITING_PROCESS', 'WAITING_PACKING'].includes(order.status) && (
                   <button
                     onClick={() => {
                       onClose();
@@ -384,7 +384,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               )}
 
               {/* EDIT BUTTON (SALES CAN ONLY EDIT IF UNVERIFIED - WAITING_PROCESS) */}
-              {isOwnerOrAdmin && onEdit && (
+              {isOwnerOrAdmin && onEdit && ['WAITING_PROCESS', 'WAITING_PACKING'].includes(order.status) && (
                 <button
                   onClick={() => onEdit(order)}
                   className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl cursor-pointer"
