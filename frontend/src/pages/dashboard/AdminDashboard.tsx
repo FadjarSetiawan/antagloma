@@ -204,24 +204,24 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Sleek Compact 2x2 Grid Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5 sm:gap-4">
         {statCards.map((card, idx) => {
           const Icon = card.icon;
           return (
             <div
               key={idx}
               onClick={() => card.title === 'Menunggu Foto Paket' ? setShowPhotoQueue(true) : navigate(card.link)}
-              className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 min-h-[172px] flex flex-col justify-between space-y-3 shadow-sm hover:border-[#04593f] hover:shadow-md transition-all cursor-pointer group"
+              className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-5 min-h-[150px] sm:min-h-[172px] flex flex-col justify-between space-y-2.5 sm:space-y-3 shadow-sm hover:border-[#04593f] hover:shadow-md transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center flex-shrink-0">
                   <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#04593f]" />
                 </div>
-                <span className="text-2xl sm:text-3xl font-black text-slate-900">{card.value}</span>
+                <span className="text-xl sm:text-3xl font-black text-slate-900">{card.value}</span>
               </div>
 
               <div>
-                <h2 className="text-sm font-bold text-slate-900 leading-snug block">
+                <h2 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug block">
                   {card.title}
                 </h2>
 
@@ -235,7 +235,7 @@ export const AdminDashboard: React.FC = () => {
                       <span className="truncate">{card.caption}</span>
                     </span>
                   ) : (
-                    <span className="text-xs text-slate-600 font-medium leading-snug">{card.caption}</span>
+                    <span className="text-[10px] sm:text-xs text-slate-600 font-medium leading-snug">{card.caption}</span>
                   )}
                 </div>
               </div>
@@ -245,7 +245,7 @@ export const AdminDashboard: React.FC = () => {
                   type="button"
                   className="w-full py-1.5 px-2 bg-emerald-50 group-hover:bg-[#04593f] text-[#04593f] group-hover:text-white rounded-xl text-[10px] sm:text-xs font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"
                 >
-                  <span className="text-xs">{card.buttonText}</span>
+                  <span className="text-[10px] sm:text-xs">{card.buttonText}</span>
                   <ChevronRight className="w-3 h-3" />
                 </button>
               </div>
