@@ -283,7 +283,13 @@ export const OrderListPage: React.FC = () => {
             const totalOrderAmount = plantTotalPrice + (order.buyer_shipping_cost || 0);
             const configuredPlantCount = (order.packages || []).reduce((sum, pkg) => sum + (pkg.items || []).reduce((packageSum, item) => packageSum + (Number(item.quantity) || 0), 0), 0);
             const remainingPlantCount = Math.max(0, itemCount - configuredPlantCount);
-            const isPartiallyConfigured = role === 'admin' && configuredPlantCount > 0 && remainingPlantCount > 0;
+            // Sales should also see that an order is being arranged in stages,
+            // but only Admin gets the operational allocation breakdown.
+            const isPartiallyConfigured =
+              (role === 'admin' || role === 'sales') &&
+              order.status === 'WAITING_PACKING' &&
+              configuredPlantCount > 0 &&
+              remainingPlantCount > 0;
             const isNotConfigured = role === 'admin' && order.status === 'WAITING_PACKING' && configuredPlantCount === 0;
             const isWaitingPackingPhoto = role === 'admin' && order.status === 'WAITING_PACKING' && itemCount > 0 && configuredPlantCount >= itemCount;
             const hasPackages = Boolean(order.packages?.length);
@@ -416,7 +422,7 @@ export const OrderListPage: React.FC = () => {
                   {isPartiallyConfigured ? (
                     <div className="rounded-xl bg-amber-100 border border-amber-300 px-2.5 py-1 text-right leading-tight shrink-0">
                       <span className="block text-[10px] font-black text-amber-950">Sedang Diatur ({configuredPlantCount}/{itemCount})</span>
-                      <span className="block text-[9px] font-semibold text-amber-800 mt-0.5">{configuredPlantCount} tanaman siap cetak nota</span>
+                      {role === 'admin' && <span className="block text-[9px] font-semibold text-amber-800 mt-0.5">{configuredPlantCount} tanaman siap cetak nota</span>}
                     </div>
                   ) : isNotConfigured ? (
                     <span className="rounded-xl bg-blue-600 px-3 py-1 text-xs font-bold text-white shadow-2xs">Belum Diatur</span>
@@ -425,7 +431,7 @@ export const OrderListPage: React.FC = () => {
                   ) : <OrderStatusBadge status={order.status} />}
                 </div>
 
-                {isPartiallyConfigured && (
+                {isPartiallyConfigured && role === 'admin' && (
                   <div className="grid grid-cols-[1.35fr_1fr_1fr] gap-2 rounded-xl border border-amber-200 bg-amber-50/70 p-2.5 text-[10px]">
                     <div className="flex items-center gap-1.5 text-amber-950 min-w-0"><PackageCheck className="w-4 h-4 text-[#04593f] shrink-0" /><div><p className="font-extrabold">Progress Pengaturan</p><p className="font-medium text-amber-800">{configuredPlantCount} dari {itemCount} tanaman diatur</p></div></div>
                     <div className="border-l border-amber-200 pl-2"><p className="font-extrabold text-[#04593f]">✓ Sudah Diatur</p><p className="font-semibold text-slate-600 mt-0.5">{configuredPlantCount} tanaman</p></div>
