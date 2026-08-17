@@ -500,7 +500,7 @@ export const OrderListPage: React.FC = () => {
                       </button>
                     )}
 
-                    {(role === 'admin' || role === 'owner') && canViewTracking && (
+                    {(role === 'admin' || role === 'owner' || role === 'sales') && canViewTracking && (
                       <button
                         onClick={() => setTrackingOrder(order)}
                         className="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1 shadow-2xs cursor-pointer"
