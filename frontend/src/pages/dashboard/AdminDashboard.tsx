@@ -36,17 +36,6 @@ export const AdminDashboard: React.FC = () => {
   });
 
   const orders: Order[] = dashboardData?.data || [];
-  // `price` is the saved total selling price for each line item (not the unit
-  // price), so do not multiply it by quantity here.
-  const totalItems = orders.reduce(
-    (sum, order) => sum + (order.items || []).reduce((itemSum, item) => itemSum + (Number(item.quantity) || 0), 0),
-    0,
-  );
-  const totalSales = orders.reduce(
-    (sum, order) => sum + (order.items || []).reduce((itemSum, item) => itemSum + (Number(item.price) || 0), 0),
-    0,
-  );
-
   const waitingVerification = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
   // Keep the shipping-setup notification visible until every ordered plant has
   // been allocated to a package. This includes orders that already have one
@@ -213,20 +202,6 @@ export const AdminDashboard: React.FC = () => {
           <Plus className="w-4 h-4" /> Buat Order
         </button>
       </div>
-
-      {/* Operational sales summary: available to Admin for all shop orders. */}
-      <section className="grid grid-cols-2 gap-2.5 sm:gap-3.5" aria-label="Ringkasan item dan penjualan">
-        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3.5 shadow-2xs">
-          <p className="text-[10px] font-extrabold uppercase tracking-wide text-emerald-800">Total Item</p>
-          <p className="mt-1 text-xl font-black text-slate-950">{isLoading ? '...' : totalItems.toLocaleString('id-ID')}</p>
-          <p className="mt-0.5 text-[10px] font-semibold text-slate-500">Tanaman dari order yang terlihat</p>
-        </div>
-        <div className="rounded-2xl border border-emerald-900 bg-gradient-to-br from-[#04593f] to-emerald-950 p-3.5 shadow-2xs">
-          <p className="text-[10px] font-extrabold uppercase tracking-wide text-emerald-200">Total Penjualan</p>
-          <p className="mt-1 text-base font-black text-white sm:text-xl">{isLoading ? '...' : `Rp ${totalSales.toLocaleString('id-ID')}`}</p>
-          <p className="mt-0.5 text-[10px] font-semibold text-emerald-200/90">Harga tanaman, di luar ongkir</p>
-        </div>
-      </section>
 
       {/* Sleek Compact 2x2 Grid Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">

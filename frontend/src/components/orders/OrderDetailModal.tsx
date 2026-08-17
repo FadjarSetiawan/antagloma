@@ -55,6 +55,9 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const plantTotalPrice = order.items
     ? order.items.reduce((sum, item) => sum + (item.price || 0), 0)
     : 0;
+  const totalItemQuantity = order.items
+    ? order.items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0)
+    : 0;
   const shippingCost = order.buyer_shipping_cost || 0;
   const grandTotal = plantTotalPrice + shippingCost;
   const itemPricing = (item: OrderItem) => {
@@ -329,10 +332,11 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   <p className="py-2 text-center text-slate-400">Tidak ada detail item tanaman.</p>
                 )}
               </div>
-              {isOwner && order.items && order.items.length > 0 && (
+              {order.items && order.items.length > 0 && (
                 <div className="mt-1 rounded-xl border border-amber-200 bg-amber-50/70 p-3 space-y-1.5">
-                  <div className="flex items-center justify-between text-[10px] font-semibold text-slate-600"><span>Total harga normal</span><span>Rp {totalNormalPlantPrice.toLocaleString('id-ID')}</span></div>
-                  <div className="flex items-center justify-between text-[11px] font-extrabold text-rose-700"><span>Diskon diberikan sales</span><span>−Rp {totalSalesDiscount.toLocaleString('id-ID')}</span></div>
+                  <div className="flex items-center justify-between text-[10px] font-semibold text-slate-600"><span>Total item</span><span>{totalItemQuantity.toLocaleString('id-ID')} tanaman</span></div>
+                  {isOwner && <><div className="flex items-center justify-between text-[10px] font-semibold text-slate-600"><span>Total harga normal</span><span>Rp {totalNormalPlantPrice.toLocaleString('id-ID')}</span></div>
+                  <div className="flex items-center justify-between text-[11px] font-extrabold text-rose-700"><span>Diskon diberikan sales</span><span>−Rp {totalSalesDiscount.toLocaleString('id-ID')}</span></div></>}
                   <div className="flex items-center justify-between border-t border-amber-200 pt-1.5 text-xs font-black text-slate-900"><span>Total harga jual tanaman</span><span>Rp {plantTotalPrice.toLocaleString('id-ID')}</span></div>
                 </div>
               )}
