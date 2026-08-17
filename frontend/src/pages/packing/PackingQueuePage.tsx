@@ -31,27 +31,27 @@ export const PackingQueuePage: React.FC = () => {
   const orders = data?.data || [];
 
   return (
-    <div className="space-y-4 max-w-7xl pb-24 font-sans">
+    <div className="space-y-5 max-w-6xl mx-auto pb-24 font-sans">
       {/* Title & Subtitle */}
       <div>
-        <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Antrean Packing Tanaman</h1>
-        <p className="text-xs text-slate-500 font-normal mt-0.5">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-950 leading-tight">Antrean Packing Tanaman</h1>
+        <p className="text-sm text-slate-600 font-normal mt-1">
           Daftar pesanan Adenium yang disetujui admin, siap dikemas, dan diatur paket pengirimannya.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="p-8 text-center text-xs text-slate-400 font-normal bg-white rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="p-10 text-center text-sm text-slate-600 font-normal bg-white rounded-2xl border border-slate-200 shadow-sm">
           Memuat antrean packing...
         </div>
       ) : orders.length === 0 ? (
-        <div className="py-12 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="py-14 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-2xl border border-slate-200 shadow-sm">
           <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#04593f]">
             <Package className="w-7 h-7" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Tidak Ada Antrean Packing</h3>
-            <p className="text-xs text-slate-500 mt-0.5 font-normal max-w-xs mx-auto">
+            <h3 className="text-base font-bold text-slate-950">Tidak Ada Antrean Packing</h3>
+            <p className="text-sm text-slate-600 mt-1 font-normal max-w-xs mx-auto">
               Semua pesanan saat ini sudah dikemas atau belum disetujui oleh Admin/Owner.
             </p>
           </div>
@@ -132,15 +132,15 @@ export const PackingQueuePage: React.FC = () => {
                     </div>
 
                     {/* Items Summary Rangkaian */}
-                    <div className="p-3 bg-slate-50/80 border border-slate-100 rounded-2xl text-[11px] space-y-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                    <div className="py-2.5 border-y border-slate-200 text-sm space-y-1.5">
+                      <span className="text-xs font-bold uppercase tracking-wide text-slate-500 block">
                         RINCIAN BARANG RANGKAIAN ({order.items?.length || 0} ITEM):
                       </span>
                       <div className="space-y-1">
                         {order.items?.map((item: OrderItem, i: number) => (
-                          <div key={i} className="flex justify-between font-bold text-slate-800 text-xs">
+                          <div key={i} className="flex justify-between font-semibold text-slate-800 text-sm">
                             <span className="truncate pr-2">• {item.tree_name || item.product_name} (Grade {item.grade || 'A'})</span>
-                            <span className="shrink-0 text-slate-600 font-semibold">— {item.quantity} Qty</span>
+                            <span className="shrink-0 text-slate-600 font-semibold">{item.quantity} Qty</span>
                           </div>
                         ))}
                       </div>
@@ -158,12 +158,8 @@ export const PackingQueuePage: React.FC = () => {
                         return (
                           <div
                             key={item.id || item.product_name}
-                            className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
-                              isFullyAllocated
-                                ? 'bg-emerald-50/50 border-emerald-200/80'
-                                : isPartiallyAllocated
-                                ? 'bg-amber-50/70 border-amber-300/90 shadow-2xs'
-                                : 'bg-amber-50/40 border-amber-200/80'
+                            className={`py-2.5 border-b border-slate-200 transition-colors flex items-center justify-between gap-3 ${
+                              isFullyAllocated ? 'bg-emerald-50/40' : isPartiallyAllocated ? 'bg-amber-50/50' : ''
                             }`}
                           >
                             <div className="flex items-center gap-2.5">
@@ -210,9 +206,9 @@ export const PackingQueuePage: React.FC = () => {
 
                     {/* Notes if available */}
                     {order.notes && (
-                      <div className="p-3 bg-amber-50/70 border border-amber-200/70 rounded-2xl text-xs space-y-1">
-                        <span className="font-extrabold text-amber-950 uppercase block text-[9.5px]">CATATAN TANAMAN / PACKING:</span>
-                        <p className="text-amber-900 font-medium italic">"{order.notes}"</p>
+                      <div className="py-2.5 pl-3 border-l-4 border-amber-400 text-sm space-y-1">
+                        <span className="font-bold text-amber-950 uppercase block text-xs">Catatan tanaman / packing</span>
+                        <p className="text-amber-900 font-medium italic">“{order.notes}”</p>
                       </div>
                     )}
                   </div>
