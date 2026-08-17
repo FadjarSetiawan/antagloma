@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
 import { masterService } from '../../services/masterService';
 import { Order } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
+import { CustomDatePickerModal } from '../../components/shared/CustomDatePickerModal';
+import { CustomSelect } from '../../components/shared/CustomSelect';
 import {
   TrendingUp,
   ShoppingBag,
   CheckCircle,
-  Calendar,
   Download,
   Wallet,
   FileText,
@@ -17,6 +18,7 @@ import {
   Truck,
   ArrowUpRight,
   Filter,
+  Calendar as CalendarIcon,
   Search,
   Eye,
   PieChart,
@@ -26,16 +28,32 @@ import {
 import { RpIcon } from '../../components/shared/RpIcon';
 
 export const ReportsPage: React.FC = () => {
-  const [periodFilter, setPeriodFilter] = useState<'all' | 'month' | 'today'>('all');
+  const [periodFilter, setPeriodFilter] = useState<'all' | 'date' | 'month' | 'year'>('month');
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState(todayStr);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [search, setSearch] = useState('');
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<Order | null>(null);
   const [showGradeReport, setShowGradeReport] = useState(false);
   const [showPlantPerformance, setShowPlantPerformance] = useState(false);
   const [showAllSoldModal, setShowAllSoldModal] = useState(false);
 
+  const reportParams = useMemo(() => {
+    if (periodFilter === 'date') return { order_date: selectedDate };
+    if (periodFilter === 'month') {
+      const lastDay = new Date(selectedYear, selectedMonth, 0).getDate();
+      const month = String(selectedMonth).padStart(2, '0');
+      return { date_from: `${selectedYear}-${month}-01`, date_to: `${selectedYear}-${month}-${lastDay}` };
+    }
+    if (periodFilter === 'year') return { date_from: `${selectedYear}-01-01`, date_to: `${selectedYear}-12-31` };
+    return {};
+  }, [periodFilter, selectedDate, selectedMonth, selectedYear]);
+
   const { data, isLoading } = useQuery({
-    queryKey: ['reports-orders-list'],
-    queryFn: () => orderService.getOrders({ per_page: 500 }),
+    queryKey: ['reports-orders-list', reportParams],
+    queryFn: () => orderService.getOrders({ per_page: 500, ...reportParams }),
   });
 
   const allOrders: Order[] = data?.data || [];
@@ -44,16 +62,18 @@ export const ReportsPage: React.FC = () => {
     queryFn: () => masterService.getTrees(),
   });
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const currentMonthStr = new Date().toISOString().slice(0, 7);
-  const reportPeriodLabel = periodFilter === 'today' ? 'Hari Ini' : periodFilter === 'month' ? 'Bulan Ini' : 'Semua Waktu';
+  const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  const reportPeriodLabel = periodFilter === 'date'
+    ? new Date(selectedDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+    : periodFilter === 'month'
+      ? `${monthNames[selectedMonth - 1]} ${selectedYear}`
+      : periodFilter === 'year'
+        ? `Tahun ${selectedYear}`
+        : 'Semua Waktu';
 
   // Filter orders by period
   const orders = allOrders.filter((o) => {
     // Period filter
-    if (periodFilter === 'today' && o.order_date !== todayStr) return false;
-    if (periodFilter === 'month' && !o.order_date?.startsWith(currentMonthStr)) return false;
-
     // Search filter
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -241,39 +261,31 @@ export const ReportsPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Period Filter Tabs */}
-      <div className="flex items-center gap-2 bg-white border border-slate-200/90 rounded-2xl p-1 shadow-2xs w-full sm:w-auto self-start text-xs font-bold">
-        <button
-          onClick={() => setPeriodFilter('all')}
-          className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
-            periodFilter === 'all'
-              ? 'bg-[#04593f] text-white shadow-2xs'
-              : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          Semua Waktu
-        </button>
-        <button
-          onClick={() => setPeriodFilter('month')}
-          className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
-            periodFilter === 'month'
-              ? 'bg-[#04593f] text-white shadow-2xs'
-              : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          Bulan Ini
-        </button>
-        <button
-          onClick={() => setPeriodFilter('today')}
-          className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
-            periodFilter === 'today'
-              ? 'bg-[#04593f] text-white shadow-2xs'
-              : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          Hari Ini
-        </button>
-      </div>
+      {/* Period filter — the same controls used on Komisi Sales. */}
+      <section className="bg-white border border-slate-200/90 rounded-2xl p-2.5 space-y-2.5 shadow-2xs">
+        <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2 overflow-x-auto">
+          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider shrink-0">Periode Laporan:</span>
+          <div className="flex items-center gap-1 shrink-0">
+            {([
+              ['date', 'Harian'],
+              ['month', 'Bulanan'],
+              ['year', 'Tahunan'],
+              ['all', 'Semua'],
+            ] as const).map(([value, label]) => (
+              <button key={value} type="button" onClick={() => { setPeriodFilter(value); if (value === 'date') setIsDatePickerOpen(true); }} className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${periodFilter === value ? 'bg-[#04593f] text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 pt-0.5">
+          {periodFilter === 'date' && <button type="button" onClick={() => setIsDatePickerOpen(true)} className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 rounded-xl px-3 py-2 text-xs font-extrabold text-[#04593f] cursor-pointer"><CalendarIcon className="w-4 h-4" />{reportPeriodLabel}</button>}
+          {periodFilter === 'month' && <><div className="w-36"><CustomSelect options={monthNames.map((label, index) => ({ value: String(index + 1), label }))} value={String(selectedMonth)} onChange={(value) => setSelectedMonth(Number(value))} /></div><div className="w-28"><CustomSelect options={[2024, 2025, 2026, 2027, 2028].map((year) => ({ value: String(year), label: String(year) }))} value={String(selectedYear)} onChange={(value) => setSelectedYear(Number(value))} /></div></>}
+          {periodFilter === 'year' && <div className="w-36"><CustomSelect options={[2024, 2025, 2026, 2027, 2028].map((year) => ({ value: String(year), label: `Tahun ${year}` }))} value={String(selectedYear)} onChange={(value) => setSelectedYear(Number(value))} /></div>}
+          {periodFilter === 'all' && <span className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold">Semua transaksi penjualan</span>}
+          <span className="text-[11px] text-slate-400 font-semibold">Menampilkan: <b className="text-slate-700">{reportPeriodLabel}</b></span>
+        </div>
+      </section>
 
       {/* Executive Financial Summary Hero Card */}
       <div className="bg-gradient-to-br from-[#04593f] via-[#04593f] to-emerald-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg relative overflow-hidden space-y-4 border border-emerald-950 font-sans">
@@ -774,6 +786,7 @@ export const ReportsPage: React.FC = () => {
           </div>
         </div>
       )}
+      <CustomDatePickerModal isOpen={isDatePickerOpen} value={selectedDate} onChange={setSelectedDate} onClose={() => setIsDatePickerOpen(false)} />
     </div>
   );
 };

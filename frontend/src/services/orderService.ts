@@ -50,7 +50,7 @@ export interface DashboardMetrics {
 }
 
 export const orderService = {
-  getOrders: async (params?: { page?: number; per_page?: number; status?: string; search?: string; order_date?: string }): Promise<PaginatedResponse<Order>> => {
+  getOrders: async (params?: { page?: number; per_page?: number; status?: string; search?: string; order_date?: string; date_from?: string; date_to?: string }): Promise<PaginatedResponse<Order>> => {
     const res = await api.get('/orders', { params });
     return res.data;
   },
