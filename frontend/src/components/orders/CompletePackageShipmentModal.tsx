@@ -65,7 +65,7 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
     ctx.putImageData(image, 0, 0); return await new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Gagal memproses gambar')), 'image/jpeg', .92));
   };
   const extractTrackingFromOcr = (text: string) => {
-    const normalized = text.toUpperCase().replace(/[|]/g, 'I').replace(/\s*-\s*/g, '-');
+    const normalized = text.toUpperCase().replace(/[|]/g, 'I').replace(/\s*-\s*/g, '-').replace(/\s+/g, ' ');
     const labelled = normalized.match(/(?:NO\.?\s*RESI|NOMOR\s*RESI|TRACKING(?:\s*NUMBER)?)\s*[:#-]?\s*([A-Z0-9-]{8,})/);
     if (labelled?.[1]) return labelled[1];
 
@@ -74,28 +74,51 @@ export const CompletePackageShipmentModal: React.FC<Props> = ({ pkg, onClose, on
     const candidates = normalized.match(/\b(?:[A-Z]{1,4}\d{7,}[A-Z0-9-]*|\d{3}-[A-Z]{2,8}\d{1,}-\d{2,}[A-Z]?)\b/g) || [];
     return candidates.find((value) => !value.startsWith('IDR') && !value.startsWith('RP')) || '';
   };
+  const extractShippingCost = (text: string) => {
+    const normalized = text.toUpperCase().replace(/\s+/g, ' ');
+    const labelled = normalized.match(/(?:ONGKIR|BIAYA\s*(?:KIRIM|PENGIRIMAN)|SHIPPING\s*COST|TOTAL)\s*[:=]?\s*(?:IDR|RP\.?)[\s]*([0-9][0-9.,\s]*)/i);
+    const currency = normalized.match(/(?:IDR|RP\.?)\s*([0-9][0-9.,\s]*)/i);
+    const value = labelled?.[1] || currency?.[1] || '';
+    const digits = value.replace(/\D/g, '');
+    return digits && Number(digits) > 0 ? digits : '';
+  };
+  const detectBarcode = async (file: File) => {
+    const Detector = (window as any).BarcodeDetector;
+    if (!Detector) return '';
+    const bitmap = await createImageBitmap(file);
+    try {
+      let detector: any;
+      try {
+        const supported = typeof Detector.getSupportedFormats === 'function' ? await Detector.getSupportedFormats() : [];
+        const preferred = ['qr_code', 'code_128', 'code_39', 'ean_13'].filter((format) => !supported.length || supported.includes(format));
+        detector = new Detector(preferred.length ? { formats: preferred } : undefined);
+      } catch {
+        // Some Chromium versions expose BarcodeDetector but reject a formats
+        // list. The default detector is a safe fallback.
+        detector = new Detector();
+      }
+      const codes = await detector.detect(bitmap);
+      return String(codes?.[0]?.rawValue || '').trim();
+    } finally {
+      bitmap.close?.();
+    }
+  };
 
   const scanPhoto = async (file: File) => {
     setScanning(true); setError(''); setScanSucceeded(false); setScanMessage('Membaca barcode dan nominal ongkir dari foto…');
     try {
-      const Detector = (window as any).BarcodeDetector;
-      const barcodeTask = Detector
-        ? createImageBitmap(file).then((bitmap) => new Detector({ formats: ['qr_code', 'code_128', 'code_39', 'ean_13'] }).detect(bitmap)).then((codes: any[]) => codes?.[0]?.rawValue || '')
-        : Promise.resolve('');
+      const barcodeTask = detectBarcode(file).catch(() => '');
       // OCR stays on the device/browser. It is deliberately only a suggested
       // value: admin can correct it before saving.
       const processed = await preprocess(file); const ocrTask = recognize(processed, 'eng').then(({ data }) => data.text);
       const [barcodeResult, ocrResult] = await Promise.all([barcodeTask, ocrTask]);
       const detectedTracking = String(barcodeResult || extractTrackingFromOcr(String(ocrResult))).trim();
       if (detectedTracking) setTrackingNumber(detectedTracking);
-      const money = String(ocrResult).match(/(?:IDR|RP\.?)[\s:]*([0-9][0-9.,\s]*)/i);
-      if (money) {
-        const amount = money[1].replace(/\D/g, '');
-        if (amount) setShippingCost(amount);
-      }
-      if (detectedTracking && money) { setScanSucceeded(true); setScanMessage('Nomor resi dan ongkir terdeteksi. Periksa hasil sebelum menyimpan.'); }
+      const amount = extractShippingCost(String(ocrResult));
+      if (amount) setShippingCost(amount);
+      if (detectedTracking && amount) { setScanSucceeded(true); setScanMessage('Nomor resi dan ongkir terdeteksi. Periksa hasil sebelum menyimpan.'); }
       else if (detectedTracking) setScanMessage('Nomor resi terdeteksi. Nominal ongkir belum terbaca, silakan isi atau foto ulang.');
-      else if (money) setScanMessage('Ongkir terdeteksi. Nomor resi belum terbaca, silakan isi atau foto ulang.');
+      else if (amount) setScanMessage('Ongkir terdeteksi. Nomor resi belum terbaca, silakan isi atau foto ulang.');
       else setError('Belum terbaca. Pastikan label terang, tidak blur, dan barcode terlihat penuh.');
     } catch { setScanMessage(''); setError('Gagal membaca foto. Coba foto lebih dekat dengan pencahayaan yang cukup.'); }
     finally { setScanning(false); }
