@@ -67,10 +67,16 @@ export const AdminDashboard: React.FC = () => {
     )
     .reduce((sum, order) => sum + (order.packages || []).filter((pkg) => !(pkg.nota_printed && pkg.label_printed)).length, 0);
 
-  // Card 4: count the actual packages still waiting for a photo.
+  // A package may be photographed only after BOTH print documents have been
+  // confirmed by Print Bridge. This keeps unprinted packages out of the photo
+  // queue and prevents the admin from uploading evidence too early.
+  const isReadyForPhoto = (pkg: OrderPackage) =>
+    Boolean(pkg.nota_printed && pkg.label_printed && !pkg.photo_uploaded);
+
+  // Card 4: count only packages that have entered the reprint/printed column.
   const pendingPhotoUpload = orders
     .filter((order: Order) => order.status === 'WAITING_PACKING')
-    .reduce((sum, order) => sum + (order.packages || []).filter((pkg) => !pkg.photo_uploaded).length, 0);
+    .reduce((sum, order) => sum + (order.packages || []).filter(isReadyForPhoto).length, 0);
 
   // Table at bottom: Orders that have photo uploaded (PACKING_COMPLETED) waiting for resi input
   const waitingResiOrders = orders.filter(
@@ -81,7 +87,7 @@ export const AdminDashboard: React.FC = () => {
         : !!o.packing_images?.length && (!o.tracking_number || o.tracking_number.trim() === ''))
   );
   const waitingPackagePhotos = orders.filter(
-    (order) => order.status === 'WAITING_PACKING' && order.packages?.some((pkg) => !pkg.photo_uploaded)
+    (order) => order.status === 'WAITING_PACKING' && order.packages?.some(isReadyForPhoto)
   );
   const adminHistoryOrders = orders.filter((order) =>
     order.packages?.length
@@ -249,7 +255,7 @@ export const AdminDashboard: React.FC = () => {
         })}
       </div>
 
-      {showPhotoQueue && <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs"><div className="flex items-center justify-between border-b border-slate-100 pb-2.5"><div><h2 className="text-xs sm:text-sm font-bold">Menunggu Foto Paket</h2><p className="text-[10px] text-slate-400 mt-0.5">Upload minimal satu foto untuk setiap package.</p></div><button type="button" onClick={() => setShowPhotoQueue(false)} className="min-h-10 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">Kembali</button></div>{waitingPackagePhotos.length === 0 ? <div className="py-8 text-center text-xs text-slate-400">Tidak ada package yang menunggu foto.</div> : waitingPackagePhotos.map((order) => <div key={order.id} className="rounded-xl border border-slate-200 p-3 space-y-2"><div className="text-xs"><b>{order.order_number}</b></div><div className="grid gap-2 sm:grid-cols-2">{order.packages?.filter((pkg) => !pkg.photo_uploaded).map((pkg) => <div key={pkg.id} className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs space-y-2"><div className="flex items-start justify-between gap-2"><div><b className="block">Paket {pkg.letter}</b><span className="text-[10px] text-slate-500">Customer: {order.customer_name}</span></div><span className="shrink-0 rounded-lg bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-800">Menunggu Foto</span></div><p className="text-[11px] font-bold text-slate-700">Jenis: {packageTypeLabel(pkg.package_type)}</p><div className="text-[10px] text-slate-600 space-y-0.5">{pkg.items?.map((item) => <p key={item.order_item_id}>• {item.product_name || 'Tanaman'} ×{item.quantity}</p>)}</div><label className={`min-h-11 rounded-xl px-3 flex items-center justify-center text-xs font-black transition-colors ${packagePhotoMutation.isPending ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-[#04593f] hover:bg-emerald-900 text-white cursor-pointer'}`}><Camera className="w-4 h-4 mr-1.5" />Input Foto Paket<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={packagePhotoMutation.isPending} onChange={(e) => { const file = e.target.files?.[0]; if (file) packagePhotoMutation.mutate({ packageId: pkg.id, file }); e.currentTarget.value = ''; }} /></label></div>)}</div></div>)}</div>}
+      {showPhotoQueue && <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs"><div className="flex items-center justify-between border-b border-slate-100 pb-2.5"><div><h2 className="text-xs sm:text-sm font-bold">Menunggu Foto Paket</h2><p className="text-[10px] text-slate-400 mt-0.5">Hanya package dengan nota dan label yang sudah tercetak dapat diunggah fotonya.</p></div><button type="button" onClick={() => setShowPhotoQueue(false)} className="min-h-10 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">Kembali</button></div>{waitingPackagePhotos.length === 0 ? <div className="py-8 text-center text-xs text-slate-400">Tidak ada package yang siap diunggah fotonya.</div> : waitingPackagePhotos.map((order) => <div key={order.id} className="rounded-xl border border-slate-200 p-3 space-y-2"><div className="text-xs"><b>{order.order_number}</b></div><div className="grid gap-2 sm:grid-cols-2">{order.packages?.filter(isReadyForPhoto).map((pkg) => <div key={pkg.id} className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs space-y-2"><div className="flex items-start justify-between gap-2"><div><b className="block">Paket {pkg.letter}</b><span className="text-[10px] text-slate-500">Customer: {order.customer_name}</span></div><span className="shrink-0 rounded-lg bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-800">Menunggu Foto</span></div><p className="text-[11px] font-bold text-slate-700">Jenis: {packageTypeLabel(pkg.package_type)}</p><div className="text-[10px] text-slate-600 space-y-0.5">{pkg.items?.map((item) => <p key={item.order_item_id}>• {item.product_name || 'Tanaman'} ×{item.quantity}</p>)}</div><label className={`min-h-11 rounded-xl px-3 flex items-center justify-center text-xs font-black transition-colors ${packagePhotoMutation.isPending ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-[#04593f] hover:bg-emerald-900 text-white cursor-pointer'}`}><Camera className="w-4 h-4 mr-1.5" />Input Foto Paket<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={packagePhotoMutation.isPending} onChange={(e) => { const file = e.target.files?.[0]; if (file) packagePhotoMutation.mutate({ packageId: pkg.id, file }); e.currentTarget.value = ''; }} /></label></div>)}</div></div>)}</div>}
 
       {/* Dedicated Section: Daftar Pesanan Menunggu Input Resi (Mobile Responsive Cards & Desktop Table) */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">
