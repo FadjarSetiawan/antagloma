@@ -190,8 +190,8 @@ export const AdminDashboard: React.FC = () => {
       {/* Header Banner - Streamlined & Clean */}
       <div className="flex items-center justify-between pt-1">
         <div>
-          <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Admin Dashboard</h1>
-          <p className="text-xs text-slate-500 font-normal mt-0.5">Pantau dan kelola operasional toko secara real-time.</p>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-tight tracking-tight">Admin Dashboard</h1>
+          <p className="text-sm text-slate-600 font-normal mt-1">Pantau dan kelola operasional toko secara real-time.</p>
         </div>
 
         {/* Desktop-only action button */}
@@ -204,30 +204,30 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Sleek Compact 2x2 Grid Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         {statCards.map((card, idx) => {
           const Icon = card.icon;
           return (
             <div
               key={idx}
               onClick={() => card.title === 'Menunggu Foto Paket' ? setShowPhotoQueue(true) : navigate(card.link)}
-              className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between space-y-2 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all cursor-pointer group"
+              className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 min-h-[172px] flex flex-col justify-between space-y-3 shadow-sm hover:border-[#04593f] hover:shadow-md transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center flex-shrink-0">
                   <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#04593f]" />
                 </div>
-                <span className="text-lg sm:text-2xl font-black text-slate-900">{card.value}</span>
+                <span className="text-2xl sm:text-3xl font-black text-slate-900">{card.value}</span>
               </div>
 
               <div>
-                <h3 className="text-xs font-bold text-slate-800 leading-tight block truncate">
+                <h2 className="text-sm font-bold text-slate-900 leading-snug block">
                   {card.title}
-                </h3>
+                </h2>
 
                 <div className="mt-1 flex items-center max-w-full">
                   {card.hasNotification ? (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200/90 text-[9px] sm:text-[10px] font-bold shadow-2xs max-w-full truncate">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200/90 text-xs font-bold shadow-2xs max-w-full truncate">
                       <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
@@ -235,7 +235,7 @@ export const AdminDashboard: React.FC = () => {
                       <span className="truncate">{card.caption}</span>
                     </span>
                   ) : (
-                    <span className="text-[10px] text-slate-400 font-normal leading-none truncate">{card.caption}</span>
+                    <span className="text-xs text-slate-600 font-medium leading-snug">{card.caption}</span>
                   )}
                 </div>
               </div>
@@ -245,7 +245,7 @@ export const AdminDashboard: React.FC = () => {
                   type="button"
                   className="w-full py-1.5 px-2 bg-emerald-50 group-hover:bg-[#04593f] text-[#04593f] group-hover:text-white rounded-xl text-[10px] sm:text-xs font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"
                 >
-                  <span>{card.buttonText}</span>
+                  <span className="text-xs">{card.buttonText}</span>
                   <ChevronRight className="w-3 h-3" />
                 </button>
               </div>
@@ -259,12 +259,12 @@ export const AdminDashboard: React.FC = () => {
       {/* Dedicated Section: Daftar Pesanan Menunggu Input Resi (Mobile Responsive Cards & Desktop Table) */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 space-y-3 shadow-2xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-          <div>
-            <h2 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+          <div className="min-w-0">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5">
               <PackageCheck className="w-4 h-4 text-[#04593f]" />
               <span>Daftar Pesanan Menunggu Input Resi</span>
             </h2>
-            <p className="text-[10px] sm:text-[11px] text-slate-400 font-normal mt-0.5">
+            <p className="text-xs sm:text-sm text-slate-600 font-normal mt-1 max-w-2xl leading-relaxed">
               Pesanan yang sudah diunggah foto bukti packing-nya dan siap diinputkan nomor resinya
             </p>
           </div>
@@ -280,8 +280,8 @@ export const AdminDashboard: React.FC = () => {
           </div>
         ) : waitingResiOrders.length === 0 ? (
           <div className="py-6 text-center space-y-1">
-            <p className="text-xs font-bold text-slate-700">Tidak Ada Pesanan Menunggu Resi</p>
-            <p className="text-[10px] sm:text-[11px] text-slate-400">Pesanan yang telah diunggah foto packing-nya akan muncul di sini untuk diinputkan resi.</p>
+            <p className="text-sm font-bold text-slate-800">Tidak ada pesanan menunggu resi</p>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">Pesanan yang telah diunggah foto packing-nya akan muncul di sini untuk diinputkan resi.</p>
           </div>
         ) : (
           <>

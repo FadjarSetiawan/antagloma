@@ -85,7 +85,7 @@ export const AppSidebar: React.FC = () => {
           />
           <div>
             <h1 className="font-extrabold text-sm text-white leading-tight">Antagloma Florist</h1>
-            <p className="text-[10px] text-slate-400 font-medium">Sales Order Management</p>
+            <p className="text-xs text-slate-400 font-medium leading-snug">Sales Order Management</p>
           </div>
         </div>
 
