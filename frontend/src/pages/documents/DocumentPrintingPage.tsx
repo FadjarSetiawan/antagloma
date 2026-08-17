@@ -139,7 +139,7 @@ export const DocumentPrintingPage: React.FC = () => {
       </div>
 
       {/* Top Batch Action Buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+      <div className="grid grid-cols-2 gap-3 pt-1">
         <button
           disabled={bulkPrintQueue !== null || unprintedCards.every((card) => card.printedNota)}
           onClick={() => startBulkPrint('nota', unprintedCards.filter((card) => !card.printedNota))}
@@ -279,7 +279,7 @@ export const DocumentPrintingPage: React.FC = () => {
                   </div>
 
                   {/* Info Callout Box (Belum Dicetak) */}
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5 text-sm">
+                  <div className="px-3 py-2.5 bg-emerald-50/70 border-l-4 border-emerald-600 rounded-r-lg space-y-1.5 text-sm">
                     <div className="flex items-center justify-between font-semibold text-[#04593f]">
                       <div className="flex items-center gap-1.5">
                         <FileText className="w-3.5 h-3.5 text-[#04593f]" />
@@ -382,7 +382,7 @@ export const DocumentPrintingPage: React.FC = () => {
                   </div>
 
                   {/* Info Callout Box (Sudah Dicetak) */}
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5 text-sm">
+                  <div className="px-3 py-2.5 bg-emerald-50/70 border-l-4 border-emerald-600 rounded-r-lg space-y-1.5 text-sm">
                     <div className="flex items-center gap-1.5 font-semibold text-[#04593f]">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#04593f] shrink-0" />
                       <span className="text-sm">Nota & Label sudah lengkap dicetak</span>
@@ -392,7 +392,7 @@ export const DocumentPrintingPage: React.FC = () => {
                     </p>
 
                     {/* Resi & Courier Sub-box */}
-                    <div className="p-2.5 bg-white border border-slate-200 rounded-lg flex items-center justify-between text-sm shadow-sm">
+                    <div className="pt-2 flex items-center justify-between text-sm border-t border-emerald-200">
                       <div className="flex items-center gap-1.5 text-slate-800 font-semibold text-sm">
                         <Printer className="w-3.5 h-3.5 text-[#04593f] shrink-0" />
                         <span>{pkgCard.order.delivery_method || 'Kirim Paket'}</span>
