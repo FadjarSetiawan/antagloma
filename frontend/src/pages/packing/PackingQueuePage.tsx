@@ -31,7 +31,7 @@ export const PackingQueuePage: React.FC = () => {
   const orders = data?.data || [];
 
   return (
-    <div className="space-y-5 max-w-6xl mx-auto pb-24 font-sans">
+    <div className="space-y-5 max-w-6xl mx-auto pb-24 font-[system-ui,sans-serif]">
       {/* Title & Subtitle */}
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-slate-950 leading-tight">Antrean Packing Tanaman</h1>
@@ -82,7 +82,7 @@ export const PackingQueuePage: React.FC = () => {
               .map((item) => item.tree_name || item.product_name) || [];
 
             return (
-              <div key={order.id} className="space-y-2 font-sans">
+              <div key={order.id} className="space-y-2 font-[system-ui,sans-serif]">
                 {/* Top Yellow Warning Notification Banner if unallocated items exist */}
                 {isPartial && (
                   <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex items-center gap-3 shadow-2xs">
@@ -134,7 +134,7 @@ export const PackingQueuePage: React.FC = () => {
                     {/* Items Summary Rangkaian */}
                     <div className="py-2.5 border-y border-slate-200 text-sm space-y-1.5">
                       <span className="text-xs font-bold uppercase tracking-wide text-slate-500 block">
-                        RINCIAN BARANG RANGKAIAN ({order.items?.length || 0} ITEM):
+                        Rincian barang rangkaian ({order.items?.length || 0} item)
                       </span>
                       <div className="space-y-1">
                         {order.items?.map((item: OrderItem, i: number) => (
@@ -158,9 +158,7 @@ export const PackingQueuePage: React.FC = () => {
                         return (
                           <div
                             key={item.id || item.product_name}
-                            className={`py-2.5 border-b border-slate-200 transition-colors flex items-center justify-between gap-3 ${
-                              isFullyAllocated ? 'bg-emerald-50/40' : isPartiallyAllocated ? 'bg-amber-50/50' : ''
-                            }`}
+                            className="py-2.5 border-b border-slate-200 flex items-center justify-between gap-3"
                           >
                             <div className="flex items-center gap-2.5">
                               <div
@@ -173,7 +171,7 @@ export const PackingQueuePage: React.FC = () => {
                                 {isFullyAllocated ? <CheckCircle2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                               </div>
                               <div>
-                                <p className="text-xs font-bold text-slate-900 leading-tight">
+                                <p className="text-sm font-bold text-slate-950 leading-normal">
                                   {item.tree_name || item.product_name} (Grade {item.grade || 'A'})
                                 </p>
                                 <div className="mt-1">
