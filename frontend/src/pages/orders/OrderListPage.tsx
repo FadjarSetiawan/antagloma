@@ -256,6 +256,9 @@ export const OrderListPage: React.FC = () => {
             const itemCount = order.items ? order.items.reduce((sum: number, item: OrderItem) => sum + item.quantity, 0) : 0;
             const plantTotalPrice = order.items ? order.items.reduce((sum: number, item: OrderItem) => sum + item.price, 0) : 0;
             const totalOrderAmount = plantTotalPrice + (order.buyer_shipping_cost || 0);
+            const configuredPlantCount = (order.packages || []).reduce((sum, pkg) => sum + (pkg.items || []).reduce((packageSum, item) => packageSum + (Number(item.quantity) || 0), 0), 0);
+            const remainingPlantCount = Math.max(0, itemCount - configuredPlantCount);
+            const isPartiallyConfigured = role === 'admin' && configuredPlantCount > 0 && remainingPlantCount > 0;
 
             // ALLOW EDIT & DELETE FOR SALES ONLY WHEN UNVERIFIED (WAITING_PROCESS). AUTOMATICALLY HIDE WHEN VERIFIED BY ADMIN.
             const isSalesOrderOwner = role === 'sales' && order.created_by === user?.id;
@@ -368,8 +371,21 @@ export const OrderListPage: React.FC = () => {
                       {order.order_date}
                     </span>
                   </div>
-                  <OrderStatusBadge status={order.status} />
+                  {isPartiallyConfigured ? (
+                    <div className="rounded-xl bg-amber-100 border border-amber-300 px-2.5 py-1 text-right leading-tight shrink-0">
+                      <span className="block text-[10px] font-black text-amber-950">Sedang Diatur ({configuredPlantCount}/{itemCount})</span>
+                      <span className="block text-[9px] font-semibold text-amber-800 mt-0.5">{configuredPlantCount} tanaman siap cetak nota</span>
+                    </div>
+                  ) : <OrderStatusBadge status={order.status} />}
                 </div>
+
+                {isPartiallyConfigured && (
+                  <div className="grid grid-cols-[1.35fr_1fr_1fr] gap-2 rounded-xl border border-amber-200 bg-amber-50/70 p-2.5 text-[10px]">
+                    <div className="flex items-center gap-1.5 text-amber-950 min-w-0"><PackageCheck className="w-4 h-4 text-[#04593f] shrink-0" /><div><p className="font-extrabold">Progress Pengaturan</p><p className="font-medium text-amber-800">{configuredPlantCount} dari {itemCount} tanaman diatur</p></div></div>
+                    <div className="border-l border-amber-200 pl-2"><p className="font-extrabold text-[#04593f]">✓ Sudah Diatur</p><p className="font-semibold text-slate-600 mt-0.5">{configuredPlantCount} tanaman</p></div>
+                    <div className="border-l border-amber-200 pl-2"><p className="font-extrabold text-amber-800">◷ Belum Diatur</p><p className="font-semibold text-slate-600 mt-0.5">{remainingPlantCount} tanaman</p></div>
+                  </div>
+                )}
 
                 {/* Body Details: Customer Info & Items Count */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-normal text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
@@ -446,7 +462,7 @@ export const OrderListPage: React.FC = () => {
                     )}
 
                     {/* EDIT BUTTON (AUTO HIDDEN IF SALES & ORDER IS ALREADY VERIFIED) */}
-                    {canDeleteOrder && (
+                    {canModifySalesOrder && (
                       <button
                         onClick={() => setEditingOrder(order)}
                         className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer transition-colors"
@@ -457,7 +473,7 @@ export const OrderListPage: React.FC = () => {
                     )}
 
                     {/* DELETE BUTTON WITH CONFIRMATION POPUP (AUTO HIDDEN IF SALES & ORDER IS ALREADY VERIFIED) */}
-                    {canModifySalesOrder && (
+                    {canDeleteOrder && (
                       <button
                         onClick={() => setDeletingOrder(order)}
                         className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl cursor-pointer transition-colors"
