@@ -143,7 +143,7 @@ export const SalesDashboard: React.FC = () => {
           <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse inline-block" />
           Daftar Antrean Menunggu Packing ({waiting.length} Order)
         </h3>
-        <div className="grid grid-cols-2 auto-rows-fr gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
           {waiting.length === 0
             ? <Empty text="Belum ada order menunggu packing." />
             : waiting.map(o => <article key={o.id} className="h-full bg-white border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5 shadow-2xs"><div className="flex flex-col gap-1.5"><div><b className="text-[11px] break-words">{o.order_number}</b><p className="font-bold text-sm mt-1">{o.customer_name}</p></div><span className="h-fit rounded-full bg-amber-50 border border-amber-200 px-2 py-1 text-[10px] font-bold text-amber-800">Menunggu Packing</span></div><div><p className="text-[10px] font-bold uppercase text-slate-400">Pesanan</p><ul className="mt-1 text-xs text-slate-600 space-y-0.5">{plants(o).map(p => <li key={p}>• {p}</li>)}</ul></div>{o.packages?.length ? <div className="text-xs"><p className="font-bold text-slate-400 mb-1">Jenis Paket</p><div className="space-y-0.5">{o.packages.map(p => <p key={p.id} className="text-slate-700">{packageLabel(o, p)}</p>)}</div></div> : null}<button onClick={() => setDetail(o)} className="self-start min-h-9 px-4 py-1.5 bg-emerald-50 text-[#04593f] rounded-xl text-[10px] font-extrabold inline-flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"><Eye className="inline w-4 h-4 mr-1" />Lihat Detail</button></article>)
@@ -158,7 +158,7 @@ export const SalesDashboard: React.FC = () => {
           <span className="w-2.5 h-2.5 rounded-full bg-[#04593f] inline-block" />
           Daftar Paket Selesai Packing ({completedPackageCount} Paket)
         </h3>
-        <div className="grid grid-cols-2 auto-rows-fr gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
           {completed.length === 0
             ? <Empty text="Belum ada package dengan foto." />
             : completed.map(o => <OrderPackageCard key={o.id} order={o} onPhoto={setPhotos} />)
