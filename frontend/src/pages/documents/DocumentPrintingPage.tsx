@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
 import { Order, OrderPackage } from '../../types/order';
 import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
@@ -9,8 +9,6 @@ import { useNavigate } from 'react-router-dom';
 
 export const DocumentPrintingPage: React.FC = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
   const [activeTab, setActiveTab] = useState<'unprinted' | 'printed'>('unprinted');
 
   const [selectedNotaOrder, setSelectedNotaOrder] = useState<Order | null>(null);
@@ -28,26 +26,11 @@ export const DocumentPrintingPage: React.FC = () => {
   } | null>(null);
 
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
-  const pendingCompletionPackageIds = useRef(new Set<number>());
-  const [printToast, setPrintToast] = useState<{ title: string; description: string } | null>(null);
   const [bulkPrintQueue, setBulkPrintQueue] = useState<{ document: 'nota' | 'label'; cards: typeof expandedPackageCards; index: number } | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['document-printing-orders'],
     queryFn: () => orderService.getOrders({ per_page: 100 }),
-  });
-
-  const printMutation = useMutation({
-    mutationFn: ({ packageId, document }: { packageId: number; document: 'nota' | 'label' }) =>
-      orderService.printPackageDocument(packageId, document),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['document-printing-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['orders-list'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
-    },
-    onError: (_error, variables) => {
-      pendingCompletionPackageIds.current.delete(variables.packageId);
-    },
   });
 
   const orders = data?.data || [];
@@ -85,36 +68,9 @@ export const DocumentPrintingPage: React.FC = () => {
 
   const unprintedCards = expandedPackageCards.filter((card) => !getCardPrintStatus(card).isBothPrinted);
   const printedCards = expandedPackageCards.filter((card) => getCardPrintStatus(card).isBothPrinted);
-  useEffect(() => {
-    if (!data || pendingCompletionPackageIds.current.size === 0) return;
-
-    const completedPackageIds = new Set(
-      expandedPackageCards
-        .filter((card) => card.printedNota && card.printedLabel)
-        .map((card) => card.packageId)
-    );
-    const newlyCompleted = [...pendingCompletionPackageIds.current].filter((id) => completedPackageIds.has(id));
-
-    if (newlyCompleted.length > 0) {
-      newlyCompleted.forEach((id) => pendingCompletionPackageIds.current.delete(id));
-      setPrintToast({
-        title: 'Nota & Label sudah dicetak semua',
-        description: 'Paket dipindahkan ke Sudah Dicetak',
-      });
-      window.setTimeout(() => setPrintToast(null), 3500);
-    }
-  }, [data, expandedPackageCards]);
-
-  const markPendingCompletion = (packageId: number, printedNota: boolean, printedLabel: boolean) => {
-    if (!(printedNota && printedLabel)) pendingCompletionPackageIds.current.add(packageId);
-  };
-
   const handlePrintNota = (order: Order, packageId?: number) => {
     if (packageId) {
-      const card = expandedPackageCards.find((item) => item.packageId === packageId);
-      if (card) markPendingCompletion(packageId, card.printedNota, card.printedLabel);
       setSelectedNotaPackage(order.packages?.find((pkg) => pkg.id === packageId) || null);
-      printMutation.mutate({ packageId, document: 'nota' });
     } else {
       setSelectedNotaPackage(null);
     }
@@ -122,9 +78,6 @@ export const DocumentPrintingPage: React.FC = () => {
   };
 
   const handlePrintLabel = (pkgCard: typeof expandedPackageCards[0]) => {
-    markPendingCompletion(pkgCard.packageId, pkgCard.printedNota, pkgCard.printedLabel);
-    printMutation.mutate({ packageId: pkgCard.packageId, document: 'label' });
-
     setSelectedLabelOrder({
       order: pkgCard.order,
       packageInfo: {
@@ -165,12 +118,6 @@ export const DocumentPrintingPage: React.FC = () => {
   };
   return (
     <div className="space-y-4 max-w-xl mx-auto pb-24 font-sans text-slate-900">
-      {printToast && (
-        <div className="fixed top-4 right-4 left-4 sm:left-auto sm:w-80 z-[10000] rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-lg" role="status">
-          <p className="text-xs font-black text-[#04593f]">{printToast.title}</p>
-          <p className="text-[11px] text-emerald-800 mt-0.5">{printToast.description}</p>
-        </div>
-      )}
       {/* Header Bar */}
       <div className="flex items-center justify-between gap-3 pt-1 border-b border-slate-200/80 pb-3">
         <div className="flex items-center gap-3">
@@ -358,7 +305,7 @@ export const DocumentPrintingPage: React.FC = () => {
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
                       className={`min-h-[34px] py-1 px-2 rounded-xl text-[10px] font-semibold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${
                         printedStatus.printedNota
-                          ? 'bg-emerald-800 text-white shadow-xs'
+                          ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
                           : 'bg-gradient-to-r from-[#04593f] to-emerald-900 text-white'
                       }`}
                     >
@@ -371,7 +318,7 @@ export const DocumentPrintingPage: React.FC = () => {
                       onClick={() => handlePrintLabel(pkgCard)}
                       className={`min-h-[34px] py-1 px-2 rounded-xl text-[10px] font-semibold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer ${
                         printedStatus.printedLabel
-                          ? 'bg-emerald-800 text-white shadow-xs'
+                          ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
                           : 'bg-gradient-to-r from-[#04593f] to-emerald-900 text-white'
                       }`}
                     >
@@ -464,7 +411,7 @@ export const DocumentPrintingPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
-                      className="min-h-[34px] py-1 px-2 bg-gradient-to-r from-[#04593f] to-emerald-900 text-white rounded-xl text-[10px] font-semibold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="min-h-[34px] py-1 px-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-[10px] font-semibold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
                       <Printer className="w-3.5 h-3.5 text-white shrink-0" />
                       <span className="truncate">Cetak Ulang Nota</span>
@@ -473,7 +420,7 @@ export const DocumentPrintingPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className="min-h-[34px] py-1 px-2 bg-gradient-to-r from-[#04593f] to-emerald-900 text-white rounded-xl text-[10px] font-semibold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      className="min-h-[34px] py-1 px-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-[10px] font-semibold flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
                       <Tag className="w-3.5 h-3.5 text-white shrink-0" />
                       <span className="truncate">Cetak Ulang Label</span>
