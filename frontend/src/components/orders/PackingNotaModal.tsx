@@ -23,7 +23,7 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
 
   const handlePrint = async () => {
     if (!packageInfo?.id) { window.alert('Pilih paket terlebih dahulu sebelum mencetak Nota.'); return; }
-    try { await openPrintBridge(packageInfo.id, 'NOTA'); }
+    try { await openPrintBridge(packageInfo.id, 'NOTA', customNotes); }
     catch (error) { window.alert(error instanceof Error ? error.message : 'Gagal membuka Antagloma Print Bridge.'); }
   };
 

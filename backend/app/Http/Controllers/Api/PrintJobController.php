@@ -19,12 +19,12 @@ class PrintJobController extends Controller
 
     public function create(Request $request): JsonResponse
     {
-        $data = $request->validate(['document_type' => ['required', 'in:NOTA,SHIPPING_LABEL'], 'package_id' => ['required', 'integer', 'exists:order_packages,id']]);
+        $data = $request->validate(['document_type' => ['required', 'in:NOTA,SHIPPING_LABEL'], 'package_id' => ['required', 'integer', 'exists:order_packages,id'], 'notes' => ['nullable', 'string', 'max:4000']]);
         $package = OrderPackage::with(['order', 'items.item'])->findOrFail($data['package_id']);
         Gate::authorize('approve', $package->order);
         $plainToken = Str::random(64);
         // Column is UUID-sized (36 chars). Keep the public `pj_` prefix while staying below that limit.
-        $job = PrintJob::create(['public_id' => 'pj_'.Str::lower(Str::random(27)), 'order_package_id' => $package->id, 'document_type' => $data['document_type'], 'token_hash' => hash('sha256', $plainToken), 'expires_at' => now()->addMinutes(5)]);
+        $job = PrintJob::create(['public_id' => 'pj_'.Str::lower(Str::random(27)), 'order_package_id' => $package->id, 'document_type' => $data['document_type'], 'notes_override' => $data['document_type'] === 'NOTA' ? ($data['notes'] ?? '') : null, 'token_hash' => hash('sha256', $plainToken), 'expires_at' => now()->addMinutes(5)]);
         // Do not use APP_URL here: this Laravel backend is hosted at florist.kaizoratech.com,
         // while Android App Links are verified by the customer-facing floristyan.web.id domain.
         $base = self::APP_LINK_BASE_URL;
@@ -35,7 +35,7 @@ class PrintJobController extends Controller
     {
         $job = $this->authorizeToken($request, $jobId, true);
         $package = $job->package()->with(['order.creator', 'order.verifier', 'items.item'])->firstOrFail(); $order = $package->order;
-        return response()->json(['job_id' => $job->public_id, 'document_type' => $job->document_type, 'order_number' => $order->order_number.'-'.$package->letter, 'package_letter' => $package->letter, 'package_type' => $package->package_type, 'customer' => $order->customer_name, 'phone' => $order->phone, 'address' => collect([$order->district_name, $order->regency_name, $order->province_name, $order->full_address])->filter()->implode(', '), 'package_items' => $package->items->map(fn ($item) => ['name' => $item->item?->product_name ?? 'Tanaman', 'quantity' => $item->quantity])->values(), 'notes' => $order->notes ?? '', 'sales' => $order->creator?->name, 'admin' => $order->verifier?->name, 'layout_profile' => PrintLayoutProfile::where('document_type', $job->document_type)->value('layout') ?? []]);
+        return response()->json(['job_id' => $job->public_id, 'document_type' => $job->document_type, 'order_number' => $order->order_number.'-'.$package->letter, 'package_letter' => $package->letter, 'package_type' => $package->package_type, 'customer' => $order->customer_name, 'phone' => $order->phone, 'address' => collect([$order->district_name, $order->regency_name, $order->province_name, $order->full_address])->filter()->implode(', '), 'package_items' => $package->items->map(fn ($item) => ['name' => $item->item?->product_name ?? 'Tanaman', 'quantity' => $item->quantity])->values(), 'notes' => $job->notes_override ?? $order->notes ?? '', 'sales' => $order->creator?->name, 'admin' => $order->verifier?->name, 'layout_profile' => PrintLayoutProfile::where('document_type', $job->document_type)->value('layout') ?? []]);
     }
 
     public function result(Request $request, string $jobId): JsonResponse
