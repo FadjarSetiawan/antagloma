@@ -64,34 +64,6 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
         };
       });
 
-      const usedPerItemIdx = (itemIdx: number) => {
-        return existingAssignments.reduce((sum, pkg) => sum + (pkg.allocations[itemIdx] || 0), 0);
-      };
-
-      const hasUnallocatedItems = totalOrderItems.some((item, idx) => item.quantity > usedPerItemIdx(idx));
-
-      if (hasUnallocatedItems) {
-        const nextIndex = existingAssignments.length;
-        const letter = getLetter(nextIndex);
-        const newAllocations: Record<number, number> = {};
-
-        for (let idx = 0; idx < totalOrderItems.length; idx++) {
-          const remaining = totalOrderItems[idx].quantity - usedPerItemIdx(idx);
-          if (remaining > 0) {
-            newAllocations[idx] = remaining;
-            break;
-          }
-        }
-
-        existingAssignments.push({
-          id: `pkg-${Date.now()}`,
-          letter,
-          subOrderNumber: `${order.order_number}-${letter}`,
-          packageType: isWoodPacking ? 'Non-fullset' : 'Fullset',
-          allocations: newAllocations,
-        });
-      }
-
       return existingAssignments;
     }
 
@@ -124,19 +96,9 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
 
   // Add new package (Paket B, Paket C, etc.)
   const handleAddPackage = () => {
+    if (packages.some((pkg) => !Object.values(pkg.allocations).some((quantity) => quantity > 0))) return;
     const nextIndex = Array.from({ length: 26 }, (_, index) => index).find((index) => !packages.some((pkg) => pkg.letter === getLetter(index))) ?? packages.length;
     const letter = getLetter(nextIndex);
-
-    // Initial allocations for new package: find 1st item with remaining unassigned quantity
-    const newAllocations: Record<number, number> = {};
-    for (let idx = 0; idx < totalOrderItems.length; idx++) {
-      const used = getUsedQuantity(idx);
-      const remaining = totalOrderItems[idx].quantity - used;
-      if (remaining > 0) {
-        newAllocations[idx] = remaining;
-        break; // Default Fullset starts with 1 item selection
-      }
-    }
 
     setPackages([
       ...packages,
@@ -145,7 +107,9 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
         letter,
         subOrderNumber: `${order.order_number}-${letter}`,
         packageType: isWoodPacking ? 'Non-fullset' : 'Fullset',
-        allocations: newAllocations,
+        // A new package must be explicitly filled by admin; never preselect a
+        // plant from another package or from the remaining stock.
+        allocations: {},
       },
     ]);
   };
@@ -306,6 +270,11 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
 
     if (totalAllocatedQty === 0) {
       setError('Pilih minimal 1 tanaman untuk dimasukkan ke paket.');
+      return;
+    }
+    const emptyPackage = packages.find((pkg) => !Object.values(pkg.allocations).some((quantity) => quantity > 0));
+    if (emptyPackage) {
+      setError(`Paket ${emptyPackage.letter} masih kosong. Pilih tanaman terlebih dahulu sebelum membuat nota.`);
       return;
     }
 
@@ -588,17 +557,19 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
             const totalRequiredQty = totalOrderItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
             const totalAllocatedQty = totalOrderItems.reduce((sum, _, idx) => sum + getUsedQuantity(idx), 0);
             const isAllAllocated = totalAllocatedQty >= totalRequiredQty;
+            const emptyPackage = packages.find((pkg) => !Object.values(pkg.allocations).some((quantity) => quantity > 0));
+            const disableAddPackage = isAllAllocated || Boolean(emptyPackage);
 
             return (
               <div className="pt-1">
                 <button
                   type="button"
-                  disabled={isAllAllocated}
+                  disabled={disableAddPackage}
                   onClick={handleAddPackage}
                   className="w-full py-2.5 bg-white hover:bg-emerald-50 text-[#04593f] border border-[#04593f] rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-300 disabled:cursor-not-allowed disabled:shadow-none"
                 >
-                  <Plus className={`w-4 h-4 ${isAllAllocated ? 'text-slate-400' : 'text-[#04593f]'}`} />
-                  <span>{isAllAllocated ? 'Semua Tanaman Sudah Diatur Paketnya' : 'Tambah Paket Lagi'}</span>
+                  <Plus className={`w-4 h-4 ${disableAddPackage ? 'text-slate-400' : 'text-[#04593f]'}`} />
+                  <span>{isAllAllocated ? 'Semua Tanaman Sudah Diatur Paketnya' : emptyPackage ? `Isi Tanaman di Paket ${emptyPackage.letter} Terlebih Dahulu` : 'Tambah Paket Lagi'}</span>
                 </button>
               </div>
             );
@@ -615,7 +586,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || packages.some((pkg) => !Object.values(pkg.allocations).some((quantity) => quantity > 0))}
               className="px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
