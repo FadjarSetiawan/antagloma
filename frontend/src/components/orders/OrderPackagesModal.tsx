@@ -443,7 +443,9 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                       const isFullyPackedElsewhere = usedElsewhere >= item.quantity && !isChecked;
                       const lockedByPackage = packages.find((other) => other.id !== pkg.id && other.locked && (other.allocations[itemIdx] || 0) > 0);
                       const isDisabled = pkg.locked || isFullyPackedElsewhere;
-                      const showCheckedIcon = isChecked || isFullyPackedElsewhere;
+                      // A plant allocated to another completed package is not selected in
+                      // this package. Show it as locked, never as a green checkmark.
+                      const showCheckedIcon = isChecked;
 
                       return (
                         <div
@@ -465,19 +467,21 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                             {/* Checkbox Icon Circle */}
                             <div
                               className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors ${
-                                showCheckedIcon && !pkg.locked
+                                isFullyPackedElsewhere
+                                  ? 'border border-slate-300 bg-white text-slate-500'
+                                  : showCheckedIcon && !pkg.locked
                                   ? 'bg-[#04593f] text-white shadow-2xs'
                                   : pkg.locked && isChecked
                                   ? 'border border-slate-300 bg-white text-slate-500'
                                   : 'border-2 border-slate-300 bg-white'
                               }`}
                             >
-                              {pkg.locked && isChecked ? <Lock className="w-3.5 h-3.5" /> : showCheckedIcon && <Check className="w-3.5 h-3.5 text-white" />}
+                              {pkg.locked && isChecked ? <Lock className="w-3.5 h-3.5" /> : isFullyPackedElsewhere ? <Lock className="w-3.5 h-3.5" /> : showCheckedIcon && <Check className="w-3.5 h-3.5 text-white" />}
                             </div>
 
                             {/* Item Name & Grade Badge */}
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className={`font-bold text-xs ${showCheckedIcon ? 'text-slate-900' : 'text-slate-400'}`}>
+                              <span className={`font-bold text-xs ${showCheckedIcon || isFullyPackedElsewhere ? 'text-slate-900' : 'text-slate-400'}`}>
                                 {item.tree_name || item.product_name}
                               </span>
                               <span className="px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded text-[10px] font-bold">
@@ -502,12 +506,12 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                           {(isWoodPacking || pkg.packageType === 'Non-fullset') && !pkg.locked ? (
                             <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                               <button type="button" disabled={!allocatedQty || isDisabled} onClick={() => setPackages(packages.map(p => p.id === pkg.id ? { ...p, allocations: { ...p.allocations, [itemIdx]: Math.max(0, allocatedQty - 1) } } : p))} className="h-8 w-8 rounded-lg border border-slate-200 font-black disabled:opacity-40">−</button>
-                              <span className="w-8 text-center font-black text-xs">{isFullyPackedElsewhere ? usedElsewhere : allocatedQty}</span>
+                              <span className="w-8 text-center font-black text-xs">{allocatedQty}</span>
                               <button type="button" disabled={allocatedQty >= remainingAvailable || isDisabled} onClick={() => setPackages(packages.map(p => p.id === pkg.id ? { ...p, allocations: { ...p.allocations, [itemIdx]: Math.min(remainingAvailable, allocatedQty + 1) } } : p))} className="h-8 w-8 rounded-lg bg-[#04593f] text-white font-black disabled:opacity-40">+</button>
                             </div>
                           ) : (
                             <div className="w-10 py-0.5 bg-slate-100 border border-slate-200 rounded-lg text-center font-bold text-xs text-slate-800">
-                              {isFullyPackedElsewhere ? usedElsewhere : allocatedQty}
+                              {allocatedQty}
                             </div>
                           )}
                         </div>
