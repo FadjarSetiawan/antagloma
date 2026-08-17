@@ -315,6 +315,7 @@ export const SalesCommissionPage: React.FC = () => {
             <p className="text-xs sm:text-lg font-black text-amber-700 mt-0.5 truncate">
               {isLoading ? '...' : formatRp(summary.waiting_verification)}
             </p>
+            <p className="text-[8.5px] sm:text-[10px] font-bold text-amber-600/80 mt-0.5">Estimasi komisi</p>
           </div>
 
           {/* Card 2: Terverifikasi */}

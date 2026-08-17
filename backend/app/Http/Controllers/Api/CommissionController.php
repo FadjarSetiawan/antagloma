@@ -180,6 +180,10 @@ class CommissionController extends Controller
             } elseif ($statusVal === 'WAITING_PROCESS') {
                 $statusKey = 'waiting_verification';
                 $statusLabel = 'Menunggu Verifikasi';
+                // Payment is still pending, so this is an estimated commission.
+                // Showing it lets sales see the potential amount without mixing it
+                // into the verified/payout totals.
+                $orderCommission = round($plantTotal * $rate / 100);
             } else {
                 // WAITING_PACKING, PACKING_COMPLETED, COMPLETED (unpaid)
                 $statusKey = 'verified';
