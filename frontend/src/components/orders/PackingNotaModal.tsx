@@ -103,6 +103,22 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
               <div className="aspect-[2/3] flex items-center justify-center text-xs text-slate-500">Menyiapkan pratinjau nota...</div>
             )}
           </div>
+          <div className="mx-auto mt-3 w-full max-w-[340px] rounded-xl border border-emerald-200 bg-emerald-50 p-3 no-print">
+            <label htmlFor="packing-note-editor" className="block text-xs font-bold uppercase tracking-wide text-emerald-900">
+              Catatan Pengiriman / Packing Kayu
+            </label>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
+              Edit catatan di sini. Preview di atas akan berubah dan isi yang sama dikirim ke aplikasi printer.
+            </p>
+            <textarea
+              id="packing-note-editor"
+              value={customNotes}
+              onChange={(e) => setCustomNotes(e.target.value)}
+              placeholder="Ketik catatan packing di sini..."
+              rows={3}
+              className="mt-2 w-full resize-y rounded-lg border border-emerald-200 bg-white px-2.5 py-2 text-sm font-medium italic leading-relaxed text-slate-900 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-200"
+            />
+          </div>
           {/* Kept temporarily for legacy browser-print fallback only. The visible
               preview above is the deterministic bridge bitmap. */}
           <div className="hidden">
