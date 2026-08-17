@@ -37,6 +37,10 @@ export const SalesDashboard: React.FC = () => {
   const progressQuery = useQuery({ queryKey: ['sales-packing-progress'], queryFn: () => orderService.getSalesPackingProgress({ per_page: 100 }), refetchInterval: 5000 });
   const informed = useMutation({ mutationFn: (id: number) => orderService.markSalesInformed(id), onSuccess: () => { setError(''); setConfirm(null); qc.invalidateQueries({ queryKey: ['sales-orders-lifecycle'] }); qc.invalidateQueries({ queryKey: ['sales-packing-progress'] }); }, onError: (e: any) => setError(e?.response?.data?.message || 'Gagal menandai pesanan.') });
   const orders = ordersQuery.data?.data || []; const progress = progressQuery.data?.data || [];
+  // The API scopes this list to the signed-in sales account. `price` is a
+  // selling-line total, therefore it must not be multiplied by qty again.
+  const totalItems = orders.reduce((sum, order) => sum + (order.items || []).reduce((itemSum, item) => itemSum + (Number(item.quantity) || 0), 0), 0);
+  const totalSales = orders.reduce((sum, order) => sum + (order.items || []).reduce((itemSum, item) => itemSum + (Number(item.price) || 0), 0), 0);
   const allTracked = (o: Order) => !!o.packages?.length && o.packages.every(p => !!p.tracking_number);
   const allPhotos = (o: Order) => !!o.packages?.length && o.packages.every(hasPackagePhoto);
   const waiting = orders.filter(o => o.status === 'WAITING_PACKING');
@@ -132,6 +136,18 @@ export const SalesDashboard: React.FC = () => {
         </div>
       </div>
     </button>
+    <section aria-label="Ringkasan penjualan saya" className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
+      <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3.5 shadow-2xs">
+        <p className="text-[10px] font-extrabold uppercase tracking-wide text-emerald-800">Total Item</p>
+        <p className="mt-1 text-xl font-black text-slate-950">{totalItems.toLocaleString('id-ID')}</p>
+        <p className="mt-0.5 text-[10px] font-semibold text-slate-500">Tanaman dari pesanan saya</p>
+      </div>
+      <div className="rounded-2xl border border-emerald-900 bg-gradient-to-br from-[#04593f] to-emerald-950 p-3.5 shadow-2xs">
+        <p className="text-[10px] font-extrabold uppercase tracking-wide text-emerald-200">Total Penjualan</p>
+        <p className="mt-1 text-base font-black text-white sm:text-xl">Rp {totalSales.toLocaleString('id-ID')}</p>
+        <p className="mt-0.5 text-[10px] font-semibold text-emerald-200/90">Harga tanaman, di luar ongkir</p>
+      </div>
+    </section>
     <section aria-label="Ringkasan status pesanan" className="grid grid-cols-2 gap-2.5 sm:gap-3.5">{summaryCards.map(card => <article key={card.title} className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-2xs hover:border-[#04593f] hover:shadow-xs transition-all group"><div className="flex items-start justify-between gap-2"><span className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">{card.icon}</span><strong className="text-xl sm:text-2xl leading-none text-slate-950">{card.count}</strong></div><div><h2 className="text-xs font-bold text-slate-800 leading-tight block">{card.title}</h2><p className="mt-1 flex items-center text-[10px] text-slate-400 leading-none truncate">{card.detail}</p></div><button onClick={card.onClick} className="w-full py-1.5 px-2 bg-emerald-50 group-hover:bg-[#04593f] text-[#04593f] group-hover:text-white rounded-xl text-[10px] sm:text-xs font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"><span>{card.action}</span><span aria-hidden="true">›</span></button></article>)}</section>
 
 
