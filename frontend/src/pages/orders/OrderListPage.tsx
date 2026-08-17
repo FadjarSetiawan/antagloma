@@ -66,7 +66,8 @@ export const OrderListPage: React.FC = () => {
     queryKey: ['orders-list', search, statusFilter, orderDateFilter, role],
     queryFn: async () => {
       // Fetch orders
-      const res = await orderService.getOrders({ search, status: statusFilter === 'COMPLETED' ? undefined : statusFilter, order_date: orderDateFilter || undefined, per_page: 200 });
+      const isAdminProgressFilter = ['ADMIN_NOT_CONFIGURED', 'ADMIN_PARTIALLY_CONFIGURED', 'ADMIN_WAITING_PHOTO'].includes(statusFilter);
+      const res = await orderService.getOrders({ search, status: (statusFilter === 'COMPLETED' || isAdminProgressFilter) ? undefined : statusFilter, order_date: orderDateFilter || undefined, per_page: 200 });
       if (statusFilter === 'COMPLETED') {
         res.data = res.data.filter((order) => {
           if (role === 'admin') {
@@ -85,6 +86,17 @@ export const OrderListPage: React.FC = () => {
           }
           // Default for owner or other roles: completed status
           return order.status === 'COMPLETED' || !!order.sales_informed_at;
+        });
+      }
+      if (role === 'admin' && isAdminProgressFilter) {
+        res.data = res.data.filter((order) => {
+          if (order.status !== 'WAITING_PACKING') return false;
+          const totalPlants = (order.items || []).reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+          const configuredPlants = (order.packages || []).reduce((sum, pkg) => sum + (pkg.items || []).reduce((packageSum, item) => packageSum + (Number(item.quantity) || 0), 0), 0);
+
+          if (statusFilter === 'ADMIN_NOT_CONFIGURED') return configuredPlants === 0;
+          if (statusFilter === 'ADMIN_PARTIALLY_CONFIGURED') return configuredPlants > 0 && configuredPlants < totalPlants;
+          return totalPlants > 0 && configuredPlants >= totalPlants;
         });
       }
       return res;
@@ -132,14 +144,25 @@ export const OrderListPage: React.FC = () => {
     await shipmentMutation.mutateAsync({ id: orderId, payload });
   };
 
-  const statusOptions = [
-    { value: '', label: 'Semua Status' },
-    { value: 'WAITING_PROCESS', label: 'Menunggu Diproses' },
-    { value: 'WAITING_PACKING', label: 'Menunggu Packing' },
-    { value: 'PACKING_COMPLETED', label: 'Packing Selesai' },
-    { value: 'COMPLETED', label: 'Selesai' },
-    { value: 'CANCELLED', label: 'Dibatalkan' },
-  ];
+  const statusOptions = role === 'admin'
+    ? [
+      { value: '', label: 'Semua Status' },
+      { value: 'WAITING_PROCESS', label: 'Menunggu Verifikasi' },
+      { value: 'ADMIN_NOT_CONFIGURED', label: 'Belum Diatur' },
+      { value: 'ADMIN_PARTIALLY_CONFIGURED', label: 'Sedang Diatur' },
+      { value: 'ADMIN_WAITING_PHOTO', label: 'Menunggu Packing' },
+      { value: 'PACKING_COMPLETED', label: 'Packing Selesai' },
+      { value: 'COMPLETED', label: 'Selesai' },
+      { value: 'CANCELLED', label: 'Dibatalkan' },
+    ]
+    : [
+      { value: '', label: 'Semua Status' },
+      { value: 'WAITING_PROCESS', label: 'Menunggu Diproses' },
+      { value: 'WAITING_PACKING', label: 'Menunggu Packing' },
+      { value: 'PACKING_COMPLETED', label: 'Packing Selesai' },
+      { value: 'COMPLETED', label: 'Selesai' },
+      { value: 'CANCELLED', label: 'Dibatalkan' },
+    ];
 
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
@@ -260,6 +283,8 @@ export const OrderListPage: React.FC = () => {
             const configuredPlantCount = (order.packages || []).reduce((sum, pkg) => sum + (pkg.items || []).reduce((packageSum, item) => packageSum + (Number(item.quantity) || 0), 0), 0);
             const remainingPlantCount = Math.max(0, itemCount - configuredPlantCount);
             const isPartiallyConfigured = role === 'admin' && configuredPlantCount > 0 && remainingPlantCount > 0;
+            const isNotConfigured = role === 'admin' && order.status === 'WAITING_PACKING' && configuredPlantCount === 0;
+            const isWaitingPackingPhoto = role === 'admin' && order.status === 'WAITING_PACKING' && itemCount > 0 && configuredPlantCount >= itemCount;
             const hasPackages = Boolean(order.packages?.length);
             const allPackageTrackingCompleted = hasPackages && order.packages!.every((pkg) => Boolean(pkg.tracking_number?.trim()));
             const orderTrackingCompleted = !hasPackages && Boolean(order.tracking_number?.trim());
@@ -383,6 +408,10 @@ export const OrderListPage: React.FC = () => {
                       <span className="block text-[10px] font-black text-amber-950">Sedang Diatur ({configuredPlantCount}/{itemCount})</span>
                       <span className="block text-[9px] font-semibold text-amber-800 mt-0.5">{configuredPlantCount} tanaman siap cetak nota</span>
                     </div>
+                  ) : isNotConfigured ? (
+                    <span className="rounded-xl bg-blue-600 px-3 py-1 text-xs font-bold text-white shadow-2xs">Belum Diatur</span>
+                  ) : isWaitingPackingPhoto ? (
+                    <span className="rounded-xl bg-amber-600 px-3 py-1 text-xs font-bold text-white shadow-2xs">Menunggu Packing</span>
                   ) : <OrderStatusBadge status={order.status} />}
                 </div>
 
