@@ -57,6 +57,7 @@ export const OrderListPage: React.FC = () => {
   const [notaOrder, setNotaOrder] = useState<Order | null>(null);
   const [shipmentOrder, setShipmentOrder] = useState<Order | null>(null);
   const [shipmentPackage, setShipmentPackage] = useState<OrderPackage | null>(null);
+  const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
   const [verifyingOrder, setVerifyingOrder] = useState<Order | null>(null);
   const [isVerifyChecked, setIsVerifyChecked] = useState(false);
   const role = user?.role;
@@ -259,6 +260,12 @@ export const OrderListPage: React.FC = () => {
             const configuredPlantCount = (order.packages || []).reduce((sum, pkg) => sum + (pkg.items || []).reduce((packageSum, item) => packageSum + (Number(item.quantity) || 0), 0), 0);
             const remainingPlantCount = Math.max(0, itemCount - configuredPlantCount);
             const isPartiallyConfigured = role === 'admin' && configuredPlantCount > 0 && remainingPlantCount > 0;
+            const hasPackages = Boolean(order.packages?.length);
+            const allPackageTrackingCompleted = hasPackages && order.packages!.every((pkg) => Boolean(pkg.tracking_number?.trim()));
+            const orderTrackingCompleted = !hasPackages && Boolean(order.tracking_number?.trim());
+            const hasCompletedTracking = allPackageTrackingCompleted || orderTrackingCompleted;
+            const canViewTracking = (order.status === 'PACKING_COMPLETED' || order.status === 'COMPLETED') && hasCompletedTracking;
+            const canInputTracking = order.status === 'PACKING_COMPLETED' && !hasCompletedTracking;
 
             // ALLOW EDIT & DELETE FOR SALES ONLY WHEN UNVERIFIED (WAITING_PROCESS). AUTOMATICALLY HIDE WHEN VERIFIED BY ADMIN.
             const isSalesOrderOwner = role === 'sales' && order.created_by === user?.id;
@@ -443,21 +450,30 @@ export const OrderListPage: React.FC = () => {
                       </button>
                     )}
 
-                    {(role === 'admin' || role === 'owner') && order.status === 'PACKING_COMPLETED' && order.packages?.length && (
+                    {(role === 'admin' || role === 'owner') && canViewTracking && (
                       <button
-                        onClick={() => setShipmentPackage(order.packages?.find((pkg) => !pkg.tracking_number) || order.packages![0])}
-                        className="px-2 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-xl text-[10px] font-normal whitespace-nowrap flex items-center gap-1 shadow-2xs cursor-pointer"
+                        onClick={() => setTrackingOrder(order)}
+                        className="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1 shadow-2xs cursor-pointer"
                       >
-                        <PackageCheck className="w-3.5 h-3.5 text-white" /> Resi Package
+                        <Eye className="w-3.5 h-3.5 text-white" /> Lihat Resi
                       </button>
                     )}
 
-                    {(role === 'admin' || role === 'owner') && order.status === 'PACKING_COMPLETED' && !order.packages?.length && (
+                    {(role === 'admin' || role === 'owner') && canInputTracking && order.packages?.length && (
+                      <button
+                        onClick={() => setShipmentPackage(order.packages!.find((pkg) => !pkg.tracking_number?.trim()) || order.packages![0])}
+                        className="px-2.5 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1 shadow-2xs cursor-pointer"
+                      >
+                        <PackageCheck className="w-3.5 h-3.5 text-white" /> Input Resi
+                      </button>
+                    )}
+
+                    {(role === 'admin' || role === 'owner') && canInputTracking && !order.packages?.length && (
                       <button
                         onClick={() => setShipmentOrder(order)}
                         className="px-2.5 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer"
                       >
-                        <PackageCheck className="w-3.5 h-3.5 text-white" /> Resi
+                        <PackageCheck className="w-3.5 h-3.5 text-white" /> Input Resi
                       </button>
                     )}
 
@@ -581,6 +597,39 @@ export const OrderListPage: React.FC = () => {
           setShipmentPackage(null);
         }}
       />
+
+      {trackingOrder && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 p-4" onClick={() => setTrackingOrder(null)}>
+          <div className="w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Resi Pengiriman</p>
+                <h3 className="mt-0.5 text-base font-extrabold text-slate-900">{trackingOrder.order_number}</h3>
+              </div>
+              <button type="button" onClick={() => setTrackingOrder(null)} className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200">
+                Tutup
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {trackingOrder.packages?.length ? trackingOrder.packages.map((pkg) => (
+                <div key={pkg.id} className="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-bold text-slate-700">Paket {pkg.letter}</span>
+                    <span className="text-sm font-extrabold tracking-wide text-emerald-800">{pkg.tracking_number || '-'}</span>
+                  </div>
+                  {pkg.shipping_cost != null && <p className="mt-1 text-xs text-slate-500">Ongkir: Rp{Number(pkg.shipping_cost).toLocaleString('id-ID')}</p>}
+                </div>
+              )) : (
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
+                  <p className="text-sm font-extrabold tracking-wide text-emerald-800">{trackingOrder.tracking_number || '-'}</p>
+                  {trackingOrder.shipping_cost != null && <p className="mt-1 text-xs text-slate-500">Ongkir: Rp{Number(trackingOrder.shipping_cost).toLocaleString('id-ID')}</p>}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Custom Date Picker Modal */}
       <CustomDatePickerModal
