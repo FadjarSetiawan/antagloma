@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Order, PackingImage } from '../../types/order';
+import { Order, OrderItem, PackingImage } from '../../types/order';
 import { OrderStatusBadge } from '../shared/OrderStatusBadge';
 import { StatusTimeline } from './StatusTimeline';
 import {
@@ -46,6 +46,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
   const role = user?.role;
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
+  const isOwner = role === 'owner';
 
   const formattedDate = order.order_date
     ? new Date(order.order_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' })
@@ -56,6 +57,21 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     : 0;
   const shippingCost = order.buyer_shipping_cost || 0;
   const grandTotal = plantTotalPrice + shippingCost;
+  const itemPricing = (item: OrderItem) => {
+    const quantity = Math.max(1, Number(item.quantity) || 1);
+    const sellingTotal = Number(item.price) || 0;
+    const configuredDiscount = Number(item.discount) || 0;
+    const standardTotal = Math.max(0, Number(item.standard_price) || 0) * quantity;
+    // Older orders may not have a stored discount. In that case derive it from
+    // the historical standard price when it is available.
+    const discount = configuredDiscount > 0
+      ? configuredDiscount
+      : Math.max(0, standardTotal - sellingTotal);
+    const normalTotal = standardTotal > 0 ? standardTotal : sellingTotal + discount;
+    return { sellingTotal, discount, normalTotal };
+  };
+  const totalNormalPlantPrice = (order.items || []).reduce((sum, item) => sum + itemPricing(item).normalTotal, 0);
+  const totalSalesDiscount = (order.items || []).reduce((sum, item) => sum + itemPricing(item).discount, 0);
 
   return (
     <>
@@ -286,19 +302,19 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                       cleanTitle = `${item.tree_name.toUpperCase()} (${item.tree_code.toUpperCase()})`;
                     }
 
+                    const pricing = itemPricing(item);
                     return (
-                      <div key={idx} className="py-2.5 flex items-center justify-between">
-                        <div>
+                      <div key={idx} className="py-2.5 flex items-start justify-between gap-3">
+                        <div className="min-w-0">
                           <span className="font-bold text-slate-900 block text-xs">{cleanTitle}</span>
                           <span className="inline-block mt-0.5 px-2 py-0.5 bg-emerald-50 text-emerald-900 border border-emerald-200 text-[10px] font-black rounded uppercase">
                             GRADE {item.grade || 'A'}
                           </span>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right shrink-0">
                           <span className="font-bold text-slate-900 block text-xs">x{item.quantity}</span>
-                          <span className="text-[10px] text-slate-500 font-medium">
-                            Rp {(item.price || 0).toLocaleString('id-ID')}
-                          </span>
+                          {isOwner && pricing.discount > 0 && <><span className="text-[10px] text-slate-400 line-through block">Rp {pricing.normalTotal.toLocaleString('id-ID')}</span><span className="text-[10px] text-rose-600 font-bold block">Diskon −Rp {pricing.discount.toLocaleString('id-ID')}</span></>}
+                          <span className="text-[10px] text-slate-700 font-extrabold block">Rp {pricing.sellingTotal.toLocaleString('id-ID')}</span>
                         </div>
                       </div>
                     );
@@ -307,6 +323,13 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   <p className="py-2 text-center text-slate-400">Tidak ada detail item tanaman.</p>
                 )}
               </div>
+              {isOwner && order.items && order.items.length > 0 && (
+                <div className="mt-1 rounded-xl border border-amber-200 bg-amber-50/70 p-3 space-y-1.5">
+                  <div className="flex items-center justify-between text-[10px] font-semibold text-slate-600"><span>Total harga normal</span><span>Rp {totalNormalPlantPrice.toLocaleString('id-ID')}</span></div>
+                  <div className="flex items-center justify-between text-[11px] font-extrabold text-rose-700"><span>Diskon diberikan sales</span><span>−Rp {totalSalesDiscount.toLocaleString('id-ID')}</span></div>
+                  <div className="flex items-center justify-between border-t border-amber-200 pt-1.5 text-xs font-black text-slate-900"><span>Total harga jual tanaman</span><span>Rp {plantTotalPrice.toLocaleString('id-ID')}</span></div>
+                </div>
+              )}
             </div>
           </div>
 
