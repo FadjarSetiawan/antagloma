@@ -58,6 +58,15 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const totalItemQuantity = order.items
     ? order.items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0)
     : 0;
+  const configuredItemQuantity = (order.packages || []).reduce(
+    (sum, pkg) => sum + (pkg.items || []).reduce((itemSum, item) => itemSum + (Number(item.quantity) || 0), 0),
+    0,
+  );
+  const isSalesPartialConfiguration =
+    role === 'sales' &&
+    order.status === 'WAITING_PACKING' &&
+    configuredItemQuantity > 0 &&
+    configuredItemQuantity < totalItemQuantity;
   const shippingCost = order.buyer_shipping_cost || 0;
   const grandTotal = plantTotalPrice + shippingCost;
   const itemPricing = (item: OrderItem) => {
@@ -85,7 +94,11 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm sm:text-base font-bold text-slate-900">{order.order_number}</h3>
-                <OrderStatusBadge status={order.status} />
+                {isSalesPartialConfiguration ? (
+                  <span className="rounded-xl border border-amber-300 bg-amber-100 px-2.5 py-1 text-[10px] font-black text-amber-950">
+                    Sedang Diatur ({configuredItemQuantity}/{totalItemQuantity})
+                  </span>
+                ) : <OrderStatusBadge status={order.status} />}
               </div>
               <p className="text-[11px] text-slate-400 font-normal mt-0.5">Tanggal Order: {formattedDate}</p>
             </div>
@@ -105,10 +118,12 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               <div className="p-3 bg-emerald-50 border border-emerald-200/90 rounded-xl space-y-0.5 text-xs text-emerald-950 shadow-2xs">
                 <span className="font-bold text-[#04593f] flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4 text-[#04593f]" />
-                  <span>Pembayaran terverifikasi, menunggu buat paket</span>
+                  <span>{isSalesPartialConfiguration ? `Paket sedang diatur (${configuredItemQuantity}/${totalItemQuantity})` : 'Pembayaran terverifikasi, menunggu buat paket'}</span>
                 </span>
                 <p className="text-[11px] text-slate-600 font-medium pl-5.5">
-                  Pembayaran order telah disetujui admin. Saat ini menunggu pembuatan paket pengiriman oleh admin.
+                  {isSalesPartialConfiguration
+                    ? `${configuredItemQuantity} dari ${totalItemQuantity} tanaman sudah dialokasikan. Admin masih mengatur sisa paket pengiriman.`
+                    : 'Pembayaran order telah disetujui admin. Saat ini menunggu pembuatan paket pengiriman oleh admin.'}
                 </p>
               </div>
             )}
