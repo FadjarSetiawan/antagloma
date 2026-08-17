@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Order } from '../../types/order';
-import { X, Package, Plus, CheckCircle2, Trash2, AlertCircle, FileText, Check, Scale } from 'lucide-react';
+import { X, Package, Plus, CheckCircle2, Trash2, AlertCircle, FileText, Check, Scale, Lock } from 'lucide-react';
 
 export interface PackageAssignment {
   id: string;
@@ -9,6 +9,7 @@ export interface PackageAssignment {
   packageType: 'Fullset' | 'Non-fullset';
   allocations: Record<number, number>; // itemIndex -> quantity allocated
   customWeight?: number; // Manual weight override in kg
+  locked?: boolean; // Submitted packages are already in the document queue.
 }
 
 interface OrderPackagesModalProps {
@@ -59,6 +60,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
           packageType: (savedPkg.package_type as 'Fullset' | 'Non-fullset') || (isWoodPacking ? 'Non-fullset' : 'Fullset'),
           allocations,
           customWeight: savedPkg.weight,
+          locked: Boolean(savedPkg.configured_at || savedPkg.nota_printed || savedPkg.label_printed),
         };
       });
 
@@ -122,7 +124,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
 
   // Add new package (Paket B, Paket C, etc.)
   const handleAddPackage = () => {
-    const nextIndex = packages.length;
+    const nextIndex = Array.from({ length: 26 }, (_, index) => index).find((index) => !packages.some((pkg) => pkg.letter === getLetter(index))) ?? packages.length;
     const letter = getLetter(nextIndex);
 
     // Initial allocations for new package: find 1st item with remaining unassigned quantity
@@ -151,25 +153,17 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
   // Remove package
   const handleRemovePackage = (pkgId: string) => {
     if (packages.length <= 1) return;
-    const filtered = packages.filter((p) => p.id !== pkgId);
-
-    // Re-index letters A, B, C
-    const updated = filtered.map((pkg, idx) => {
-      const letter = getLetter(idx);
-      return {
-        ...pkg,
-        letter,
-        subOrderNumber: `${order.order_number}-${letter}`,
-      };
-    });
-    setPackages(updated);
+    if (packages.find((pkg) => pkg.id === pkgId)?.locked) return;
+    // Preserve letters on submitted packages. Renumbering would alter a package
+    // that already has an order/document reference.
+    setPackages(packages.filter((pkg) => pkg.id !== pkgId));
   };
 
   // Switch package type (Fullset enforces max 1 plant)
   const handleSetPackageType = (pkgId: string, type: 'Fullset' | 'Non-fullset') => {
     setPackages(
       packages.map((pkg) => {
-        if (pkg.id !== pkgId) return pkg;
+        if (pkg.id !== pkgId || pkg.locked) return pkg;
 
         let newAllocations = { ...pkg.allocations };
         if (type === 'Non-fullset') {
@@ -203,7 +197,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
 
     setPackages(
       packages.map((pkg) => {
-        if (pkg.id !== pkgId) return pkg;
+        if (pkg.id !== pkgId || pkg.locked) return pkg;
 
         const currentAllocated = pkg.allocations[itemIdx] || 0;
         let newAllocations: Record<number, number> = { ...pkg.allocations };
@@ -426,7 +420,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                       </span>
                     </div>
 
-                    {packages.length > 1 && (
+                    {packages.length > 1 && !pkg.locked && (
                       <button
                         type="button"
                         onClick={() => handleRemovePackage(pkg.id)}
@@ -443,6 +437,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleSetPackageType(pkg.id, 'Fullset')}
+                      disabled={pkg.locked}
                       className={`py-2 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         pkg.packageType === 'Fullset'
                           ? 'bg-emerald-50 text-[#04593f] border-[#04593f] shadow-2xs'
@@ -456,6 +451,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleSetPackageType(pkg.id, 'Non-fullset')}
+                      disabled={pkg.locked}
                       className={`py-2 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         pkg.packageType === 'Non-fullset'
                           ? 'bg-emerald-50 text-[#04593f] border-[#04593f] shadow-2xs'
@@ -476,7 +472,8 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                       const remainingAvailable = item.quantity - usedElsewhere;
 
                       const isFullyPackedElsewhere = usedElsewhere >= item.quantity && !isChecked;
-                      const isDisabled = isFullyPackedElsewhere;
+                      const lockedByPackage = packages.find((other) => other.id !== pkg.id && other.locked && (other.allocations[itemIdx] || 0) > 0);
+                      const isDisabled = pkg.locked || isFullyPackedElsewhere;
                       const showCheckedIcon = isChecked || isFullyPackedElsewhere;
 
                       return (
@@ -486,10 +483,12 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                             if (!isDisabled) handleToggleItemInPackage(pkg.id, itemIdx);
                           }}
                           className={`p-2.5 rounded-xl border transition-all flex items-center justify-between ${
-                            isChecked
+                            pkg.locked && isChecked
+                              ? 'bg-slate-100 border-slate-200 cursor-not-allowed opacity-90'
+                              : isChecked
                               ? 'bg-white border-slate-300 shadow-2xs cursor-pointer'
                               : isFullyPackedElsewhere
-                              ? 'bg-emerald-50/60 border-emerald-200/90 cursor-not-allowed opacity-85'
+                              ? 'bg-slate-100 border-slate-200 cursor-not-allowed opacity-85'
                               : 'bg-white border-slate-100 hover:border-slate-200 cursor-pointer'
                           }`}
                         >
@@ -497,12 +496,14 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                             {/* Checkbox Icon Circle */}
                             <div
                               className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors ${
-                                showCheckedIcon
+                                showCheckedIcon && !pkg.locked
                                   ? 'bg-[#04593f] text-white shadow-2xs'
+                                  : pkg.locked && isChecked
+                                  ? 'border border-slate-300 bg-white text-slate-500'
                                   : 'border-2 border-slate-300 bg-white'
                               }`}
                             >
-                              {showCheckedIcon && <Check className="w-3.5 h-3.5 text-white" />}
+                              {pkg.locked && isChecked ? <Lock className="w-3.5 h-3.5" /> : showCheckedIcon && <Check className="w-3.5 h-3.5 text-white" />}
                             </div>
 
                             {/* Item Name & Grade Badge */}
@@ -513,9 +514,13 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                               <span className="px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded text-[10px] font-bold">
                                 Grade {item.grade || 'A'}
                               </span>
-                              {isFullyPackedElsewhere ? (
-                                <span className="w-full text-[10px] text-emerald-800 font-semibold italic flex items-center gap-1">
-                                  ✓ Sudah dikemas & diatur di paket sebelumnya (tidak dapat dipilih lagi)
+                              {pkg.locked && isChecked ? (
+                                <span className="w-full text-[10px] text-slate-500 font-semibold flex items-center gap-1">
+                                  <Lock className="w-3 h-3" /> Sudah dikunci untuk daftar cetak Paket {pkg.letter}
+                                </span>
+                              ) : isFullyPackedElsewhere ? (
+                                <span className="w-full text-[10px] text-slate-500 font-semibold flex items-center gap-1">
+                                  <Lock className="w-3 h-3" /> Sudah dipilih di Paket {lockedByPackage?.letter || packages.find((other) => other.id !== pkg.id && (other.allocations[itemIdx] || 0) > 0)?.letter} (tidak dapat dipilih lagi)
                                 </span>
                               ) : pkg.packageType === 'Fullset' && (
                                 <span className="w-full text-[10px] text-slate-500 font-medium">
@@ -525,7 +530,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                             </div>
                           </div>
 
-                          {(isWoodPacking || pkg.packageType === 'Non-fullset') ? (
+                          {(isWoodPacking || pkg.packageType === 'Non-fullset') && !pkg.locked ? (
                             <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                               <button type="button" disabled={!allocatedQty || isDisabled} onClick={() => setPackages(packages.map(p => p.id === pkg.id ? { ...p, allocations: { ...p.allocations, [itemIdx]: Math.max(0, allocatedQty - 1) } } : p))} className="h-8 w-8 rounded-lg border border-slate-200 font-black disabled:opacity-40">−</button>
                               <span className="w-8 text-center font-black text-xs">{isFullyPackedElsewhere ? usedElsewhere : allocatedQty}</span>
@@ -559,6 +564,7 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
                         step="0.1"
                         min="0"
                         value={displayWeight}
+                        disabled={pkg.locked}
                         onChange={(e) => {
                           const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
                           handleSetCustomWeight(pkg.id, val);

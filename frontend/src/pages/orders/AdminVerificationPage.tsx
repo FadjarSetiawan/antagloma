@@ -470,13 +470,6 @@ export const AdminVerificationPage: React.FC = () => {
           setIsVerifyChecked(false);
         }}
         onEdit={(ord) => setEditingOrder(ord)}
-        onDelete={(id) => {
-          const order = orders.find((item) => item.id === id) ?? selectedOrder;
-          if (!order) return;
-          setSelectedOrder(null);
-          setRejectingOrder(order);
-          setSelectedRejectReason('');
-        }}
       />
 
       {/* Order Edit Modal for Admin */}

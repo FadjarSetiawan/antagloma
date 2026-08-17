@@ -260,6 +260,7 @@ export const OrderListPage: React.FC = () => {
             // ALLOW EDIT & DELETE FOR SALES ONLY WHEN UNVERIFIED (WAITING_PROCESS). AUTOMATICALLY HIDE WHEN VERIFIED BY ADMIN.
             const isSalesOrderOwner = role === 'sales' && order.created_by === user?.id;
             const canModifySalesOrder = role === 'admin' || role === 'owner';
+            const canDeleteOrder = role === 'owner';
 
             if (order.status === 'CANCELLED') {
               return (
@@ -445,7 +446,7 @@ export const OrderListPage: React.FC = () => {
                     )}
 
                     {/* EDIT BUTTON (AUTO HIDDEN IF SALES & ORDER IS ALREADY VERIFIED) */}
-                    {canModifySalesOrder && (
+                    {canDeleteOrder && (
                       <button
                         onClick={() => setEditingOrder(order)}
                         className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer transition-colors"
@@ -533,7 +534,7 @@ export const OrderListPage: React.FC = () => {
           : setShipmentOrder(ord)}
         onOpenNota={(ord) => setNotaOrder(ord)}
         onEdit={(ord) => setEditingOrder(ord)}
-        onDelete={(id) => setDeletingOrder(selectedOrder)}
+        onDelete={role === 'owner' ? (() => setDeletingOrder(selectedOrder)) : undefined}
         isActionLoading={approveMutation.isPending}
       />
 

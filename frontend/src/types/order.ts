@@ -53,6 +53,7 @@ export interface OrderPackage {
   letter: string;
   package_type?: string;
   status: string;
+  configured_at?: string;
   nota_printed: boolean;
   label_printed: boolean;
   photo_uploaded: boolean;

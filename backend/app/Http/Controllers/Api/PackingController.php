@@ -89,10 +89,44 @@ class PackingController extends Controller
                 ], 422));
             }
             $letters = $inputs->pluck('letter')->all();
-            $order->packages()->whereNotIn('letter', $letters)->delete();
+            $lockedPackages = $order->packages()->with('items')->whereNotNull('configured_at')->get()->keyBy('letter');
+
+            // A submitted package is already in the document-print queue. Keep
+            // its type and allocations immutable, while still allowing a new
+            // package for plants that have not been allocated yet.
+            foreach ($lockedPackages as $letter => $lockedPackage) {
+                $input = $inputs->firstWhere('letter', $letter);
+                abort_unless($input, 422, "Paket {$letter} sudah dikunci dan tidak dapat dihapus karena sudah masuk daftar cetak.");
+                abort_unless(($input['package_type'] ?? null) === $lockedPackage->package_type, 422, "Paket {$letter} sudah dikunci dan jenis paketnya tidak dapat diubah.");
+
+                $storedAllocations = $lockedPackage->items->mapWithKeys(fn ($allocation) => [$allocation->order_item_id => (int) $allocation->quantity])->all();
+                $submittedAllocations = [];
+                foreach (($input['allocations'] ?? []) as $itemIndex => $quantity) {
+                    $item = $order->items->get((int) $itemIndex);
+                    if ($item && (int) $quantity > 0) $submittedAllocations[$item->id] = (int) $quantity;
+                }
+                ksort($storedAllocations);
+                ksort($submittedAllocations);
+                abort_unless($storedAllocations === $submittedAllocations, 422, "Tanaman di Paket {$letter} sudah dikunci dan tidak dapat diubah.");
+            }
+
+            $order->packages()->whereNull('configured_at')->whereNotIn('letter', $letters)->delete();
             $used = [];
+            foreach ($lockedPackages as $lockedPackage) {
+                foreach ($lockedPackage->items as $allocation) {
+                    $used[$allocation->order_item_id] = ($used[$allocation->order_item_id] ?? 0) + (int) $allocation->quantity;
+                }
+            }
             foreach ($inputs as $input) {
-                $package = $order->packages()->updateOrCreate(['letter'=>$input['letter']], ['package_type'=>$input['package_type'] ?? null, 'waiting_photo_at'=>null]);
+                $package = $lockedPackages->get($input['letter']);
+                if ($package) {
+                    continue;
+                }
+                $package = $order->packages()->updateOrCreate(['letter'=>$input['letter']], [
+                    'package_type'=>$input['package_type'] ?? null,
+                    'waiting_photo_at'=>null,
+                    'configured_at'=>now(),
+                ]);
                 $assignedItemIds = [];
                 foreach (($input['allocations'] ?? []) as $itemIndex => $quantity) {
                     $item = $order->items->get((int) $itemIndex); $quantity = (int) $quantity;

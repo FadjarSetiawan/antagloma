@@ -57,7 +57,7 @@ class OrderResource extends JsonResource
                 'id' => $package->id, 'letter' => $package->letter, 'package_type' => $package->package_type,
                 ...(!$isSales ? ['weight' => $package->weight] : []),
                 ...(!$isSales ? ['shipping_cost' => $package->shipping_cost] : []),
-                'status' => $package->status, 'nota_printed' => $package->nota_printed, 'label_printed' => $package->label_printed,
+                'status' => $package->status, 'configured_at' => $package->configured_at?->toIso8601String(), 'nota_printed' => $package->nota_printed, 'label_printed' => $package->label_printed,
                 'photo_uploaded' => (bool) $package->photo_uploaded_at, 'tracking_number' => $package->tracking_number,
                 'items' => $package->items->map(fn ($allocation) => ['order_item_id' => $allocation->order_item_id, 'quantity' => $allocation->quantity, 'product_name' => $allocation->item?->product_name]),
                 'packing_images' => PackingImageResource::collection($package->packingImages),

@@ -5,8 +5,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrderPackage extends Model {
-    protected $fillable = ['order_id','letter','package_type','weight','nota_printed','nota_printed_at','label_printed','label_printed_at','waiting_photo_at','photo_uploaded_at','tracking_number','shipping_cost','completed_at'];
-    protected $casts = ['nota_printed'=>'boolean','label_printed'=>'boolean','nota_printed_at'=>'datetime','label_printed_at'=>'datetime','waiting_photo_at'=>'datetime','photo_uploaded_at'=>'datetime','completed_at'=>'datetime','weight'=>'float','shipping_cost'=>'float'];
+    protected $fillable = ['order_id','letter','package_type','weight','configured_at','nota_printed','nota_printed_at','label_printed','label_printed_at','waiting_photo_at','photo_uploaded_at','tracking_number','shipping_cost','completed_at'];
+    protected $casts = ['nota_printed'=>'boolean','label_printed'=>'boolean','configured_at'=>'datetime','nota_printed_at'=>'datetime','label_printed_at'=>'datetime','waiting_photo_at'=>'datetime','photo_uploaded_at'=>'datetime','completed_at'=>'datetime','weight'=>'float','shipping_cost'=>'float'];
     public function order(): BelongsTo { return $this->belongsTo(Order::class); }
     public function items(): HasMany { return $this->hasMany(OrderPackageItem::class); }
     public function packingImages(): HasMany { return $this->hasMany(PackingImage::class); }
