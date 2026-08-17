@@ -38,7 +38,26 @@ export const AdminDashboard: React.FC = () => {
   const orders: Order[] = dashboardData?.data || [];
 
   const waitingVerification = orders.filter((o: Order) => o.status === 'WAITING_PROCESS').length;
-  const pendingShipping = orders.filter((o: Order) => o.status === 'WAITING_PACKING' && !o.packages?.length).length;
+  // Keep the shipping-setup notification visible until every ordered plant has
+  // been allocated to a package. This includes orders that already have one
+  // completed package but still have plants waiting to be configured.
+  const pendingShipping = orders.filter((order: Order) => {
+    if (order.status !== 'WAITING_PACKING') return false;
+
+    const orderedPlantCount = (order.items || []).reduce(
+      (sum, item) => sum + (Number(item.quantity) || 0),
+      0,
+    );
+    const configuredPlantCount = (order.packages || []).reduce(
+      (sum, pkg) => sum + (pkg.items || []).reduce(
+        (packageSum, item) => packageSum + (Number(item.quantity) || 0),
+        0,
+      ),
+      0,
+    );
+
+    return !order.packages?.length || configuredPlantCount < orderedPlantCount;
+  }).length;
   // Card 3: keep the dashboard count aligned with DocumentPrintingPage's
   // "Belum Dicetak" source of truth: one count per eligible package whose
   // Nota and Label are not both printed yet.
@@ -135,7 +154,7 @@ export const AdminDashboard: React.FC = () => {
     {
       title: 'Belum Diatur Pengiriman',
       value: isLoading ? '...' : pendingShipping,
-      caption: pendingShipping > 0 ? `${pendingShipping} order siap kemas` : 'Semua teratur',
+      caption: pendingShipping > 0 ? `${pendingShipping} order perlu diatur` : 'Semua teratur',
       hasNotification: pendingShipping > 0,
       buttonText: 'Atur Pengiriman',
       icon: Truck,
