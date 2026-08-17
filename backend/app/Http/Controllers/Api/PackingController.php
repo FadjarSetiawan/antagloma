@@ -8,6 +8,7 @@ use App\Http\Resources\OrderResource;
 use App\Http\Resources\PackingImageResource;
 use App\Models\Order;
 use App\Models\OrderPackage;
+use App\Enums\OrderStatus;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 use App\Services\NotificationService;
@@ -182,7 +183,28 @@ class PackingController extends Controller
                 'customer' => $used?->order?->customer_name,
             ]], 422);
         }
-        return response()->json(['success'=>true,'data'=>$package->fresh()]);
+
+        // A package is not the final delivery state. As soon as the last
+        // package receives its resi, promote the parent order to COMPLETED so
+        // the admin sees the expected "Selesai" status everywhere.
+        $completedOrder = DB::transaction(function () use ($package) {
+            $order = Order::whereKey($package->order_id)->lockForUpdate()->firstOrFail();
+            $hasPackagesWithoutTracking = $order->packages()
+                ->where(fn ($query) => $query->whereNull('tracking_number')->orWhere('tracking_number', ''))
+                ->exists();
+
+            if (!$hasPackagesWithoutTracking && $order->status !== OrderStatus::COMPLETED) {
+                $order->update([
+                    'status' => OrderStatus::COMPLETED,
+                    'shipped_at' => now(),
+                    'completed_at' => now(),
+                ]);
+                NotificationService::notifyShipmentCompleted($order->fresh());
+            }
+
+            return $order->fresh(['packages']);
+        });
+        return response()->json(['success'=>true,'data'=>$package->fresh(), 'order'=>$completedOrder]);
     }
 
     public function uploadProof(UploadPackingImageRequest $request, int $id): JsonResponse
