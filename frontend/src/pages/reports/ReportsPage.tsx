@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
 import { masterService } from '../../services/masterService';
+import { managementService } from '../../services/managementService';
 import { Order } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
@@ -23,6 +24,8 @@ import {
   Eye,
   PieChart,
   Package,
+  UserRound,
+  Percent,
   X,
 } from 'lucide-react';
 import { RpIcon } from '../../components/shared/RpIcon';
@@ -35,6 +38,7 @@ export const ReportsPage: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [search, setSearch] = useState('');
+  const [selectedSalesId, setSelectedSalesId] = useState('all');
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<Order | null>(null);
   const [showGradeReport, setShowGradeReport] = useState(false);
   const [showPlantPerformance, setShowPlantPerformance] = useState(false);
@@ -61,6 +65,11 @@ export const ReportsPage: React.FC = () => {
     queryKey: ['master-trees-report'],
     queryFn: () => masterService.getTrees(),
   });
+  const { data: salesResponse } = useQuery({
+    queryKey: ['reports-sales-list'],
+    queryFn: () => managementService.getCommissions(),
+  });
+  const salesList = salesResponse?.data || [];
 
   const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const reportPeriodLabel = periodFilter === 'date'
@@ -71,10 +80,14 @@ export const ReportsPage: React.FC = () => {
         ? `Tahun ${selectedYear}`
         : 'Semua Waktu';
 
-  // Filter orders by period
+  // The API already applies the selected period. Keep this unfiltered set for
+  // the sales-percentage denominator, so selecting one sales person does not
+  // incorrectly make their share read 100%.
+  const periodOrders = allOrders;
+
+  // Filter the visible report by sales person and search text.
   const orders = allOrders.filter((o) => {
-    // Period filter
-    // Search filter
+    if (selectedSalesId !== 'all' && String(o.creator?.id) !== selectedSalesId) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
       const matchNumber = o.order_number?.toLowerCase().includes(q);
@@ -102,7 +115,18 @@ export const ReportsPage: React.FC = () => {
   };
 
   // Total Omset Penjualan Tanaman = hanya harga tanaman (tidak termasuk ongkir pembeli)
+  const totalPeriodPlantOmzet = periodOrders.reduce((sum, order) => sum + calculateOrderItemsTotal(order), 0);
   const totalPlantOmzet = orders.reduce((sum, order) => sum + calculateOrderItemsTotal(order), 0);
+
+  const calculateOrderCommission = (order: Order) => {
+    const fromApi = Number((order as Order & { sales_commission?: number }).sales_commission);
+    if (Number.isFinite(fromApi) && fromApi >= 0) return fromApi;
+    const isVerified = order.status !== 'WAITING_PROCESS' && order.status !== 'CANCELLED';
+    return isVerified
+      ? Math.round(calculateOrderItemsTotal(order) * (Number(order.creator?.commission_rate) || 5) / 100)
+      : 0;
+  };
+  const totalSalesCommission = orders.reduce((sum, order) => sum + calculateOrderCommission(order), 0);
 
   // Total Paket Dikirim = jumlah paket yang sudah ada foto paketnya (photo_uploaded === true)
   const totalPackagesSent = orders.reduce(
@@ -126,6 +150,7 @@ export const ReportsPage: React.FC = () => {
 
   // Selisih Ongkir = ongkir dibayar pembeli - ongkir ekspedisi
   const totalShippingDifference = totalShippingCost - totalExpeditionShipping;
+  const estimatedNetProfit = totalPlantOmzet + totalShippingDifference - totalSalesCommission;
 
   const totalOrdersCount = orders.length;
   const completedOrdersCount = orders.filter((o) => o.status === 'COMPLETED' || o.status === 'PACKING_COMPLETED').length;
@@ -136,6 +161,30 @@ export const ReportsPage: React.FC = () => {
     (sum, order) => sum + (order.items || []).reduce((iSum, it) => iSum + (Number(it.quantity) || 1), 0),
     0
   );
+
+  const salesPerformance = useMemo(() => {
+    const rows = new Map<string, { id: number | string; name: string; orderCount: number; omzet: number; commission: number }>();
+    (salesList || []).forEach((sales) => rows.set(String(sales.id), {
+      id: sales.id,
+      name: sales.name,
+      orderCount: 0,
+      omzet: 0,
+      commission: 0,
+    }));
+    periodOrders.forEach((order) => {
+      const id = order.creator?.id ?? order.created_by;
+      const key = String(id);
+      const current = rows.get(key) || { id, name: order.creator?.name || 'Sales Staff', orderCount: 0, omzet: 0, commission: 0 };
+      current.orderCount += 1;
+      current.omzet += calculateOrderItemsTotal(order);
+      current.commission += calculateOrderCommission(order);
+      rows.set(key, current);
+    });
+    return [...rows.values()]
+      .filter((row) => selectedSalesId === 'all' || String(row.id) === selectedSalesId)
+      .sort((a, b) => b.omzet - a.omzet)
+      .map((row) => ({ ...row, percentage: totalPeriodPlantOmzet > 0 ? (row.omzet / totalPeriodPlantOmzet) * 100 : 0 }));
+  }, [periodOrders, salesList, selectedSalesId, totalPeriodPlantOmzet]);
 
   const gradeSummary = Object.values(
     orders.reduce<Record<string, { grade: string; quantity: number; omzet: number }>>((summary, order) => {
@@ -283,7 +332,15 @@ export const ReportsPage: React.FC = () => {
           {periodFilter === 'month' && <><div className="w-36"><CustomSelect options={monthNames.map((label, index) => ({ value: String(index + 1), label }))} value={String(selectedMonth)} onChange={(value) => setSelectedMonth(Number(value))} /></div><div className="w-28"><CustomSelect options={[2024, 2025, 2026, 2027, 2028].map((year) => ({ value: String(year), label: String(year) }))} value={String(selectedYear)} onChange={(value) => setSelectedYear(Number(value))} /></div></>}
           {periodFilter === 'year' && <div className="w-36"><CustomSelect options={[2024, 2025, 2026, 2027, 2028].map((year) => ({ value: String(year), label: `Tahun ${year}` }))} value={String(selectedYear)} onChange={(value) => setSelectedYear(Number(value))} /></div>}
           {periodFilter === 'all' && <span className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold">Semua transaksi penjualan</span>}
+          <div className="w-full sm:w-48">
+            <CustomSelect
+              options={[{ value: 'all', label: 'Semua Sales' }, ...(salesList || []).map((sales) => ({ value: String(sales.id), label: sales.name }))]}
+              value={selectedSalesId}
+              onChange={setSelectedSalesId}
+            />
+          </div>
           <span className="text-[11px] text-slate-400 font-semibold">Menampilkan: <b className="text-slate-700">{reportPeriodLabel}</b></span>
+          <span className="text-[11px] text-slate-400 font-semibold">• <b className="text-slate-700">{selectedSalesId === 'all' ? 'Semua Sales' : (salesList || []).find((sales) => String(sales.id) === selectedSalesId)?.name || 'Sales'}</b></span>
         </div>
       </section>
 
@@ -306,6 +363,20 @@ export const ReportsPage: React.FC = () => {
           </div>
         </div>
 
+        <div className="bg-emerald-900/70 border border-emerald-300/30 rounded-2xl p-3.5 relative z-10 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-emerald-400/20 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="w-5 h-5 text-emerald-200" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-extrabold text-emerald-200 tracking-wider block">ESTIMASI LABA BERSIH</span>
+              <span className="text-xl sm:text-2xl font-black text-white block mt-0.5 truncate">Rp {estimatedNetProfit.toLocaleString('id-ID')}</span>
+              <span className="text-[10px] text-emerald-200/80 block">Omzet + selisih ongkir − komisi sales</span>
+            </div>
+          </div>
+          <ArrowUpRight className="w-5 h-5 text-emerald-200 flex-shrink-0" />
+        </div>
+
         {/* Sub-Metrics 2x2 Grid */}
         <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs relative z-10">
           {/* Total Pesanan */}
@@ -316,6 +387,17 @@ export const ReportsPage: React.FC = () => {
             <div className="min-w-0">
               <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Total Pesanan</span>
               <span className="text-xs font-bold text-white block mt-0.5 truncate">{totalOrdersCount} Pesanan</span>
+            </div>
+          </div>
+
+          {/* Komisi Sales */}
+          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
+            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
+              <Percent className="w-3.5 h-3.5 text-emerald-200" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Komisi Sales</span>
+              <span className="text-xs font-bold text-white block mt-0.5 truncate">Rp {totalSalesCommission.toLocaleString('id-ID')}</span>
             </div>
           </div>
 
@@ -369,6 +451,46 @@ export const ReportsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Sales performance uses omzet sales / total omzet for the active period. */}
+      <section className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-2xs">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2.5">
+            <span className="w-9 h-9 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center">
+              <UserRound className="w-4 h-4" />
+            </span>
+            <div>
+              <h2 className="text-sm font-bold text-slate-900">Performa Sales</h2>
+              <p className="text-[10px] text-slate-400 mt-0.5">Persentase = omzet sales ÷ total omzet × 100%</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">{salesPerformance.length} Sales</span>
+        </div>
+        {salesPerformance.length === 0 ? (
+          <p className="py-5 text-center text-xs text-slate-400">Belum ada data penjualan sales pada periode ini.</p>
+        ) : (
+          <div className="space-y-3">
+            {salesPerformance.map((sales, index) => (
+              <div key={String(sales.id)} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5">
+                <span className="w-7 h-7 rounded-full bg-emerald-50 text-[#04593f] flex items-center justify-center text-xs font-black">{index + 1}</span>
+                <div className="min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <span className="block text-xs font-bold text-slate-900 truncate">{sales.name}</span>
+                      <span className="block text-[10px] text-slate-400">{sales.orderCount} pesanan</span>
+                    </div>
+                    <span className="text-xs font-extrabold text-slate-900 whitespace-nowrap">Rp {sales.omzet.toLocaleString('id-ID')}</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1.5">
+                    <div className="h-full bg-[#04593f] rounded-full" style={{ width: `${Math.min(100, Math.max(0, sales.percentage))}%` }} />
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-[#04593f] w-12 text-right">{sales.percentage.toFixed(1)}%</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* Financial Breakdown Section (Bank Breakdown & Shipping) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

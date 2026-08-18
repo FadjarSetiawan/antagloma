@@ -98,6 +98,7 @@ export interface Order {
   shipped_at?: string;
   completed_at?: string;
   sales_informed_at?: string;
+  sales_commission?: number;
   packages?: OrderPackage[];
 }
 
