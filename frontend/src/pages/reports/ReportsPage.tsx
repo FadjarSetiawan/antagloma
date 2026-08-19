@@ -167,21 +167,25 @@ export const ReportsPage: React.FC = () => {
   );
 
   const salesPerformance = useMemo(() => {
-    const rows = new Map<string, { id: number | string; name: string; orderCount: number; omzet: number; commission: number }>();
+    const rows = new Map<string, { id: number | string; name: string; orderCount: number; omzet: number; commission: number; returnCount: number; returnAmount: number }>();
     (salesList || []).forEach((sales) => rows.set(String(sales.id), {
       id: sales.id,
       name: sales.name,
       orderCount: 0,
       omzet: 0,
       commission: 0,
+      returnCount: 0,
+      returnAmount: 0,
     }));
     periodOrders.forEach((order) => {
       const id = order.creator?.id ?? order.created_by;
       const key = String(id);
-      const current = rows.get(key) || { id, name: order.creator?.name || 'Sales Staff', orderCount: 0, omzet: 0, commission: 0 };
+      const current = rows.get(key) || { id, name: order.creator?.name || 'Sales Staff', orderCount: 0, omzet: 0, commission: 0, returnCount: 0, returnAmount: 0 };
       current.orderCount += 1;
       current.omzet += calculateOrderItemsTotal(order);
       current.commission += calculateOrderCommission(order);
+      current.returnCount += Number(order.returned_package_count) || 0;
+      current.returnAmount += Number(order.return_total) || 0;
       rows.set(key, current);
     });
     return [...rows.values()]
@@ -482,6 +486,7 @@ export const ReportsPage: React.FC = () => {
                     <div className="min-w-0">
                       <span className="block text-xs font-bold text-slate-900 truncate">{sales.name}</span>
                       <span className="block text-[10px] text-slate-400">{sales.orderCount} pesanan</span>
+                      <span className={`block text-[10px] ${sales.returnCount > 0 ? 'text-rose-600' : 'text-slate-400'}`}>Retur: {sales.returnCount > 0 ? `${sales.returnCount} paket · Rp ${sales.returnAmount.toLocaleString('id-ID')}` : 'Tidak ada'}</span>
                     </div>
                     <span className="text-xs font-extrabold text-slate-900 whitespace-nowrap">Rp {sales.omzet.toLocaleString('id-ID')}</span>
                   </div>
