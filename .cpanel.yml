@@ -1,13 +1,14 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home2/kaizorat/florist.kaizoratech.com
-    - /bin/mkdir -p $DEPLOYPATH
-    - /bin/cp -R backend/* $DEPLOYPATH/
-    - /bin/mkdir -p $DEPLOYPATH/public
-    - /bin/cp -R frontend/dist/* $DEPLOYPATH/public/
-    # Shell glob (*) does not include dot-directories. App Links verification depends on this exact file.
-    - /bin/mkdir -p $DEPLOYPATH/public/.well-known
-    - /bin/cp -R frontend/dist/.well-known/* $DEPLOYPATH/public/.well-known/
-    - /bin/chmod -R 775 $DEPLOYPATH/storage
-    - /bin/chmod -R 775 $DEPLOYPATH/bootstrap/cache
+    # Client production account. Keep Laravel outside the public frontend root.
+    - export FRONTEND_PATH=/home/antaglom/public_html
+    - export BACKEND_PATH=/home/antaglom/api.antaglomaflorist.id
+    - /bin/mkdir -p $FRONTEND_PATH
+    - /bin/mkdir -p $BACKEND_PATH
+    # Copy the complete dist tree, including .well-known for Android App Links.
+    - /bin/cp -R frontend/dist/. $FRONTEND_PATH/
+    # The API subdomain document root must be $BACKEND_PATH/public.
+    - /bin/cp -R backend/. $BACKEND_PATH/
+    - /bin/chmod -R 775 $BACKEND_PATH/storage
+    - /bin/chmod -R 775 $BACKEND_PATH/bootstrap/cache
