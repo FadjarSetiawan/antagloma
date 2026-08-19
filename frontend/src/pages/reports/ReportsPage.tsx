@@ -27,6 +27,7 @@ import {
   UserRound,
   Percent,
   X,
+  RotateCcw,
 } from 'lucide-react';
 import { RpIcon } from '../../components/shared/RpIcon';
 
@@ -163,6 +164,10 @@ export const ReportsPage: React.FC = () => {
   // Selisih Ongkir = ongkir dibayar pembeli - ongkir ekspedisi
   const totalShippingDifference = totalShippingCost - totalExpeditionShipping;
   const totalReturnAmount = orders.reduce((sum, order) => sum + calculateOrderReturnTotal(order), 0);
+  const totalReturnedPackages = orders.reduce(
+    (sum, order) => sum + (Number(order.returned_package_count) || 0),
+    0
+  );
   const estimatedNetProfit = totalPlantOmzet + totalShippingDifference - totalSalesCommission;
 
   const totalOrdersCount = orders.filter((o) => o.status !== 'RETURNED').length;
@@ -388,7 +393,7 @@ export const ReportsPage: React.FC = () => {
             <div className="min-w-0">
               <span className="text-[10px] uppercase font-extrabold text-emerald-200 tracking-wider block">ESTIMASI LABA BERSIH</span>
               <span className="text-xl sm:text-2xl font-black text-white block mt-0.5 truncate">Rp {estimatedNetProfit.toLocaleString('id-ID')}</span>
-              <span className="text-[10px] text-emerald-200/80 block">Omzet + selisih ongkir − komisi sales</span>
+              <span className="text-[10px] text-emerald-200/80 block">Omzet setelah retur + selisih ongkir − komisi sales</span>
             </div>
           </div>
           <ArrowUpRight className="w-5 h-5 text-emerald-200 flex-shrink-0" />
@@ -448,6 +453,21 @@ export const ReportsPage: React.FC = () => {
             <div className="min-w-0">
               <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Ongkir Pembeli</span>
               <span className="text-xs font-bold text-white block mt-0.5 truncate">Rp {totalShippingCost.toLocaleString('id-ID')}</span>
+            </div>
+          </div>
+          {/* Retur */}
+          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
+            <div className="w-7 h-7 rounded-lg bg-rose-400/20 flex items-center justify-center flex-shrink-0">
+              <RotateCcw className="w-3.5 h-3.5 text-rose-200" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Retur</span>
+              <div className="flex items-baseline gap-1.5 min-w-0">
+                <span className="text-xs font-bold text-white block mt-0.5 truncate">{totalReturnedPackages} Paket</span>
+                <span className="text-[10px] font-bold text-rose-200 truncate">
+                  Rp {totalReturnAmount.toLocaleString('id-ID')}
+                </span>
+              </div>
             </div>
           </div>
           {/* Selisih Ongkir — full width */}
