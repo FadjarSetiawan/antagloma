@@ -14,7 +14,7 @@ class OrderResource extends JsonResource
         $role = $request->user()?->role instanceof \BackedEnum ? $request->user()->role->value : (string) ($request->user()?->role ?? '');
         $isSales = $role === 'sales';
 
-        $grossPlantTotal = $this->items ? $this->items->sum(fn ($item) => (float) $item->price * (int) $item->quantity) : 0;
+        $grossPlantTotal = $this->items ? $this->items->sum(fn ($item) => (float) $item->price) : 0;
         $returnedAmount = $this->packages ? $this->packages->sum(fn ($package) => (float) ($package->return_amount ?? 0)) : 0;
         $plantTotal = max(0, $grossPlantTotal - $returnedAmount);
 

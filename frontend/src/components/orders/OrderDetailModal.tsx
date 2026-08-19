@@ -52,11 +52,8 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     ? new Date(order.order_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' })
     : '-';
 
-  // `price` is the unit selling price. Keep detail totals consistent with
-  // reports and commission history by applying the item quantity, then
-  // subtracting any returned package amount.
   const grossPlantTotalPrice = order.items
-    ? order.items.reduce((sum, item) => sum + (Number(item.price) || 0) * Math.max(1, Number(item.quantity) || 1), 0)
+    ? order.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0)
     : 0;
   const plantTotalPrice = Math.max(0, grossPlantTotalPrice - (Number(order.return_total) || 0));
   const totalItemQuantity = order.items

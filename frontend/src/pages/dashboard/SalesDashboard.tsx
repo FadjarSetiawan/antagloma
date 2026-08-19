@@ -100,7 +100,7 @@ export const SalesDashboard: React.FC = () => {
       (order.items || []).forEach(item => {
         const grade = item.grade?.trim() || 'Tanpa Grade';
         const qty = Number(item.quantity) || 1;
-        const price = (Number(item.price) || 0) * qty;
+        const price = Number(item.price) || 0;
         const cur = acc[grade] || { grade, quantity: 0, omzet: 0 };
         cur.quantity += qty;
         cur.omzet += price;
@@ -116,7 +116,7 @@ export const SalesDashboard: React.FC = () => {
       if (!code) return;
       const cur = acc[code] || { code, name: item.tree_name || item.product_name || code, quantity: 0, omzet: 0 };
       cur.quantity += Number(item.quantity) || 1;
-      cur.omzet += (Number(item.price) || 0) * (Number(item.quantity) || 1);
+      cur.omzet += Number(item.price) || 0;
       acc[code] = cur;
     });
     return acc;

@@ -28,7 +28,7 @@ class CommissionController extends Controller
 
     private static function grossPlantTotal($order): float
     {
-        return collect($order->items ?? [])->sum(fn ($item) => (float) $item->price * max(1, (int) ($item->quantity ?? 1)));
+        return collect($order->items ?? [])->sum(fn ($item) => (float) $item->price);
     }
 
     private static function returnTotal($order): float

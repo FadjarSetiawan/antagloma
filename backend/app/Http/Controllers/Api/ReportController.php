@@ -21,7 +21,7 @@ class ReportController extends Controller
 
     private static function calculateOrderPlantNet(Order $order): float
     {
-        $gross = collect($order->items ?? [])->sum(fn ($item) => (float) ($item->price ?? 0) * max(1, (int) ($item->quantity ?? 1)));
+        $gross = collect($order->items ?? [])->sum(fn ($item) => (float) ($item->price ?? 0));
         $returnAmount = (float) ($order->return_total ?? collect($order->packages ?? [])->sum(fn ($p) => (float) ($p->return_amount ?? 0)));
         return max(0, $gross - $returnAmount);
     }

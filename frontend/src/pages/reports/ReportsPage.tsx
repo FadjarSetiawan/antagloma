@@ -110,10 +110,10 @@ export const ReportsPage: React.FC = () => {
   });
 
   // Financial Calculations
-  // Total harga tanaman: price per item × quantity (tidak termasuk ongkir)
+  // Total harga tanaman: total item price (tidak termasuk ongkir)
   const calculateOrderItemsTotal = (order: Order) => {
     const gross = (order.items || []).reduce(
-      (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+      (sum, item) => sum + (Number(item.price) || 0),
       0
     );
     return Math.max(0, gross - (Number(order.return_total) || 0));
@@ -127,7 +127,6 @@ export const ReportsPage: React.FC = () => {
     return itemsTotal + shipping;
   };
 
-  // Total Omset Penjualan Tanaman = hanya harga tanaman (tidak termasuk ongkir pembeli)
   const totalPeriodPlantOmzet = periodOrders.reduce((sum, order) => sum + calculateOrderItemsTotal(order), 0);
   const totalPlantOmzet = orders.reduce((sum, order) => sum + calculateOrderItemsTotal(order), 0);
 
@@ -141,9 +140,17 @@ export const ReportsPage: React.FC = () => {
   };
   const totalSalesCommission = orders.reduce((sum, order) => sum + calculateOrderCommission(order), 0);
 
-  // Total Paket Dikirim = jumlah paket yang sudah ada foto paketnya (photo_uploaded === true)
   const totalPackagesSent = orders.reduce(
-    (sum, order) => sum + (order.packages || []).filter((pkg) => pkg.photo_uploaded).length,
+    (sum, order) => sum + (order.packages ? order.packages.filter((p) => p.photo_uploaded).length : 0),
+    0
+  );
+
+  const totalPlantsSold = orders.reduce(
+    (sum, order) => {
+      const grossQty = (order.items || []).reduce((itemSum, item) => itemSum + (Number(item.quantity) || 1), 0);
+      const returnedItemCount = Number(order.returned_item_count) || 0;
+      return sum + Math.max(0, grossQty - returnedItemCount);
+    },
     0
   );
 
@@ -153,7 +160,7 @@ export const ReportsPage: React.FC = () => {
     0
   );
 
-  // Ongkir Ekspedisi (yang dibayarkan ke jasa kirim saat input resi)
+  // Ongkir Ekspedisi
   const totalExpeditionShipping = orders.reduce(
     (sum, order) => sum + (order.packages?.length
       ? order.packages.reduce((packageSum, pkg) => packageSum + (Number((pkg as any).shipping_cost) || 0), 0)
@@ -161,47 +168,82 @@ export const ReportsPage: React.FC = () => {
     0
   );
 
-  // Selisih Ongkir = ongkir dibayar pembeli - ongkir ekspedisi
   const totalShippingDifference = totalShippingCost - totalExpeditionShipping;
   const totalReturnAmount = orders.reduce((sum, order) => sum + calculateOrderReturnTotal(order), 0);
   const totalReturnedPackages = orders.reduce(
     (sum, order) => sum + (Number(order.returned_package_count) || 0),
     0
   );
+  const totalPlantsCount = totalPlantsSold;
   const estimatedNetProfit = totalPlantOmzet + totalShippingDifference - totalSalesCommission;
 
   const totalOrdersCount = orders.filter((o) => o.status !== 'RETURNED').length;
   const completedOrdersCount = orders.filter((o) => o.status === 'COMPLETED' || o.status === 'PACKING_COMPLETED' || o.status === 'RETURNED_PARTIAL').length;
   const completionRate = totalOrdersCount > 0 ? Math.round((completedOrdersCount / totalOrdersCount) * 100) : 0;
 
-  // Total Tanaman Terjual = jumlah qty semua item
-  const totalPlantsCount = orders.reduce(
-    (sum, order) => sum + (order.items || []).reduce((iSum, it) => iSum + (Number(it.quantity) || 1), 0) - (Number(order.returned_item_count) || 0),
-    0
-  );
-
   const salesPerformance = useMemo(() => {
-    const rows = new Map<string, { id: number | string; name: string; orderCount: number; omzet: number; commission: number; returnCount: number; returnAmount: number }>();
-    (salesList || []).forEach((sales) => rows.set(String(sales.id), {
-      id: sales.id,
-      name: sales.name,
-      orderCount: 0,
-      omzet: 0,
-      commission: 0,
-      returnCount: 0,
-      returnAmount: 0,
-    }));
-    periodOrders.forEach((order) => {
-      const id = order.creator?.id ?? order.created_by;
-      const key = String(id);
-      const current = rows.get(key) || { id, name: order.creator?.name || 'Sales Staff', orderCount: 0, omzet: 0, commission: 0, returnCount: 0, returnAmount: 0 };
-      current.orderCount += 1;
-      current.omzet += calculateOrderItemsTotal(order);
-      current.commission += calculateOrderCommission(order);
-      current.returnCount += Number(order.returned_package_count) || 0;
-      current.returnAmount += Number(order.return_total) || 0;
-      rows.set(key, current);
+    const rows = new Map<
+      string,
+      {
+        id: number | string;
+        name: string;
+        orderCount: number;
+        omzet: number;
+        returnCount: number;
+        returnAmount: number;
+        commission: number;
+      }
+    >();
+
+    salesList.forEach((sales) => {
+      rows.set(String(sales.id), {
+        id: sales.id,
+        name: sales.name,
+        orderCount: 0,
+        omzet: 0,
+        returnCount: 0,
+        returnAmount: 0,
+        commission: 0,
+      });
     });
+
+    periodOrders.forEach((order) => {
+      const creatorId = order.creator ? String(order.creator.id) : '';
+      const creatorName = order.creator?.name || 'Sales Staff';
+      const orderOmzet = calculateOrderItemsTotal(order);
+      const orderReturns = Number(order.returned_package_count) || 0;
+      const orderReturnTotal = calculateOrderReturnTotal(order);
+      const orderComm = calculateOrderCommission(order);
+
+      const existing =
+        (creatorId && rows.get(creatorId)) ||
+        rows.get(creatorName) ||
+        ({
+          id: creatorId || creatorName,
+          name: creatorName,
+          orderCount: 0,
+          omzet: 0,
+          returnCount: 0,
+          returnAmount: 0,
+          commission: 0,
+        } as {
+          id: number | string;
+          name: string;
+          orderCount: number;
+          omzet: number;
+          returnCount: number;
+          returnAmount: number;
+          commission: number;
+        });
+
+      existing.orderCount += 1;
+      existing.omzet += orderOmzet;
+      existing.returnCount += orderReturns;
+      existing.returnAmount += orderReturnTotal;
+      existing.commission += orderComm;
+      rows.set(String(existing.id), existing);
+    });
+
     return [...rows.values()]
       .filter((row) => selectedSalesId === 'all' || String(row.id) === selectedSalesId)
       .sort((a, b) => b.omzet - a.omzet)
@@ -213,7 +255,7 @@ export const ReportsPage: React.FC = () => {
       (order.items || []).forEach((item) => {
         const grade = item.grade?.trim() || 'Tanpa Grade';
         const quantity = Number(item.quantity) || 0;
-        const omzet = (Number(item.price) || 0) * quantity;
+        const omzet = Number(item.price) || 0;
         const current = summary[grade] || { grade, quantity: 0, omzet: 0 };
         current.quantity += quantity;
         current.omzet += omzet;
@@ -230,7 +272,7 @@ export const ReportsPage: React.FC = () => {
       const quantity = Number(item.quantity) || 0;
       const current = summary[code] || { code, name: item.tree_name || item.product_name, quantity: 0, omzet: 0 };
       current.quantity += quantity;
-      current.omzet += (Number(item.price) || 0) * quantity;
+      current.omzet += Number(item.price) || 0;
       summary[code] = current;
     });
     return summary;
