@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
-import { Lock, Mail, Sprout, ShieldCheck, User as UserIcon, UserCheck, Briefcase } from 'lucide-react';
+import { Lock, Mail, Sprout, User as UserIcon, UserCheck, Briefcase } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
@@ -75,12 +75,6 @@ export const LoginPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  const demoAccounts = [
-    { label: 'Owner Role', email: 'owner@antagloma.com', color: 'bg-slate-900 text-white border-slate-900 hover:bg-slate-800' },
-    { label: 'Admin Role', email: 'admin@antagloma.com', color: 'bg-[#04593f] text-white border-[#04593f] hover:bg-emerald-900' },
-    { label: 'Sales Role', email: 'sales@antagloma.com', color: 'bg-emerald-800 text-white border-emerald-800 hover:bg-emerald-900' },
-  ];
 
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-3 sm:p-4 font-sans text-slate-900">
@@ -280,34 +274,6 @@ export const LoginPage: React.FC = () => {
           </form>
         )}
 
-        {/* Demo Quick Switcher */}
-        <div className="pt-4 border-t border-slate-200/80">
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-bold mb-2.5">
-            <ShieldCheck className="w-4 h-4 text-[#04593f]" />
-            <span>Klik Akun Demo untuk Uji Coba Role:</span>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {demoAccounts.map((acc) => (
-              <button
-                key={acc.email}
-                type="button"
-                onClick={() => {
-                  setActiveTab('login');
-                  setLoginEmail(acc.email);
-                  setLoginPassword('password123');
-                  authService.login({ email: acc.email, password: 'password123' }).then((res) => {
-                    login(res.data.token, res.data.user);
-                    navigate('/dashboard');
-                  });
-                }}
-                className={`p-2 rounded-xl text-[10px] font-extrabold transition-all text-left flex flex-col justify-center shadow-2xs border ${acc.color} cursor-pointer`}
-              >
-                <span>{acc.label}</span>
-                <span className="text-[9px] opacity-80 font-normal truncate">{acc.email}</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
