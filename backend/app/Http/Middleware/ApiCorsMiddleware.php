@@ -8,7 +8,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ApiCorsMiddleware
 {
-    private const ALLOWED_ORIGINS = ['https://floristyan.web.id'];
+    private const ALLOWED_ORIGINS = [
+        'https://antaglomaflorist.id',
+        'https://www.antaglomaflorist.id',
+        // Keep the development domain available during the migration window.
+        'https://floristyan.web.id',
+    ];
 
     public function handle(Request $request, Closure $next): Response
     {

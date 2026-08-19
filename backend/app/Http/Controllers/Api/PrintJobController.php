@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 class PrintJobController extends Controller
 {
     /** Android App Link host. API hosting intentionally uses a different domain. */
-    private const APP_LINK_BASE_URL = 'https://floristyan.web.id';
+    private const APP_LINK_BASE_URL = 'https://antaglomaflorist.id';
 
     public function create(Request $request): JsonResponse
     {
