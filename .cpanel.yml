@@ -1,14 +1,9 @@
 ---
 deployment:
   tasks:
-    # Client production account. Keep Laravel outside the public frontend root.
+    # Laravel stays in the checked-out repository; point the API subdomain
+    # document root to /home/antaglom/repositories/antagloma/backend/public.
+    # Deployment only copies the compiled frontend, keeping cPanel fast.
     - export FRONTEND_PATH=/home/antaglom/public_html
-    - export BACKEND_PATH=/home/antaglom/api.antaglomaflorist.id
     - /bin/mkdir -p $FRONTEND_PATH
-    - /bin/mkdir -p $BACKEND_PATH
-    # Copy the complete dist tree, including .well-known for Android App Links.
     - /bin/cp -R frontend/dist/. $FRONTEND_PATH/
-    # The API subdomain document root must be $BACKEND_PATH/public.
-    - /bin/cp -R backend/. $BACKEND_PATH/
-    - /bin/chmod -R 775 $BACKEND_PATH/storage
-    - /bin/chmod -R 775 $BACKEND_PATH/bootstrap/cache
