@@ -168,6 +168,8 @@ export const OrderListPage: React.FC = () => {
       { value: 'PACKING_COMPLETED', label: 'Packing Selesai' },
       { value: 'COMPLETED', label: 'Selesai' },
       { value: 'CANCELLED', label: 'Dibatalkan' },
+      { value: 'RETURNED_PARTIAL', label: 'Retur Sebagian' },
+      { value: 'RETURNED', label: 'Retur Selesai' },
     ];
 
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -301,7 +303,7 @@ export const OrderListPage: React.FC = () => {
             const allPackageTrackingCompleted = hasPackages && order.packages!.every((pkg) => Boolean(pkg.tracking_number?.trim()));
             const orderTrackingCompleted = !hasPackages && Boolean(order.tracking_number?.trim());
             const hasCompletedTracking = allPackageTrackingCompleted || orderTrackingCompleted;
-            const canViewTracking = (order.status === 'PACKING_COMPLETED' || order.status === 'COMPLETED') && hasCompletedTracking;
+            const canViewTracking = (order.status === 'PACKING_COMPLETED' || order.status === 'COMPLETED' || order.status === 'RETURNED_PARTIAL' || order.status === 'RETURNED') && hasCompletedTracking;
             const canInputTracking = order.status === 'PACKING_COMPLETED' && !hasCompletedTracking;
 
             // Admin/owner may make corrections only until the package is waiting
@@ -311,6 +313,8 @@ export const OrderListPage: React.FC = () => {
               (role === 'admin' || role === 'owner') &&
               ['WAITING_PROCESS', 'WAITING_PACKING'].includes(order.status);
             const canDeleteOrder = role === 'owner';
+            const isReturnedOrder = order.status === 'RETURNED_PARTIAL' || order.status === 'RETURNED';
+            const returnedPackages = (order.packages || []).filter((pkg) => pkg.returned || pkg.returned_at);
 
             if (order.status === 'CANCELLED') {
               return (
@@ -444,8 +448,16 @@ export const OrderListPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Body Details: Customer Info & Items Count */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-normal text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
+                {/* Body Details: returned orders show package-level outcome for Sales */}
+                {isReturnedOrder && role === 'sales' ? (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-normal text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
+                      <div><span className="text-[10px] uppercase font-bold text-slate-400 block">Pemesan</span><span className="font-bold text-slate-900 text-xs block">{order.customer_name}</span><span className="text-slate-500 text-[11px] font-medium flex items-center gap-1 mt-0.5"><Phone className="w-3 h-3 text-slate-400" />{order.phone}</span></div>
+                      <div><span className="text-[10px] uppercase font-bold text-slate-400 block">Pengiriman & Item</span>{(order.packages || []).map(pkg => <span key={pkg.id} className={`block font-bold ${pkg.returned ? 'text-rose-600' : 'text-emerald-700'}`}><Truck className="mr-1 inline h-3.5 w-3.5" />Paket {pkg.letter} <span className="font-normal">{pkg.returned ? '↩ Retur' : '✓ Selesai'}</span></span>)}<span className="text-slate-500 font-normal text-[11px] block mt-0.5">{itemCount} tanaman • Rp {totalOrderAmount.toLocaleString('id-ID')}</span></div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[10px]"><div><span className="block uppercase font-bold text-amber-800">Ringkasan Retur</span><b className="mt-1 block text-sm text-amber-700">{returnedPackages.length} dari {(order.packages || []).length} paket</b></div><div className="border-l border-amber-200 pl-2"><span className="block uppercase font-bold text-amber-800">Nominal Retur</span><b className="mt-1 block text-sm text-amber-700">Rp {(order.return_total || 0).toLocaleString('id-ID')}</b></div><div className="border-l border-amber-200 pl-2"><span className="block uppercase font-bold text-amber-800">Komisi Dikurangi</span><b className="mt-1 block text-sm text-rose-600">- Rp {Math.round((order.return_total || 0) * (Number(order.creator?.commission_rate) || 5) / 100).toLocaleString('id-ID')}</b></div></div>
+                  </>
+                ) : <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-normal text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Pemesan</span>
                     <span className="font-bold text-slate-900 text-xs block">{order.customer_name}</span>
@@ -470,7 +482,7 @@ export const OrderListPage: React.FC = () => {
                       {itemCount} tanaman • Rp {totalOrderAmount.toLocaleString('id-ID')}
                     </span>
                   </div>
-                </div>
+                </div>}
 
                 {/* Bottom Action Bar inside Order Card */}
                 <div className="flex items-center justify-between pt-1 text-xs">
