@@ -8,6 +8,7 @@ import { OrderEditModal } from '../../components/orders/OrderEditModal';
 import { PackingNotaModal } from '../../components/orders/PackingNotaModal';
 import { CompleteShipmentModal } from '../../components/orders/CompleteShipmentModal';
 import { CompletePackageShipmentModal } from '../../components/orders/CompletePackageShipmentModal';
+import { ReturnOrderModal } from '../../components/orders/ReturnOrderModal';
 import { CustomSelect } from '../../components/shared/CustomSelect';
 import { CustomDatePickerModal } from '../../components/shared/CustomDatePickerModal';
 import {
@@ -28,6 +29,7 @@ import {
   AlertTriangle,
   XCircle,
   Info,
+  RotateCcw,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -61,6 +63,7 @@ export const OrderListPage: React.FC = () => {
   const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
   const [verifyingOrder, setVerifyingOrder] = useState<Order | null>(null);
   const [isVerifyChecked, setIsVerifyChecked] = useState(false);
+  const [returningOrder, setReturningOrder] = useState<Order | null>(null);
   const role = user?.role;
 
   const { data, isLoading } = useQuery({
@@ -155,6 +158,8 @@ export const OrderListPage: React.FC = () => {
       { value: 'PACKING_COMPLETED', label: 'Packing Selesai' },
       { value: 'COMPLETED', label: 'Selesai' },
       { value: 'CANCELLED', label: 'Dibatalkan' },
+      { value: 'RETURNED_PARTIAL', label: 'Retur Sebagian' },
+      { value: 'RETURNED', label: 'Retur Selesai' },
     ]
     : [
       { value: '', label: 'Semua Status' },
@@ -509,6 +514,12 @@ export const OrderListPage: React.FC = () => {
                       </button>
                     )}
 
+                    {(role === 'admin' || role === 'owner') && order.status === 'COMPLETED' && (
+                      <button type="button" onClick={() => setReturningOrder(order)} className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer">
+                        <RotateCcw className="w-3.5 h-3.5" /> Retur
+                      </button>
+                    )}
+
                     {(role === 'admin' || role === 'owner') && canInputTracking && order.packages?.length && (
                       <button
                         onClick={() => setShipmentPackage(order.packages!.find((pkg) => !pkg.tracking_number?.trim()) || order.packages![0])}
@@ -647,6 +658,11 @@ export const OrderListPage: React.FC = () => {
           setShipmentPackage(null);
         }}
       />
+      <ReturnOrderModal order={returningOrder} onClose={() => setReturningOrder(null)} onConfirm={async (payload) => {
+        await orderService.returnOrder(returningOrder!.id, payload);
+        queryClient.invalidateQueries({ queryKey: ['orders-list'] });
+        setReturningOrder(null);
+      }} />
 
       {trackingOrder && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 p-4" onClick={() => setTrackingOrder(null)}>

@@ -102,11 +102,14 @@ export const ReportsPage: React.FC = () => {
   // Financial Calculations
   // Total harga tanaman: price per item × quantity (tidak termasuk ongkir)
   const calculateOrderItemsTotal = (order: Order) => {
-    return (order.items || []).reduce(
+    const gross = (order.items || []).reduce(
       (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
       0
     );
+    return Math.max(0, gross - (Number(order.return_total) || 0));
   };
+
+  const calculateOrderReturnTotal = (order: Order) => Number(order.return_total) || 0;
 
   const calculateOrderGrandTotal = (order: Order) => {
     const itemsTotal = calculateOrderItemsTotal(order);
@@ -150,15 +153,16 @@ export const ReportsPage: React.FC = () => {
 
   // Selisih Ongkir = ongkir dibayar pembeli - ongkir ekspedisi
   const totalShippingDifference = totalShippingCost - totalExpeditionShipping;
+  const totalReturnAmount = orders.reduce((sum, order) => sum + calculateOrderReturnTotal(order), 0);
   const estimatedNetProfit = totalPlantOmzet + totalShippingDifference - totalSalesCommission;
 
-  const totalOrdersCount = orders.length;
-  const completedOrdersCount = orders.filter((o) => o.status === 'COMPLETED' || o.status === 'PACKING_COMPLETED').length;
+  const totalOrdersCount = orders.filter((o) => o.status !== 'RETURNED').length;
+  const completedOrdersCount = orders.filter((o) => o.status === 'COMPLETED' || o.status === 'PACKING_COMPLETED' || o.status === 'RETURNED_PARTIAL').length;
   const completionRate = totalOrdersCount > 0 ? Math.round((completedOrdersCount / totalOrdersCount) * 100) : 0;
 
   // Total Tanaman Terjual = jumlah qty semua item
   const totalPlantsCount = orders.reduce(
-    (sum, order) => sum + (order.items || []).reduce((iSum, it) => iSum + (Number(it.quantity) || 1), 0),
+    (sum, order) => sum + (order.items || []).reduce((iSum, it) => iSum + (Number(it.quantity) || 1), 0) - (Number(order.returned_item_count) || 0),
     0
   );
 

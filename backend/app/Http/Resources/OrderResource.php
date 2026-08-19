@@ -14,11 +14,11 @@ class OrderResource extends JsonResource
         $role = $request->user()?->role instanceof \BackedEnum ? $request->user()->role->value : (string) ($request->user()?->role ?? '');
         $isSales = $role === 'sales';
 
-        $plantTotal = $this->items ? $this->items->sum(function ($item) {
-            return (float) $item->price;
-        }) : 0;
+        $grossPlantTotal = $this->items ? $this->items->sum(fn ($item) => (float) $item->price * (int) $item->quantity) : 0;
+        $returnedAmount = $this->packages ? $this->packages->sum(fn ($package) => (float) ($package->return_amount ?? 0)) : 0;
+        $plantTotal = max(0, $grossPlantTotal - $returnedAmount);
 
-        $isVerified = !in_array($statusStr, ['WAITING_PROCESS', 'CANCELLED']);
+        $isVerified = !in_array($statusStr, ['WAITING_PROCESS', 'CANCELLED', 'RETURNED']);
         $commissionRate = (float) ($this->creator?->commission_rate ?? 5);
         $salesCommission = $isVerified ? round($plantTotal * $commissionRate / 100) : 0;
 
@@ -43,7 +43,16 @@ class OrderResource extends JsonResource
             'bank_name'           => $this->bank_name,
             'buyer_shipping_cost' => $this->buyer_shipping_cost ?? 0,
             'plant_total'         => $plantTotal,
+            'gross_plant_total'   => $grossPlantTotal,
             'sales_commission'    => $salesCommission,
+            'return_total'        => $returnedAmount,
+            'returned_package_count' => $this->packages ? $this->packages->filter(fn ($package) => filled($package->returned_at))->count() : 0,
+            'returned_item_count' => $this->packages ? $this->packages->whereNotNull('returned_at')->sum(fn ($package) => $package->items->sum('quantity')) : 0,
+            'returns'             => $this->whenLoaded('returns', fn () => $this->returns->map(fn ($return) => [
+                'id' => $return->id, 'reason' => $return->reason, 'item_status' => $return->item_status,
+                'notes' => $return->notes, 'refund_amount' => $return->refund_amount,
+                'package_ids' => $return->package_ids, 'returned_at' => $return->returned_at?->toIso8601String(),
+            ])),
             'is_verified'         => $isVerified,
             'payment_proof_url'   => $this->payment_proof_path ? asset('storage/' . $this->payment_proof_path) : null,
             'payment_status'      => $this->payment_status ?? 'PENDING',
@@ -58,6 +67,7 @@ class OrderResource extends JsonResource
                 ...(!$isSales ? ['weight' => $package->weight] : []),
                 ...(!$isSales ? ['shipping_cost' => $package->shipping_cost] : []),
                 'status' => $package->status, 'configured_at' => $package->configured_at?->toIso8601String(), 'nota_printed' => $package->nota_printed, 'label_printed' => $package->label_printed,
+                'returned' => filled($package->returned_at), 'return_status' => $package->return_status, 'return_amount' => $package->return_amount, 'returned_at' => $package->returned_at?->toIso8601String(),
                 'photo_uploaded' => (bool) $package->photo_uploaded_at, 'tracking_number' => $package->tracking_number,
                 'items' => $package->items->map(fn ($allocation) => ['order_item_id' => $allocation->order_item_id, 'quantity' => $allocation->quantity, 'product_name' => $allocation->item?->product_name]),
                 'packing_images' => PackingImageResource::collection($package->packingImages),

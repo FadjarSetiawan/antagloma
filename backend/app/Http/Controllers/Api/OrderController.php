@@ -7,10 +7,12 @@ use App\Http\Requests\CreateOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Models\OrderReturn;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -22,7 +24,7 @@ class OrderController extends Controller
     {
         Gate::authorize('viewAny', Order::class);
 
-        $query = Order::with(['creator', 'verifier', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item']);
+        $query = Order::with(['creator', 'verifier', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item', 'returns']);
 
         $user = $request->user();
         $role = $user?->role instanceof \BackedEnum ? $user->role->value : (string) ($user?->role ?? '');
@@ -103,7 +105,7 @@ class OrderController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $order = Order::with(['creator', 'verifier', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item'])->findOrFail($id);
+        $order = Order::with(['creator', 'verifier', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item', 'returns'])->findOrFail($id);
         Gate::authorize('view', $order);
 
         return response()->json([
@@ -202,5 +204,51 @@ class OrderController extends Controller
         abort_if($packages->contains(fn ($package) => $package->packingImages->isEmpty()), 422, 'Semua package harus memiliki minimal satu foto packing terlebih dahulu.');
         $order->update(['sales_informed_at' => now()]);
         return response()->json(['success' => true, 'message' => 'Pesanan berhasil ditandai sudah diinformasikan.', 'data' => new OrderResource($order->fresh())]);
+    }
+
+    public function returnOrder(Request $request, int $id): JsonResponse
+    {
+        $order = Order::with(['items', 'packages.items'])->lockForUpdate()->findOrFail($id);
+        Gate::authorize('returnOrder', $order);
+        abort_unless($order->status?->value === 'COMPLETED', 422, 'Hanya pesanan selesai yang dapat diretur.');
+
+        $data = $request->validate([
+            'package_ids' => ['required', 'array', 'min:1'],
+            'package_ids.*' => ['integer'],
+            'reason' => ['required', 'string', 'in:Tanaman rusak / mati saat diterima,Salah kirim (jenis / ukuran tidak sesuai),Pembeli membatalkan pesanan,Paket hilang / tidak diterima,Ekspedisi bermasalah,Pembeli berubah pikiran'],
+            'item_status' => ['required', 'in:RETURNED,NOT_RETURNED'],
+            'notes' => ['nullable', 'string', 'max:250'],
+        ]);
+
+        $result = DB::transaction(function () use ($order, $data, $request) {
+            $packages = $order->packages->whereIn('id', $data['package_ids']);
+            abort_if($packages->count() !== count(array_unique($data['package_ids'])), 422, 'Package retur tidak ditemukan pada pesanan ini.');
+            abort_if($packages->contains(fn ($package) => filled($package->returned_at)), 422, 'Salah satu package sudah pernah diretur.');
+
+            $refund = $packages->sum(function ($package) {
+                return $package->items->sum(fn ($allocation) => (float) ($allocation->item?->price ?? 0) * (int) $allocation->quantity);
+            });
+            abort_if($refund <= 0, 422, 'Nilai retur tidak dapat dihitung dari package yang dipilih.');
+
+            foreach ($packages as $package) {
+                $amount = $package->items->sum(fn ($allocation) => (float) ($allocation->item?->price ?? 0) * (int) $allocation->quantity);
+                $package->update(['return_status' => 'RETURNED', 'returned_at' => now(), 'return_amount' => $amount]);
+            }
+            $return = OrderReturn::create([
+                'order_id' => $order->id,
+                'processed_by' => $request->user()->id,
+                'reason' => $data['reason'],
+                'item_status' => $data['item_status'],
+                'notes' => $data['notes'] ?? null,
+                'refund_amount' => $refund,
+                'package_ids' => $packages->pluck('id')->values()->all(),
+                'returned_at' => now(),
+            ]);
+            $newStatus = $order->packages()->whereNull('returned_at')->exists() ? \App\Enums\OrderStatus::RETURNED_PARTIAL : \App\Enums\OrderStatus::RETURNED;
+            $order->update(['status' => $newStatus]);
+            return $return;
+        });
+
+        return response()->json(['success' => true, 'message' => 'Retur pesanan berhasil diproses.', 'data' => new OrderResource($order->fresh(['creator', 'verifier', 'items', 'packages.items.item', 'packages.packingImages', 'returns']))]);
     }
 }

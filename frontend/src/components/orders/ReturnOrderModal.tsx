@@ -1,0 +1,39 @@
+import React, { useMemo, useState } from 'react';
+import { RotateCcw, X, Package, AlertTriangle } from 'lucide-react';
+import { Order } from '../../types/order';
+
+type Payload = { package_ids: number[]; reason: string; item_status: 'RETURNED' | 'NOT_RETURNED'; notes?: string };
+type Props = { order: Order | null; onClose: () => void; onConfirm: (payload: Payload) => Promise<void> };
+
+const reasons = ['Tanaman rusak / mati saat diterima','Salah kirim (jenis / ukuran tidak sesuai)','Pembeli membatalkan pesanan','Paket hilang / tidak diterima','Ekspedisi bermasalah','Pembeli berubah pikiran'];
+
+export const ReturnOrderModal: React.FC<Props> = ({ order, onClose, onConfirm }) => {
+  const [selected, setSelected] = useState<number[]>([]);
+  const [reason, setReason] = useState('');
+  const [itemStatus, setItemStatus] = useState<'RETURNED' | 'NOT_RETURNED'>('RETURNED');
+  const [notes, setNotes] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const packages = useMemo(() => (order?.packages || []).filter(pkg => !pkg.returned && !pkg.returned_at), [order]);
+  const valueOf = (pkg: NonNullable<Order['packages']>[number]) => (pkg.items || []).reduce((sum, allocation) => {
+    const item = order?.items?.find(i => i.id === allocation.order_item_id);
+    return sum + (Number(item?.price) || 0) * (Number(allocation.quantity) || 0);
+  }, 0);
+  const refund = packages.filter(pkg => selected.includes(pkg.id)).reduce((sum, pkg) => sum + valueOf(pkg), 0);
+  if (!order) return null;
+  const toggle = (id: number) => setSelected(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
+  const submit = async () => { if (!selected.length || !reason) return; setBusy(true); setError(''); try { await onConfirm({ package_ids: selected, reason, item_status: itemStatus, notes: notes || undefined }); } catch (e: any) { setError(e?.response?.data?.message || 'Retur gagal diproses.'); } finally { setBusy(false); } };
+  return <div className="fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950/55 p-3" onClick={onClose}>
+    <div className="max-h-[94vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="sticky top-0 z-10 flex items-start justify-between border-b border-slate-100 bg-white p-5"><div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-600"><RotateCcw /></span><div><h2 className="text-lg font-extrabold text-slate-900">Proses Retur Pesanan</h2><p className="text-sm text-slate-500">Lengkapi informasi retur pesanan berikut.</p></div></div><button onClick={onClose} className="rounded-xl bg-slate-100 p-2 text-slate-500"><X /></button></div>
+      <div className="space-y-5 p-5"><div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="flex justify-between gap-3"><div><p className="font-extrabold text-slate-900">{order.order_number}</p><p className="text-sm text-slate-600">{order.customer_name} · {order.phone}</p><p className="text-sm text-slate-600">{order.items?.reduce((n, i) => n + i.quantity, 0) || 0} tanaman · Rp {(order.plant_total || 0).toLocaleString('id-ID')}</p></div><span className="rounded-lg bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">Selesai</span></div></div>
+        <section><label className="mb-2 block text-sm font-bold text-slate-800">Pilih paket yang diretur <span className="text-rose-600">*</span></label><div className="space-y-2">{packages.map(pkg => { const checked = selected.includes(pkg.id); return <button type="button" key={pkg.id} onClick={() => toggle(pkg.id)} className={`flex w-full items-center justify-between rounded-xl border p-3 text-left transition ${checked ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 bg-white hover:border-emerald-300'}`}><span className="flex items-center gap-3"><span className={`flex h-6 w-6 items-center justify-center rounded-md border ${checked ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-300'}`}>{checked ? '✓' : ''}</span><span><b>Paket {pkg.letter}</b><span className="ml-2 text-sm text-slate-500">({pkg.items?.reduce((n, i) => n + i.quantity, 0) || 0} tanaman)</span></span></span><b className="text-slate-700">Rp {valueOf(pkg).toLocaleString('id-ID')}</b></button>; })}</div>{!packages.length && <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Semua paket pada pesanan ini sudah diretur.</p>}</section>
+        <label className="block text-sm font-bold text-slate-800">Alasan retur <span className="text-rose-600">*</span><select value={reason} onChange={e => setReason(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3 font-normal outline-none focus:border-emerald-600"><option value="">Pilih alasan retur</option>{reasons.map(item => <option key={item}>{item}</option>)}</select></label>
+        <section><p className="mb-2 text-sm font-bold text-slate-800">Status barang <span className="text-rose-600">*</span></p><div className="grid gap-2 sm:grid-cols-2">{[['RETURNED','Barang kembali','Barang akan dikembalikan oleh pembeli'],['NOT_RETURNED','Barang tidak kembali','Barang tidak dikembalikan atau rusak/hilang']].map(([value,title,desc]) => <button type="button" key={value} onClick={() => setItemStatus(value as any)} className={`rounded-xl border p-3 text-left ${itemStatus === value ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200'}`}><b>{itemStatus === value ? '◉' : '○'} {title}</b><span className="mt-1 block text-xs text-slate-500">{desc}</span></button>)}</div></section>
+        <label className="block text-sm font-bold text-slate-800">Catatan admin <span className="font-normal text-slate-400">(opsional)</span><textarea maxLength={250} value={notes} onChange={e => setNotes(e.target.value)} placeholder="Tulis catatan mengenai retur ini..." className="mt-2 min-h-24 w-full resize-y rounded-xl border border-slate-300 p-3 font-normal outline-none focus:border-emerald-600"/><span className="block text-right text-xs font-normal text-slate-400">{notes.length}/250</span></label>
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><div className="flex gap-2"><AlertTriangle className="h-5 w-5 shrink-0"/><div><p>Status pesanan akan berubah menjadi retur.</p><p>Omzet berkurang sesuai nominal refund (Rp {refund.toLocaleString('id-ID')}).</p><p>Komisi sales dipindahkan ke Pembayaran Ditolak.</p><p>Riwayat retur akan tersimpan di sistem.</p></div></div></div>{error && <p className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
+        <div className="grid grid-cols-2 gap-3"><button type="button" onClick={onClose} className="rounded-xl bg-slate-100 py-3 font-bold text-slate-700">Batal</button><button type="button" disabled={busy || !selected.length || !reason} onClick={submit} className="rounded-xl bg-rose-600 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Memproses...' : '↩ Proses Retur'}</button></div>
+      </div>
+    </div>
+  </div>;
+};

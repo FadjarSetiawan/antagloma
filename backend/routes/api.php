@@ -61,6 +61,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::match(['post', 'patch'], '/{id}/shipment', [OrderController::class, 'completeShipment']);
         Route::match(['post', 'patch'], '/{id}/complete-shipment', [OrderController::class, 'completeShipment']);
         Route::post('/{id}/sales-informed', [OrderController::class, 'markSalesInformed']);
+        Route::post('/{id}/return', [OrderController::class, 'returnOrder']);
     });
 
     // Packing Operations API

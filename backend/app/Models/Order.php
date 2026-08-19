@@ -77,4 +77,5 @@ class Order extends Model
     }
 
     public function packages(): HasMany { return $this->hasMany(OrderPackage::class); }
+    public function returns(): HasMany { return $this->hasMany(OrderReturn::class); }
 }

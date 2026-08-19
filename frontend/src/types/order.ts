@@ -5,7 +5,9 @@ export type OrderStatus =
   | 'WAITING_PACKING'
   | 'PACKING_COMPLETED'
   | 'COMPLETED'
-  | 'CANCELLED';
+  | 'CANCELLED'
+  | 'RETURNED_PARTIAL'
+  | 'RETURNED';
 
 export type DeliveryMethod =
   | 'Kirim Paket'
@@ -60,6 +62,10 @@ export interface OrderPackage {
   tracking_number?: string;
   shipping_cost?: number;
   weight?: number;
+  returned?: boolean;
+  return_status?: string;
+  return_amount?: number;
+  returned_at?: string;
   packing_images?: PackingImage[];
   items?: { order_item_id: number; quantity: number; product_name?: string }[];
 }
@@ -99,8 +105,16 @@ export interface Order {
   completed_at?: string;
   sales_informed_at?: string;
   sales_commission?: number;
+  plant_total?: number;
   packages?: OrderPackage[];
+  gross_plant_total?: number;
+  return_total?: number;
+  returned_package_count?: number;
+  returned_item_count?: number;
+  returns?: OrderReturn[];
 }
+
+export interface OrderReturn { id: number; reason: string; item_status: 'RETURNED' | 'NOT_RETURNED'; notes?: string; refund_amount: number; package_ids: number[]; returned_at: string; }
 
 export interface Region {
   id: string;

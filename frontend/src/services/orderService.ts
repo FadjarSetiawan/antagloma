@@ -163,6 +163,10 @@ export const orderService = {
     const res = await api.post(`/orders/${id}/reject`, { reason });
     return res.data;
   },
+  returnOrder: async (id: number, payload: { package_ids: number[]; reason: string; item_status: 'RETURNED' | 'NOT_RETURNED'; notes?: string }): Promise<{ success: boolean; message: string; data: Order }> => {
+    const res = await api.post(`/orders/${id}/return`, payload);
+    return res.data;
+  },
 
   getSalesPackingProgress: async (params?: { page?: number; per_page?: number }): Promise<PaginatedResponse<Order>> => {
     const res = await api.get('/sales/packing-progress', { params });
