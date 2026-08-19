@@ -11,6 +11,8 @@ backend/storage/logs/
 backend/storage/framework/cache/
 backend/storage/framework/sessions/
 backend/storage/framework/views/
+backend/storage/app/public/packing_proofs/
+backend/storage/app/public/payment_proofs/
 backend/bootstrap/cache/*.php
 
 # IDE / System
