@@ -21,6 +21,31 @@ class CommissionController extends Controller
             : (string) ($user?->role ?? '');
     }
 
+    private static function statusValue($order): string
+    {
+        return $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
+    }
+
+    private static function grossPlantTotal($order): float
+    {
+        return collect($order->items ?? [])->sum(fn ($item) => (float) $item->price * max(1, (int) ($item->quantity ?? 1)));
+    }
+
+    private static function returnTotal($order): float
+    {
+        return collect($order->packages ?? [])->sum(fn ($package) => (float) ($package->return_amount ?? 0));
+    }
+
+    private static function netPlantTotal($order): float
+    {
+        return max(0, self::grossPlantTotal($order) - self::returnTotal($order));
+    }
+
+    private static function returnedPackageCount($order): int
+    {
+        return collect($order->packages ?? [])->filter(fn ($package) => filled($package->returned_at) || ($package->return_status ?? null) === 'RETURNED')->count();
+    }
+
     // ─── Helper: compute plant total + commission for a set of orders ──────────
     private static function calcOrders(iterable $orders, float $rate): array
     {
@@ -30,13 +55,10 @@ class CommissionController extends Controller
         $items       = [];
 
         foreach ($orders as $order) {
-            $orderPlant = 0;
-            foreach ($order->items as $item) {
-                $orderPlant += (float) $item->price;
-            }
+            $orderPlant = self::netPlantTotal($order);
 
-            $orderStatus  = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
-            $isVerified   = !in_array($orderStatus, ['WAITING_PROCESS', 'CANCELLED'], true);
+            $orderStatus  = self::statusValue($order);
+            $isVerified   = !in_array($orderStatus, ['WAITING_PROCESS', 'CANCELLED', 'RETURNED'], true) && $orderPlant > 0;
             $orderCommission = $isVerified ? round($orderPlant * $rate / 100) : 0;
 
             $plantTotal += $orderPlant;
@@ -53,6 +75,9 @@ class CommissionController extends Controller
                 'commission'   => $orderCommission,
                 'is_verified'  => $isVerified,
                 'item_count'   => count($order->items),
+                'return_total' => self::returnTotal($order),
+                'returned_package_count' => self::returnedPackageCount($order),
+                'is_returned'  => in_array($orderStatus, ['RETURNED_PARTIAL', 'RETURNED'], true),
             ];
         }
 
@@ -82,7 +107,7 @@ class CommissionController extends Controller
                     ->pluck('order_id')->toArray();
 
                 // Pending = completed orders NOT yet covered
-                $pendingOrders = Order::with('items')
+                $pendingOrders = Order::with(['items', 'packages'])
                     ->where('created_by', $s->id)
                     ->whereNotIn('id', $paidOrderIds ?: [0])
                     ->whereNotIn('status', ['WAITING_PROCESS', 'CANCELLED'])
@@ -131,7 +156,7 @@ class CommissionController extends Controller
             ->pluck('order_id')->toArray();
 
         // Query orders of this sales user with date/month/year filter
-        $query = Order::with('items')
+        $query = Order::with(['items', 'packages'])
             ->where('created_by', $user->id);
 
         if (!empty($dateFilter)) {
@@ -153,23 +178,29 @@ class CommissionController extends Controller
             'paid'                 => 0, // Paid via payout
             'rejected'             => 0, // CANCELLED
         ];
+        $returnedOrderCount = 0;
 
         $orderHistory = [];
 
         foreach ($allOrders as $order) {
-            $plantTotal = 0;
-            foreach ($order->items as $item) {
-                $plantTotal += (float) $item->price;
-            }
+            $grossPlantTotal = self::grossPlantTotal($order);
+            $returnTotal = self::returnTotal($order);
+            $plantTotal = max(0, $grossPlantTotal - $returnTotal);
+            $returnedPackageCount = self::returnedPackageCount($order);
 
-            $statusVal = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
+            $statusVal = self::statusValue($order);
             $isPaid = in_array($order->id, $paidOrderIds, true);
 
             $orderCommission = 0;
             $statusLabel = '';
             $statusKey = '';
 
-            if ($statusVal === 'CANCELLED') {
+            if (in_array($statusVal, ['RETURNED_PARTIAL', 'RETURNED'], true)) {
+                $statusKey = 'rejected';
+                $statusLabel = $statusVal === 'RETURNED' ? 'Retur' : 'Retur Sebagian';
+                // The rejected card represents the commission deducted by the return.
+                $orderCommission = round($returnTotal * $rate / 100);
+            } elseif ($statusVal === 'CANCELLED') {
                 $statusKey = 'rejected';
                 $statusLabel = 'Pembayaran ditolak';
                 $orderCommission = round($plantTotal * $rate / 100);
@@ -195,6 +226,7 @@ class CommissionController extends Controller
                 $summary[$statusKey] += $orderCommission;
             } else {
                 $summary['rejected'] += $orderCommission;
+                if (in_array($statusVal, ['RETURNED_PARTIAL', 'RETURNED'], true)) $returnedOrderCount++;
             }
 
             $deliveryMethodVal = $order->delivery_method instanceof \BackedEnum
@@ -213,11 +245,15 @@ class CommissionController extends Controller
                 'status_key'      => $statusKey,
                 'status_label'    => $statusLabel,
                 'is_paid'         => $isPaid,
+                'return_total'    => $returnTotal,
+                'returned_package_count' => $returnedPackageCount,
+                'is_returned'     => in_array($statusVal, ['RETURNED_PARTIAL', 'RETURNED'], true),
+                'return_label'    => $statusVal === 'RETURNED' ? 'Retur seluruh pesanan' : ($statusVal === 'RETURNED_PARTIAL' ? "Retur {$returnedPackageCount} paket" : null),
             ];
         }
 
         // Payout history — all payouts for this sales, ordered newest first
-        $payouts = CommissionPayout::with(['orders.items'])
+        $payouts = CommissionPayout::with(['orders.items', 'orders.packages'])
             ->where('sales_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -250,15 +286,11 @@ class CommissionController extends Controller
         // Total verified plant total & count for top banner
         $verifiedOrders = $allOrders->filter(function ($o) {
             $st = $o->status instanceof \BackedEnum ? $o->status->value : (string) $o->status;
-            return !in_array($st, ['WAITING_PROCESS', 'CANCELLED'], true);
+            return !in_array($st, ['WAITING_PROCESS', 'CANCELLED', 'RETURNED'], true);
         });
 
         $totalPlantTotal = 0;
-        foreach ($verifiedOrders as $vo) {
-            foreach ($vo->items as $item) {
-                $totalPlantTotal += (float) $item->price;
-            }
-        }
+        foreach ($verifiedOrders as $vo) $totalPlantTotal += self::netPlantTotal($vo);
 
         $totalCommissionThisMonth = round($totalPlantTotal * $rate / 100);
 
@@ -270,6 +302,7 @@ class CommissionController extends Controller
                 'total_plant_total'            => $totalPlantTotal,
                 'total_orders_count'           => $verifiedOrders->count(),
                 'summary'                      => $summary,
+                'returned_order_count'          => $returnedOrderCount,
                 'history'                      => $orderHistory,
                 'payout_history'               => $payoutHistory->values()->all(),
             ],
@@ -297,7 +330,7 @@ class CommissionController extends Controller
         $paidOrderIds = CommissionPayoutOrder::whereHas('payout', fn($q) => $q->where('sales_id', $sales->id))
             ->pluck('order_id')->toArray();
 
-        $orders = Order::with('items')
+        $orders = Order::with(['items', 'packages'])
             ->where('created_by', $sales->id)
             ->whereNotIn('id', $paidOrderIds ?: [0])
             ->whereNotIn('status', ['WAITING_PROCESS', 'CANCELLED'])
@@ -373,7 +406,7 @@ class CommissionController extends Controller
         $paidOrderIds = CommissionPayoutOrder::whereHas('payout', fn($q) => $q->where('sales_id', $sales->id))
             ->pluck('order_id')->toArray();
 
-        $ordersToCover = Order::with('items')
+        $ordersToCover = Order::with(['items', 'packages'])
             ->where('created_by', $sales->id)
             ->whereNotIn('id', $paidOrderIds ?: [0])
             ->whereNotIn('status', ['WAITING_PROCESS', 'CANCELLED'])

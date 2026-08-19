@@ -370,6 +370,11 @@ export const SalesCommissionPage: React.FC = () => {
             <p className="text-xs sm:text-lg font-black text-rose-700 mt-0.5 truncate">
               {isLoading ? '...' : formatRp(summary.rejected)}
             </p>
+            {(payload?.returned_order_count ?? 0) > 0 && (
+              <p className="text-[8.5px] sm:text-[10px] font-bold text-rose-600/80 mt-0.5">
+                Termasuk retur {payload?.returned_order_count} pesanan
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -432,12 +437,12 @@ export const SalesCommissionPage: React.FC = () => {
                   )}
                   {item.status_key === 'rejected' && (
                     <span className="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 text-[8.5px] sm:text-[10px] font-extrabold shrink-0">
-                      Ditolak
+                      {item.is_returned ? (item.return_label || 'Retur') : 'Ditolak'}
                     </span>
                   )}
 
                   <span className="text-[11px] sm:text-sm font-black text-slate-900 shrink-0">
-                    {formatRp(item.commission)}
+                    {item.is_returned ? `- ${formatRp(item.commission)}` : formatRp(item.commission)}
                   </span>
 
                   <ChevronRight className="w-3 h-3 text-slate-300 shrink-0" />

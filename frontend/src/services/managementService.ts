@@ -25,6 +25,9 @@ export interface PreviewOrder {
   commission: number;
   is_verified: boolean;
   item_count: number;
+  return_total?: number;
+  returned_package_count?: number;
+  is_returned?: boolean;
 }
 
 export interface PreviewResult {
@@ -62,6 +65,10 @@ export interface SalesCommissionHistoryItem {
   status_key: 'waiting_verification' | 'verified' | 'paid' | 'rejected';
   status_label: string;
   is_paid: boolean;
+  return_total?: number;
+  returned_package_count?: number;
+  is_returned?: boolean;
+  return_label?: string | null;
 }
 
 export interface SalesCommissionSummary {
@@ -79,6 +86,7 @@ export interface SalesCommissionData {
   summary: SalesCommissionSummary;
   history: SalesCommissionHistoryItem[];
   payout_history: PayoutHistory[];
+  returned_order_count?: number;
 }
 
 export interface Discount {
