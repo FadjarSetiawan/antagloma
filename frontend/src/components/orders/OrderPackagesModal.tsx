@@ -67,18 +67,13 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
       return existingAssignments;
     }
 
-    const initialAllocations: Record<number, number> = {};
-    if (totalOrderItems.length > 0) {
-      initialAllocations[0] = Math.min(1, totalOrderItems[0].quantity);
-    }
-
     return [
       {
         id: 'pkg-0',
         letter: 'A',
         subOrderNumber: `${order.order_number}-A`,
         packageType: isWoodPacking ? 'Non-fullset' : 'Fullset',
-        allocations: initialAllocations,
+        allocations: {},
       },
     ];
   });

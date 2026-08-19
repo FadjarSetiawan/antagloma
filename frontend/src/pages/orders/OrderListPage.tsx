@@ -429,10 +429,9 @@ export const OrderListPage: React.FC = () => {
                     </span>
                   </div>
                   {isPartiallyConfigured ? (
-                    <div className="rounded-xl bg-amber-100 border border-amber-300 px-2.5 py-1 text-right leading-tight shrink-0">
-                      <span className="block text-[10px] font-black text-amber-950">Sedang Diatur ({configuredPlantCount}/{itemCount})</span>
-                      {role === 'admin' && <span className="block text-[9px] font-semibold text-amber-800 mt-0.5">{configuredPlantCount} tanaman siap cetak nota</span>}
-                    </div>
+                    <span className="rounded-xl bg-amber-100 border border-amber-300 px-2.5 py-1 text-xs font-black text-amber-950 shadow-2xs">
+                      Sedang Diatur ({configuredPlantCount}/{itemCount})
+                    </span>
                   ) : isNotConfigured ? (
                     <span className="rounded-xl bg-blue-600 px-3 py-1 text-xs font-bold text-white shadow-2xs">Belum Diatur</span>
                   ) : isWaitingPackingPhoto ? (

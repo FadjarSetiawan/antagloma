@@ -163,8 +163,36 @@ class PackingController extends Controller
         Gate::authorize('completeShipment', $package->order);
         $data = $request->validate(['tracking_number'=>'required|string|max:255','shipping_cost'=>'required|numeric|min:0']);
         $trackingNumber = strtoupper(trim(strip_tags($data['tracking_number'])));
-        $used = OrderPackage::with('order')->where('tracking_number', $trackingNumber)->whereKeyNot($package->id)->first();
-        if ($used) return response()->json(['message' => 'Nomor resi sudah digunakan.', 'duplicate' => ['tracking_number' => $trackingNumber, 'order_number' => $used->order?->order_number, 'customer' => $used->order?->customer_name]], 422);
+        $used = OrderPackage::with('order')
+            ->whereRaw('UPPER(tracking_number) = ?', [$trackingNumber])
+            ->whereKeyNot($package->id)
+            ->first();
+
+        if (!$used) {
+            $usedOrder = Order::whereRaw('UPPER(tracking_number) = ?', [$trackingNumber])
+                ->where('id', '!=', $package->order_id)
+                ->first();
+            if ($usedOrder) {
+                return response()->json([
+                    'message' => 'Nomor resi sudah digunakan.',
+                    'duplicate' => [
+                        'tracking_number' => $trackingNumber,
+                        'order_number' => $usedOrder->order_number,
+                        'customer' => $usedOrder->customer_name,
+                    ],
+                ], 422);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Nomor resi sudah digunakan.',
+                'duplicate' => [
+                    'tracking_number' => $trackingNumber,
+                    'order_number' => $used->order?->order_number,
+                    'customer' => $used->order?->customer_name,
+                ],
+            ], 422);
+        }
+
         $orderStatus = $package->order->status instanceof \BackedEnum ? $package->order->status->value : (string) $package->order->status;
         abort_unless($orderStatus === 'PACKING_COMPLETED', 422, 'Package belum berada pada tahap siap input resi.');
         try {
@@ -176,7 +204,7 @@ class PackingController extends Controller
                 throw $exception;
             }
 
-            $used = OrderPackage::with('order')->where('tracking_number', $trackingNumber)->first();
+            $used = OrderPackage::with('order')->whereRaw('UPPER(tracking_number) = ?', [$trackingNumber])->first();
             return response()->json(['message' => 'Nomor resi sudah digunakan.', 'duplicate' => [
                 'tracking_number' => $trackingNumber,
                 'order_number' => $used?->order?->order_number,

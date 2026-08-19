@@ -57,7 +57,7 @@ export const PackingQueuePage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-4">
           {orders.map((order: Order) => {
             // Calculate total items and allocated items across packages
             const totalRequiredQty = order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;

@@ -195,38 +195,46 @@ class CommissionController extends Controller
             $statusLabel = '';
             $statusKey = '';
 
-            if (in_array($statusVal, ['RETURNED_PARTIAL', 'RETURNED'], true)) {
+            if ($statusVal === 'RETURNED') {
                 $statusKey = 'rejected';
-                $statusLabel = $statusVal === 'RETURNED' ? 'Retur' : 'Retur Sebagian';
-                // The rejected card represents the commission deducted by the return.
+                $statusLabel = 'Retur';
+                // The rejected card represents the total commission deducted by full return.
                 $orderCommission = round($returnTotal * $rate / 100);
+                $summary['rejected'] += $orderCommission;
+                $returnedOrderCount++;
+            } elseif ($statusVal === 'RETURNED_PARTIAL') {
+                // Partial return: active commission remains eligible/verified, deducted portion goes to rejected.
+                $deductedCommission = round($returnTotal * $rate / 100);
+                $summary['rejected'] += $deductedCommission;
+                $returnedOrderCount++;
+
+                $activeCommission = round($plantTotal * $rate / 100);
+                $statusKey = $isPaid ? 'paid' : 'verified';
+                $statusLabel = 'Retur Sebagian';
+                $orderCommission = $activeCommission;
+                $summary[$statusKey] += $activeCommission;
             } elseif ($statusVal === 'CANCELLED') {
                 $statusKey = 'rejected';
                 $statusLabel = 'Pembayaran ditolak';
-                $orderCommission = round($plantTotal * $rate / 100);
+                $orderCommission = round($grossPlantTotal * $rate / 100);
+                $summary['rejected'] += $orderCommission;
             } elseif ($isPaid) {
                 $statusKey = 'paid';
                 $statusLabel = 'Sudah dibayarkan';
                 $orderCommission = round($plantTotal * $rate / 100);
+                $summary['paid'] += $orderCommission;
             } elseif ($statusVal === 'WAITING_PROCESS') {
                 $statusKey = 'waiting_verification';
                 $statusLabel = 'Menunggu Verifikasi';
                 // Payment is still pending, so this is an estimated commission.
-                // Showing it lets sales see the potential amount without mixing it
-                // into the verified/payout totals.
                 $orderCommission = round($plantTotal * $rate / 100);
+                $summary['waiting_verification'] += $orderCommission;
             } else {
                 // WAITING_PACKING, PACKING_COMPLETED, COMPLETED (unpaid)
                 $statusKey = 'verified';
                 $statusLabel = 'Terverifikasi';
                 $orderCommission = round($plantTotal * $rate / 100);
-            }
-
-            if ($statusKey !== 'rejected') {
-                $summary[$statusKey] += $orderCommission;
-            } else {
-                $summary['rejected'] += $orderCommission;
-                if (in_array($statusVal, ['RETURNED_PARTIAL', 'RETURNED'], true)) $returnedOrderCount++;
+                $summary['verified'] += $orderCommission;
             }
 
             $deliveryMethodVal = $order->delivery_method instanceof \BackedEnum
