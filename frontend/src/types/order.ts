@@ -93,6 +93,8 @@ export interface Order {
   buyer_shipping_cost?: number;
   payment_proof_url?: string;
   payment_status?: string;
+  /** False while payment is still waiting for admin verification. */
+  is_verified?: boolean;
   shipping_cost?: number;
   tracking_number?: string;
   creator: User;

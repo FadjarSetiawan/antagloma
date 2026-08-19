@@ -80,13 +80,22 @@ export const ReportsPage: React.FC = () => {
         ? `Tahun ${selectedYear}`
         : 'Semua Waktu';
 
-  // The API already applies the selected period. Keep this unfiltered set for
-  // the sales-percentage denominator, so selecting one sales person does not
-  // incorrectly make their share read 100%.
-  const periodOrders = allOrders;
+  // Reports must only include orders whose payment has been verified. The
+  // order list also contains WAITING_PROCESS orders, but those are not sales
+  // yet and must not affect omzet, items, commission, shipping difference,
+  // profit, or sales-performance percentages.
+  const reportOrders = allOrders.filter((order) => {
+    if (order.is_verified === false) return false;
+    return order.status !== 'WAITING_PROCESS';
+  });
+
+  // The API already applies the selected period. Keep this unfiltered-by-sales
+  // set for the sales-percentage denominator, so selecting one sales person
+  // does not incorrectly make their share read 100%.
+  const periodOrders = reportOrders;
 
   // Filter the visible report by sales person and search text.
-  const orders = allOrders.filter((o) => {
+  const orders = reportOrders.filter((o) => {
     if (selectedSalesId !== 'all' && String(o.creator?.id) !== selectedSalesId) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
