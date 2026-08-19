@@ -1,8 +1,6 @@
 ---
 deployment:
   tasks:
-    # Laravel stays in the checked-out repository. The API subdomain document
-    # root must point to /home/antaglom/repositories/antagloma/backend/public.
-    # Deployment only copies the compiled frontend to the primary domain.
-    - /bin/mkdir -p /home/antaglom/public_html
-    - /bin/cp -R frontend/dist/. /home/antaglom/public_html/
+    - export DEPLOYPATH=/home/antaglom/public_html/
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp -R frontend/dist/. $DEPLOYPATH
