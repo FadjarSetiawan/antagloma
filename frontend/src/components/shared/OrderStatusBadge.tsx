@@ -12,7 +12,7 @@ const statusConfig: Record<OrderStatus, { label: string; className: string }> = 
   COMPLETED: { label: 'Selesai', className: 'bg-emerald-900 text-white font-black shadow-2xs' },
   CANCELLED: { label: 'Dibatalkan', className: 'bg-rose-100 text-rose-700 border border-rose-200 font-bold' },
   RETURNED_PARTIAL: { label: 'Retur Sebagian', className: 'bg-rose-50 text-rose-700 border border-rose-200 font-bold' },
-  RETURNED: { label: 'Retur Selesai', className: 'bg-rose-600 text-white font-black shadow-2xs' },
+  RETURNED: { label: 'Retur', className: 'bg-rose-50 text-rose-700 border border-rose-200 font-black' },
 };
 
 export const OrderStatusBadge: React.FC<Props> = ({ status }) => {
