@@ -80,7 +80,7 @@ export const OwnerDashboard: React.FC = () => {
 
       {/* Section: Operational Metrics */}
       <section aria-labelledby="metrics-heading" className="space-y-2">
-        <h2 id="metrics-heading" className="text-xs font-heading font-extrabold uppercase tracking-wider text-slate-400">
+        <h2 id="metrics-heading" className="text-xs font-heading font-extrabold uppercase tracking-wider text-slate-700">
           Metrik Operasional & Penjualan
         </h2>
 
@@ -102,21 +102,21 @@ export const OwnerDashboard: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-xs font-heading font-bold text-slate-800 leading-tight block">
+                  <h3 className="text-xs font-heading font-bold text-slate-900 leading-tight block">
                     {card.title}
                   </h3>
                   
                   <div className="mt-1 flex items-center">
                     {card.hasNotification ? (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200/90 text-xs font-bold shadow-2xs">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 text-amber-950 border border-amber-300 text-xs font-bold shadow-2xs">
                         <span className="relative flex h-1.5 w-1.5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-600"></span>
                         </span>
                         <span>{card.caption}</span>
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-500 font-medium leading-none">{card.caption}</span>
+                      <span className="text-xs text-slate-600 font-medium leading-none">{card.caption}</span>
                     )}
                   </div>
                 </div>
@@ -136,18 +136,18 @@ export const OwnerDashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* Clean Botanical Sales Report Card */}
+      {/* Clean White Sales Report Card */}
       <section aria-labelledby="sales-report-heading">
         <div
           onClick={() => navigate('/reports')}
-          className="bg-emerald-50/70 border border-emerald-200/90 text-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex items-center justify-between shadow-2xs relative overflow-hidden cursor-pointer hover:bg-emerald-100/60 transition-all group font-sans"
+          className="bg-white border border-slate-200/90 text-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex items-center justify-between shadow-2xs relative overflow-hidden cursor-pointer hover:border-[#04593f] transition-all group font-sans"
         >
           <div className="flex items-center gap-3.5 relative z-10">
-            <div className="w-10 h-10 rounded-2xl bg-[#04593f] text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
-              <TrendingUp className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-[#04593f] border border-emerald-100 flex items-center justify-center flex-shrink-0 shadow-2xs">
+              <TrendingUp className="w-5 h-5 text-[#04593f]" />
             </div>
             <div>
-              <h2 id="sales-report-heading" className="text-sm sm:text-base font-heading font-extrabold text-[#04593f]">
+              <h2 id="sales-report-heading" className="text-sm sm:text-base font-heading font-extrabold text-slate-900">
                 Ringkasan Penjualan & Laporan Toko
               </h2>
               <p className="text-xs text-slate-600 font-medium mt-0.5">
