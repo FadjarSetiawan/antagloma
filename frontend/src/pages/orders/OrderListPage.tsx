@@ -336,12 +336,10 @@ export const OrderListPage: React.FC = () => {
                     <span className="px-3 py-1 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-heading font-bold shrink-0">
                       Pembayaran Ditolak
                     </span>
-                  </div>
-
-                  {/* Customer & Delivery Information Grid */}
+                  </div>                  {/* Customer & Delivery Information Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2 border-b border-slate-100 text-xs font-normal text-slate-700">
                     <div>
-                      <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pemesan</span>
+                      <span className="text-xs font-heading font-extrabold text-slate-700 block">Pemesan</span>
                       <span className="font-heading font-bold text-slate-900 text-sm block mt-0.5">{order.customer_name}</span>
                       <span className="text-slate-600 text-xs font-medium flex items-center gap-1 mt-0.5">
                         <Phone className="w-3.5 h-3.5 text-slate-400" />{order.phone}
@@ -353,7 +351,7 @@ export const OrderListPage: React.FC = () => {
                       )}
                     </div>
                     <div>
-                      <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pengiriman & Alasan Ditolak</span>
+                      <span className="text-xs font-heading font-extrabold text-slate-700 block">Pengiriman & Alasan Ditolak</span>
                       <span className="font-heading font-bold text-slate-900 flex items-center gap-1 text-sm mt-0.5">
                         <Truck className="w-4 h-4 text-[#04593f]" />
                         {order.delivery_method}
@@ -367,8 +365,8 @@ export const OrderListPage: React.FC = () => {
                   {/* Items Breakdown list */}
                   {order.items && order.items.length > 0 && (
                     <div className="py-1 space-y-1 text-xs">
-                      <p className="font-heading font-extrabold text-slate-700 text-xs uppercase tracking-wider">
-                        Rincian Barang Rangkaian ({order.items.length} item):
+                      <p className="font-heading font-extrabold text-slate-700 text-xs">
+                        Rincian Pesanan ({order.items.length} item):
                       </p>
                       <div className="space-y-1">
                         {order.items.map((item) => (
@@ -445,7 +443,7 @@ export const OrderListPage: React.FC = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2.5 border-t border-b border-slate-100 text-xs font-normal text-slate-700">
                       <div>
-                        <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pemesan</span>
+                        <span className="text-xs font-heading font-extrabold text-slate-700 block">Pemesan</span>
                         <span className="font-heading font-bold text-slate-900 text-sm block mt-0.5">{order.customer_name}</span>
                         <span className="text-slate-600 text-xs font-medium flex items-center gap-1 mt-0.5">
                           <Phone className="w-3.5 h-3.5 text-slate-400" />{order.phone}
@@ -457,7 +455,7 @@ export const OrderListPage: React.FC = () => {
                         )}
                       </div>
                       <div>
-                        <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pengiriman & Item</span>
+                        <span className="text-xs font-heading font-extrabold text-slate-700 block">Pengiriman & Item</span>
                         {(order.packages || []).map((pkg) => (
                           <span key={pkg.id} className={`block font-bold text-xs mt-0.5 ${pkg.returned ? 'text-rose-600' : 'text-emerald-700'}`}>
                             <Truck className="mr-1 inline h-3.5 w-3.5" />Paket {pkg.letter} <span className="font-normal">{pkg.returned ? '↩ Retur' : '✓ Selesai'}</span>
@@ -471,15 +469,15 @@ export const OrderListPage: React.FC = () => {
 
                     <div className="grid grid-cols-3 gap-2 py-2.5 border-t border-slate-100 text-xs font-sans">
                       <div>
-                        <span className="block font-heading font-extrabold text-slate-700 text-xs uppercase tracking-wider">Ringkasan Retur</span>
+                        <span className="block font-heading font-extrabold text-slate-700 text-xs">Ringkasan Retur</span>
                         <b className="mt-0.5 block text-xs font-heading font-black text-rose-600">{returnedPackages.length} dari {(order.packages || []).length} paket</b>
                       </div>
                       <div className="border-l border-slate-200 pl-3">
-                        <span className="block font-heading font-extrabold text-slate-700 text-xs uppercase tracking-wider">Nominal Retur</span>
+                        <span className="block font-heading font-extrabold text-slate-700 text-xs">Nominal Retur</span>
                         <b className="mt-0.5 block text-xs font-heading font-black text-rose-600">Rp {(order.return_total || 0).toLocaleString('id-ID')}</b>
                       </div>
                       <div className="border-l border-slate-200 pl-3">
-                        <span className="block font-heading font-extrabold text-slate-700 text-xs uppercase tracking-wider">{role === 'sales' ? 'Komisi Dikurangi' : 'Koreksi Omzet'}</span>
+                        <span className="block font-heading font-extrabold text-slate-700 text-xs">{role === 'sales' ? 'Komisi Dikurangi' : 'Koreksi Omzet'}</span>
                         <b className="mt-0.5 block text-xs font-heading font-black text-rose-600">
                           {role === 'sales'
                             ? `- Rp ${Math.round((order.return_total || 0) * (Number(order.creator?.commission_rate) || 5) / 100).toLocaleString('id-ID')}`
@@ -491,7 +489,7 @@ export const OrderListPage: React.FC = () => {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2.5 border-t border-b border-slate-100 text-xs font-normal text-slate-700">
                     <div>
-                      <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pemesan</span>
+                      <span className="text-xs font-heading font-extrabold text-slate-700 block">Pemesan</span>
                       <span className="font-heading font-bold text-slate-900 text-sm block mt-0.5">{order.customer_name}</span>
                       <span className="text-slate-600 text-xs font-medium flex items-center gap-1 mt-0.5">
                         <Phone className="w-3.5 h-3.5 text-slate-400" />
@@ -499,13 +497,13 @@ export const OrderListPage: React.FC = () => {
                       </span>
                       {(role === 'admin' || role === 'owner') && (
                         <span className="mt-1.5 flex items-center gap-1 text-xs font-bold text-[#04593f]">
-                          <User className="h-3.5 w-3.5" /> Sales: {order.creator?.name || 'Tidak diketahui'}
+                          <User className="h-3.5 h-3.5" /> Sales: {order.creator?.name || 'Tidak diketahui'}
                         </span>
                       )}
                     </div>
 
                     <div>
-                      <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pengiriman & Item</span>
+                      <span className="text-xs font-heading font-extrabold text-slate-700 block">Pengiriman & Item</span>
                       <span className="font-heading font-bold text-slate-900 flex items-center gap-1 text-sm mt-0.5">
                         <Truck className="w-4 h-4 text-[#04593f]" />
                         {order.delivery_method}
