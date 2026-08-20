@@ -321,68 +321,58 @@ export const OrderListPage: React.FC = () => {
                 <div
                   key={order.id}
                   onClick={() => setSelectedOrder(order)}
-                  className="bg-white border-2 border-rose-200 rounded-3xl p-4 sm:p-5 space-y-4 shadow-sm hover:border-rose-300 transition-all cursor-pointer relative font-sans"
+                  className="bg-white border-2 border-rose-200 rounded-2xl p-4 sm:p-5 space-y-3 shadow-2xs hover:border-rose-300 transition-all cursor-pointer relative font-sans"
                 >
                   {/* Header Row */}
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div className="space-y-1">
-                      <span className="font-extrabold text-slate-900 text-sm sm:text-base block">{order.order_number}</span>
-                      <span className="text-xs text-slate-400 font-semibold flex items-center gap-1">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-heading font-black text-slate-900 text-sm sm:text-base">{order.order_number}</span>
+                      <span className="text-xs font-medium text-slate-300">•</span>
+                      <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />
                         {order.order_date}
                       </span>
                     </div>
-                    <span className="px-3 py-1 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold shrink-0">
+                    <span className="px-3 py-1 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-heading font-bold shrink-0">
                       Pembayaran Ditolak
                     </span>
                   </div>
 
-                  {/* Customer & Delivery */}
-                  <div className="space-y-1.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500 font-medium">Customer:</span>
-                      <span className="font-bold text-slate-900">{order.customer_name} ({order.phone})</span>
+                  {/* Customer & Delivery Information Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2 border-b border-slate-100 text-xs font-normal text-slate-700">
+                    <div>
+                      <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pemesan</span>
+                      <span className="font-heading font-bold text-slate-900 text-sm block mt-0.5">{order.customer_name}</span>
+                      <span className="text-slate-600 text-xs font-medium flex items-center gap-1 mt-0.5">
+                        <Phone className="w-3.5 h-3.5 text-slate-400" />{order.phone}
+                      </span>
+                      {(role === 'admin' || role === 'owner') && (
+                        <span className="mt-1.5 flex items-center gap-1 text-xs font-bold text-[#04593f]">
+                          <User className="h-3.5 h-3.5" /> Sales: {order.creator?.name || 'Tidak diketahui'}
+                        </span>
+                      )}
                     </div>
-                    {(role === 'admin' || role === 'owner') && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-500 font-medium">Sales:</span>
-                        <span className="font-bold text-[#04593f]">{order.creator?.name || 'Tidak diketahui'}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500 font-medium">Metode Pengiriman:</span>
-                      <span className="font-bold text-emerald-800 flex items-center gap-1">
-                        <Truck className="w-3.5 h-3.5 text-emerald-800" />
+                    <div>
+                      <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pengiriman & Alasan Ditolak</span>
+                      <span className="font-heading font-bold text-slate-900 flex items-center gap-1 text-sm mt-0.5">
+                        <Truck className="w-4 h-4 text-[#04593f]" />
                         {order.delivery_method}
                       </span>
-                    </div>
-                  </div>
-
-                  {/* Rejection Alert Box */}
-                  <div className="p-4 bg-rose-50/70 border border-rose-100 rounded-2xl flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-full bg-rose-100/90 text-rose-600 border border-rose-200 flex items-center justify-center shrink-0">
-                      <XCircle className="w-5 h-5" />
-                    </div>
-                    <div className="text-xs space-y-1.5 text-slate-800 font-medium flex-1">
-                      <p className="font-bold text-rose-900 text-xs sm:text-sm">Pembayaran ditolak oleh Admin</p>
-                      <p className="text-slate-700 font-medium">
-                        <span className="font-bold">Alasan:</span> {order.rejection_reason || 'Nominal transfer tidak sesuai'}
-                      </p>
-                      <p className="text-[11px] text-slate-500 leading-relaxed pt-1">
-                        Pesanan dibatalkan. Jika ingin melanjutkan pembelian, pelanggan harus membuat pesanan baru.
+                      <p className="text-rose-800 text-xs font-medium mt-1">
+                        <b className="font-bold text-rose-900">Alasan:</b> {order.rejection_reason || 'Nominal transfer tidak sesuai'}
                       </p>
                     </div>
                   </div>
 
-                  {/* Items Breakdown Box */}
+                  {/* Items Breakdown list */}
                   {order.items && order.items.length > 0 && (
-                    <div className="bg-slate-50/70 border border-slate-100 rounded-2xl p-3.5 space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        RINCIAN BARANG RANGKAIAN ({order.items.length} ITEM):
+                    <div className="py-1 space-y-1 text-xs">
+                      <p className="font-heading font-extrabold text-slate-700 text-xs uppercase tracking-wider">
+                        Rincian Barang Rangkaian ({order.items.length} item):
                       </p>
                       <div className="space-y-1">
                         {order.items.map((item) => (
-                          <div key={item.id} className="flex items-center justify-between text-xs font-bold text-slate-800">
+                          <div key={item.id} className="flex items-center justify-between text-xs text-slate-800 font-medium">
                             <span>• {item.product_name} {item.variant ? `(${item.variant})` : ''}</span>
                             <span className="text-slate-600 font-semibold">— {item.quantity} Qty</span>
                           </div>
@@ -391,22 +381,10 @@ export const OrderListPage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Totals */}
-                  <div className="space-y-2 border-t border-slate-100 pt-3">
-                    <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <span className="font-bold text-slate-800">Total Pesanan</span>
-                      <span className="font-black text-emerald-900">Rp {totalOrderAmount.toLocaleString('id-ID')}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <span className="font-bold text-slate-800">Komisi Anda</span>
-                      <span className="font-black text-rose-600">Rp 0</span>
-                    </div>
-                  </div>
-
-                  {/* Notice Footer */}
-                  <div className="p-3 bg-rose-50/50 border border-rose-100 rounded-2xl flex items-center gap-2 text-[11px] font-medium text-rose-900">
-                    <Info className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span>Pesanan ini dibatalkan karena pembayaran ditolak.</span>
+                  {/* Totals & Notice */}
+                  <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span className="text-xs text-slate-600 font-medium">Total Pesanan: <b className="font-heading font-black text-slate-900 ml-1">Rp {totalOrderAmount.toLocaleString('id-ID')}</b></span>
+                    <span className="text-xs font-heading font-bold text-rose-600">Komisi Rp 0 (Dibatalkan)</span>
                   </div>
                 </div>
               );
@@ -416,7 +394,7 @@ export const OrderListPage: React.FC = () => {
               <div
                 key={order.id}
                 onClick={() => setSelectedOrder(order)}
-                className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 hover:border-[#04593f] transition-all shadow-2xs cursor-pointer relative group"
+                className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 hover:border-[#04593f] transition-all shadow-2xs cursor-pointer relative group font-sans"
               >
                 {/* Header Row: Order Number & Status Badge */}
                 <div className="flex items-center justify-between">
@@ -450,28 +428,21 @@ export const OrderListPage: React.FC = () => {
                 {/* Body Details: returned orders show package-level outcome for Sales, Admin, and Owner */}
                 {isReturnedOrder ? (
                   <>
-                    {order.status === 'RETURNED' && (
-                      <div className="flex items-center justify-between rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-700">
-                        <span>
-                          <b className="block text-sm font-heading font-extrabold">Semua paket dalam order ini telah diretur</b>
-                          <span className="text-xs text-rose-600 font-medium">
-                            Retur dilakukan pada {order.returns?.[order.returns.length - 1]?.returned_at ? new Date(order.returns[order.returns.length - 1].returned_at).toLocaleString('id-ID') : 'tanggal tercatat'}
+                    <div className="flex items-center justify-between py-2 border-b border-slate-100 text-xs">
+                      <div className="flex items-center gap-2">
+                        <RotateCcw className="w-4 h-4 text-amber-700 shrink-0" />
+                        <span className="font-heading font-bold text-slate-800 text-xs">
+                          {order.status === 'RETURNED' ? 'Semua paket telah diretur' : 'Sebagian paket telah diretur'}
+                          <span className="text-slate-500 font-medium ml-1.5 font-sans">
+                            ({returnedPackages.length} dari {(order.packages || []).length} paket)
                           </span>
                         </span>
-                        <RotateCcw className="h-5 w-5" />
                       </div>
-                    )}
-                    {order.status === 'RETURNED_PARTIAL' && (
-                      <div className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900">
-                        <span>
-                          <b className="block text-sm font-heading font-extrabold">Sebagian paket dalam order ini telah diretur</b>
-                          <span className="text-xs text-amber-700 font-medium">
-                            {returnedPackages.length} dari {(order.packages || []).length} paket diretur
-                          </span>
-                        </span>
-                        <RotateCcw className="h-5 w-5 text-amber-700" />
-                      </div>
-                    )}
+                      <span className="text-xs text-slate-500 font-medium">
+                        {order.returns?.[order.returns.length - 1]?.returned_at ? new Date(order.returns[order.returns.length - 1].returned_at).toLocaleDateString('id-ID') : ''}
+                      </span>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2.5 border-t border-b border-slate-100 text-xs font-normal text-slate-700">
                       <div>
                         <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pemesan</span>
@@ -497,18 +468,19 @@ export const OrderListPage: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                    <div className={`grid grid-cols-3 gap-2 rounded-xl border p-3 text-xs ${order.status === 'RETURNED' ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50'}`}>
+
+                    <div className="grid grid-cols-3 gap-2 py-2.5 border-t border-slate-100 text-xs font-sans">
                       <div>
-                        <span className="block uppercase font-extrabold text-amber-900 text-[11px]">Ringkasan Retur</span>
-                        <b className="mt-1 block text-sm font-heading font-black text-rose-600">{returnedPackages.length} dari {(order.packages || []).length} paket</b>
+                        <span className="block font-heading font-extrabold text-slate-700 text-xs uppercase tracking-wider">Ringkasan Retur</span>
+                        <b className="mt-0.5 block text-xs font-heading font-black text-rose-600">{returnedPackages.length} dari {(order.packages || []).length} paket</b>
                       </div>
-                      <div className="border-l border-amber-200 pl-2">
-                        <span className="block uppercase font-extrabold text-amber-900 text-[11px]">Nominal Retur</span>
-                        <b className="mt-1 block text-sm font-heading font-black text-rose-600">Rp {(order.return_total || 0).toLocaleString('id-ID')}</b>
+                      <div className="border-l border-slate-200 pl-3">
+                        <span className="block font-heading font-extrabold text-slate-700 text-xs uppercase tracking-wider">Nominal Retur</span>
+                        <b className="mt-0.5 block text-xs font-heading font-black text-rose-600">Rp {(order.return_total || 0).toLocaleString('id-ID')}</b>
                       </div>
-                      <div className="border-l border-amber-200 pl-2">
-                        <span className="block uppercase font-extrabold text-amber-900 text-[11px]">{role === 'sales' ? 'Komisi Dikurangi' : 'Koreksi Omzet'}</span>
-                        <b className="mt-1 block text-sm font-heading font-black text-rose-600">
+                      <div className="border-l border-slate-200 pl-3">
+                        <span className="block font-heading font-extrabold text-slate-700 text-xs uppercase tracking-wider">{role === 'sales' ? 'Komisi Dikurangi' : 'Koreksi Omzet'}</span>
+                        <b className="mt-0.5 block text-xs font-heading font-black text-rose-600">
                           {role === 'sales'
                             ? `- Rp ${Math.round((order.return_total || 0) * (Number(order.creator?.commission_rate) || 5) / 100).toLocaleString('id-ID')}`
                             : `- Rp ${(order.return_total || 0).toLocaleString('id-ID')}`}
@@ -551,10 +523,10 @@ export const OrderListPage: React.FC = () => {
                     <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Klik kartu untuk detail
                   </span>
 
-                  <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-1.5 font-heading" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => setSelectedOrder(order)}
-                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5 text-slate-500" /> Detail
                     </button>
