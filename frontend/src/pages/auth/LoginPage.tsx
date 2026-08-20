@@ -43,10 +43,7 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div
-      className="min-h-screen w-full bg-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 font-sans text-slate-900 relative bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url('/login-bg.jpg')" }}
-    >
+    <div className="min-h-screen w-full bg-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 font-sans text-slate-900 relative bg-cover bg-center bg-no-repeat bg-[url('/bg-mobile.png')] md:bg-[url('/bg-desktop.png')]">
       {/* Background Soft Ambient Overlay */}
       <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] pointer-events-none" />
 
