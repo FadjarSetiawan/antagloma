@@ -52,9 +52,13 @@ export const LoginPage: React.FC = () => {
         
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          {/* Logo Badge */}
-          <div className="w-14 h-14 rounded-2xl bg-[#04593f] flex items-center justify-center mx-auto shadow-md p-2.5">
-            <Sprout className="w-8 h-8 text-emerald-100" />
+          {/* Logo Image */}
+          <div className="w-16 h-16 rounded-2xl mx-auto shadow-md overflow-hidden flex items-center justify-center p-0.5">
+            <img
+              src="/antagloma-logo.png"
+              alt="Antagloma Florist"
+              className="w-full h-full object-contain rounded-2xl"
+            />
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#04593f] tracking-tight">
