@@ -178,8 +178,8 @@ export const OrderListPage: React.FC = () => {
     <div className="space-y-4 max-w-7xl pb-24 font-sans text-slate-900">
       {/* Title & Subtitle */}
       <div>
-        <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Daftar Order Penjualan</h1>
-        <p className="text-xs text-slate-500 font-normal mt-0.5">Kelola dan pantau transaksi order Tanaman Adenium secara real-time.</p>
+        <h1 className="text-xl sm:text-2xl font-heading font-extrabold text-slate-900 leading-tight">Daftar Order Penjualan</h1>
+        <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">Kelola dan pantau transaksi order Tanaman Adenium secara real-time.</p>
       </div>
 
       {/* Action Card: + Buat Order Baru */}
@@ -191,8 +191,8 @@ export const OrderListPage: React.FC = () => {
           <div className="w-8 h-8 rounded-full bg-[#04593f] text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
             <Plus className="w-5 h-5" />
           </div>
-          <span className="font-bold text-xs text-[#04593f] block">Buat Order Baru</span>
-          <span className="text-[10px] text-slate-500 font-normal">Tambah order penjualan baru</span>
+          <span className="font-heading font-bold text-xs text-[#04593f] block">Buat Order Baru</span>
+          <span className="text-xs text-slate-500 font-medium">Tambah order penjualan baru</span>
         </div>
       )}
 
@@ -421,29 +421,29 @@ export const OrderListPage: React.FC = () => {
                 {/* Header Row: Order Number & Status Badge */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 text-xs sm:text-sm">{order.order_number}</span>
-                    <span className="text-[11px] font-medium text-slate-300">•</span>
-                    <span className="text-[10px] font-normal text-slate-400 flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-slate-400" />
+                    <span className="font-heading font-black text-slate-900 text-sm sm:text-base">{order.order_number}</span>
+                    <span className="text-xs font-medium text-slate-300">•</span>
+                    <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
                       {order.order_date}
                     </span>
                   </div>
                   {isPartiallyConfigured ? (
-                    <span className="rounded-xl bg-amber-100 border border-amber-300 px-2.5 py-1 text-xs font-black text-amber-950 shadow-2xs">
+                    <span className="rounded-xl bg-amber-100 border border-amber-300 px-2.5 py-1 text-xs font-black text-amber-950 shadow-2xs font-heading">
                       Sedang Diatur ({configuredPlantCount}/{itemCount})
                     </span>
                   ) : isNotConfigured ? (
-                    <span className="rounded-xl bg-blue-600 px-3 py-1 text-xs font-bold text-white shadow-2xs">Belum Diatur</span>
+                    <span className="rounded-xl bg-blue-600 px-3 py-1 text-xs font-bold text-white shadow-2xs font-heading">Belum Diatur</span>
                   ) : isWaitingPackingPhoto ? (
-                    <span className="rounded-xl bg-amber-600 px-3 py-1 text-xs font-bold text-white shadow-2xs">Menunggu Packing</span>
+                    <span className="rounded-xl bg-amber-600 px-3 py-1 text-xs font-bold text-white shadow-2xs font-heading">Menunggu Packing</span>
                   ) : <OrderStatusBadge status={order.status} />}
                 </div>
 
                 {isPartiallyConfigured && role === 'admin' && (
-                  <div className="grid grid-cols-[1.35fr_1fr_1fr] gap-2 rounded-xl border border-amber-200 bg-amber-50/70 p-2.5 text-[10px]">
-                    <div className="flex items-center gap-1.5 text-amber-950 min-w-0"><PackageCheck className="w-4 h-4 text-[#04593f] shrink-0" /><div><p className="font-extrabold">Progress Pengaturan</p><p className="font-medium text-amber-800">{configuredPlantCount} dari {itemCount} tanaman diatur</p></div></div>
-                    <div className="border-l border-amber-200 pl-2"><p className="font-extrabold text-[#04593f]">✓ Sudah Diatur</p><p className="font-semibold text-slate-600 mt-0.5">{configuredPlantCount} tanaman</p></div>
-                    <div className="border-l border-amber-200 pl-2"><p className="font-extrabold text-amber-800">◷ Belum Diatur</p><p className="font-semibold text-slate-600 mt-0.5">{remainingPlantCount} tanaman</p></div>
+                  <div className="grid grid-cols-[1.35fr_1fr_1fr] gap-2 rounded-xl border border-amber-200 bg-amber-50/70 p-2.5 text-xs">
+                    <div className="flex items-center gap-1.5 text-amber-950 min-w-0"><PackageCheck className="w-4 h-4 text-[#04593f] shrink-0" /><div><p className="font-extrabold font-heading">Progress Pengaturan</p><p className="font-medium text-amber-800">{configuredPlantCount} dari {itemCount} tanaman diatur</p></div></div>
+                    <div className="border-l border-amber-200 pl-2"><p className="font-extrabold font-heading text-[#04593f]">✓ Sudah Diatur</p><p className="font-semibold text-slate-600 mt-0.5">{configuredPlantCount} tanaman</p></div>
+                    <div className="border-l border-amber-200 pl-2"><p className="font-extrabold font-heading text-amber-800">◷ Belum Diatur</p><p className="font-semibold text-slate-600 mt-0.5">{remainingPlantCount} tanaman</p></div>
                   </div>
                 )}
 
@@ -453,8 +453,8 @@ export const OrderListPage: React.FC = () => {
                     {order.status === 'RETURNED' && (
                       <div className="flex items-center justify-between rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-700">
                         <span>
-                          <b className="block text-sm">Semua paket dalam order ini telah diretur</b>
-                          <span className="text-[11px] text-rose-600">
+                          <b className="block text-sm font-heading font-extrabold">Semua paket dalam order ini telah diretur</b>
+                          <span className="text-xs text-rose-600 font-medium">
                             Retur dilakukan pada {order.returns?.[order.returns.length - 1]?.returned_at ? new Date(order.returns[order.returns.length - 1].returned_at).toLocaleString('id-ID') : 'tanggal tercatat'}
                           </span>
                         </span>
@@ -464,51 +464,51 @@ export const OrderListPage: React.FC = () => {
                     {order.status === 'RETURNED_PARTIAL' && (
                       <div className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900">
                         <span>
-                          <b className="block text-sm">Sebagian paket dalam order ini telah diretur</b>
-                          <span className="text-[11px] text-amber-700">
+                          <b className="block text-sm font-heading font-extrabold">Sebagian paket dalam order ini telah diretur</b>
+                          <span className="text-xs text-amber-700 font-medium">
                             {returnedPackages.length} dari {(order.packages || []).length} paket diretur
                           </span>
                         </span>
                         <RotateCcw className="h-5 w-5 text-amber-700" />
                       </div>
                     )}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-normal text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2.5 border-t border-b border-slate-100 text-xs font-normal text-slate-700">
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Pemesan</span>
-                        <span className="font-bold text-slate-900 text-xs block">{order.customer_name}</span>
-                        <span className="text-slate-500 text-[11px] font-medium flex items-center gap-1 mt-0.5">
-                          <Phone className="w-3 h-3 text-slate-400" />{order.phone}
+                        <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pemesan</span>
+                        <span className="font-heading font-bold text-slate-900 text-sm block mt-0.5">{order.customer_name}</span>
+                        <span className="text-slate-600 text-xs font-medium flex items-center gap-1 mt-0.5">
+                          <Phone className="w-3.5 h-3.5 text-slate-400" />{order.phone}
                         </span>
                         {(role === 'admin' || role === 'owner') && (
-                          <span className="mt-1.5 flex items-center gap-1 text-[11px] font-bold text-[#04593f]">
-                            <User className="h-3 w-3" /> Sales: {order.creator?.name || 'Tidak diketahui'}
+                          <span className="mt-1.5 flex items-center gap-1 text-xs font-bold text-[#04593f]">
+                            <User className="h-3.5 h-3.5" /> Sales: {order.creator?.name || 'Tidak diketahui'}
                           </span>
                         )}
                       </div>
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Pengiriman & Item</span>
+                        <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pengiriman & Item</span>
                         {(order.packages || []).map((pkg) => (
-                          <span key={pkg.id} className={`block font-bold ${pkg.returned ? 'text-rose-600' : 'text-emerald-700'}`}>
+                          <span key={pkg.id} className={`block font-bold text-xs mt-0.5 ${pkg.returned ? 'text-rose-600' : 'text-emerald-700'}`}>
                             <Truck className="mr-1 inline h-3.5 w-3.5" />Paket {pkg.letter} <span className="font-normal">{pkg.returned ? '↩ Retur' : '✓ Selesai'}</span>
                           </span>
                         ))}
-                        <span className="text-slate-500 font-normal text-[11px] block mt-0.5">
+                        <span className="text-slate-600 font-semibold text-xs block mt-1">
                           {itemCount} tanaman • Rp {totalOrderAmount.toLocaleString('id-ID')}
                         </span>
                       </div>
                     </div>
-                    <div className={`grid grid-cols-3 gap-2 rounded-xl border p-3 text-[10px] ${order.status === 'RETURNED' ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50'}`}>
+                    <div className={`grid grid-cols-3 gap-2 rounded-xl border p-3 text-xs ${order.status === 'RETURNED' ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50'}`}>
                       <div>
-                        <span className="block uppercase font-bold text-amber-900">Ringkasan Retur</span>
-                        <b className="mt-1 block text-sm text-rose-600">{returnedPackages.length} dari {(order.packages || []).length} paket</b>
+                        <span className="block uppercase font-extrabold text-amber-900 text-[11px]">Ringkasan Retur</span>
+                        <b className="mt-1 block text-sm font-heading font-black text-rose-600">{returnedPackages.length} dari {(order.packages || []).length} paket</b>
                       </div>
                       <div className="border-l border-amber-200 pl-2">
-                        <span className="block uppercase font-bold text-amber-900">Nominal Retur</span>
-                        <b className="mt-1 block text-sm text-rose-600">Rp {(order.return_total || 0).toLocaleString('id-ID')}</b>
+                        <span className="block uppercase font-extrabold text-amber-900 text-[11px]">Nominal Retur</span>
+                        <b className="mt-1 block text-sm font-heading font-black text-rose-600">Rp {(order.return_total || 0).toLocaleString('id-ID')}</b>
                       </div>
                       <div className="border-l border-amber-200 pl-2">
-                        <span className="block uppercase font-bold text-amber-900">{role === 'sales' ? 'Komisi Dikurangi' : 'Koreksi Omzet'}</span>
-                        <b className="mt-1 block text-sm text-rose-600">
+                        <span className="block uppercase font-extrabold text-amber-900 text-[11px]">{role === 'sales' ? 'Komisi Dikurangi' : 'Koreksi Omzet'}</span>
+                        <b className="mt-1 block text-sm font-heading font-black text-rose-600">
                           {role === 'sales'
                             ? `- Rp ${Math.round((order.return_total || 0) * (Number(order.creator?.commission_rate) || 5) / 100).toLocaleString('id-ID')}`
                             : `- Rp ${(order.return_total || 0).toLocaleString('id-ID')}`}
@@ -516,37 +516,39 @@ export const OrderListPage: React.FC = () => {
                       </div>
                     </div>
                   </>
-                ) : <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-normal text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Pemesan</span>
-                    <span className="font-bold text-slate-900 text-xs block">{order.customer_name}</span>
-                    <span className="text-slate-500 text-[11px] font-medium flex items-center gap-1 mt-0.5">
-                      <Phone className="w-3 h-3 text-slate-400" />
-                      {order.phone}
-                    </span>
-                    {(role === 'admin' || role === 'owner') && (
-                      <span className="mt-1.5 flex items-center gap-1 text-[11px] font-bold text-[#04593f]">
-                        <User className="h-3 w-3" /> Sales: {order.creator?.name || 'Tidak diketahui'}
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2.5 border-t border-b border-slate-100 text-xs font-normal text-slate-700">
+                    <div>
+                      <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pemesan</span>
+                      <span className="font-heading font-bold text-slate-900 text-sm block mt-0.5">{order.customer_name}</span>
+                      <span className="text-slate-600 text-xs font-medium flex items-center gap-1 mt-0.5">
+                        <Phone className="w-3.5 h-3.5 text-slate-400" />
+                        {order.phone}
                       </span>
-                    )}
-                  </div>
+                      {(role === 'admin' || role === 'owner') && (
+                        <span className="mt-1.5 flex items-center gap-1 text-xs font-bold text-[#04593f]">
+                          <User className="h-3.5 w-3.5" /> Sales: {order.creator?.name || 'Tidak diketahui'}
+                        </span>
+                      )}
+                    </div>
 
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Pengiriman & Item</span>
-                    <span className="font-bold text-slate-900 block flex items-center gap-1 text-xs">
-                      <Truck className="w-3.5 h-3.5 text-[#04593f]" />
-                      {order.delivery_method}
-                    </span>
-                    <span className="text-slate-500 font-normal text-[11px] block mt-0.5">
-                      {itemCount} tanaman • Rp {totalOrderAmount.toLocaleString('id-ID')}
-                    </span>
+                    <div>
+                      <span className="text-xs uppercase font-extrabold text-slate-700 tracking-wider block">Pengiriman & Item</span>
+                      <span className="font-heading font-bold text-slate-900 flex items-center gap-1 text-sm mt-0.5">
+                        <Truck className="w-4 h-4 text-[#04593f]" />
+                        {order.delivery_method}
+                      </span>
+                      <span className="text-slate-600 font-semibold text-xs block mt-1">
+                        {itemCount} tanaman • Rp {totalOrderAmount.toLocaleString('id-ID')}
+                      </span>
+                    </div>
                   </div>
-                </div>}
+                )}
 
                 {/* Bottom Action Bar inside Order Card */}
                 <div className="flex items-center justify-between pt-1 text-xs">
-                  <span className="text-[10px] text-slate-400 font-normal flex items-center gap-1">
-                    <Lightbulb className="w-3 h-3 text-amber-500" /> Klik kartu untuk detail
+                  <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
+                    <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Klik kartu untuk detail
                   </span>
 
                   <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
