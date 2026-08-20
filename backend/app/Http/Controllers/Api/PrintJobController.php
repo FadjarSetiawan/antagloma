@@ -28,7 +28,20 @@ class PrintJobController extends Controller
         // Do not use APP_URL here: this Laravel backend is hosted at florist.kaizoratech.com,
         // while Android App Links are verified by the customer-facing floristyan.web.id domain.
         $base = self::APP_LINK_BASE_URL;
-        return response()->json(['success' => true, 'data' => ['job_id' => $job->public_id, 'token' => $plainToken, 'expires_at' => $job->expires_at->toIso8601String(), 'app_link' => "$base/print-jobs/{$job->public_id}?token=$plainToken"]], 201);
+        $appLink = "$base/print-jobs/{$job->public_id}?token=$plainToken";
+        $windowsLink = "antaglomaprint://print-jobs/{$job->public_id}?token=$plainToken";
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'job_id'           => $job->public_id,
+                'token'            => $plainToken,
+                'expires_at'       => $job->expires_at->toIso8601String(),
+                'app_link'         => $appLink,
+                'android_app_link' => $appLink,
+                'windows_app_link' => $windowsLink,
+            ],
+        ], 201);
     }
 
     public function show(Request $request, string $jobId): JsonResponse
