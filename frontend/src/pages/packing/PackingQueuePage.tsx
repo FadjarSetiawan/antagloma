@@ -131,75 +131,60 @@ export const PackingQueuePage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Items Summary Rangkaian */}
-                    <div className="py-2.5 border-y border-slate-100 text-xs space-y-1.5">
+                    {/* Item Allocation Status List */}
+                    <div className="py-2 border-y border-slate-100 space-y-1.5">
                       <span className="text-xs font-heading font-extrabold text-slate-700 block">
-                        Rincian Pesanan ({order.items?.length || 0} item):
+                        Rincian Item ({order.items?.length || 0} varian):
                       </span>
-                      <div className="space-y-1">
-                        {order.items?.map((item: OrderItem, i: number) => (
-                          <div key={i} className="flex justify-between font-medium text-slate-800 text-xs">
-                            <span className="truncate pr-2">• {item.tree_name || item.product_name} (Grade {item.grade || 'A'})</span>
-                            <span className="shrink-0 text-slate-600 font-semibold">{item.quantity} Qty</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                      <div className="divide-y divide-slate-100">
+                        {order.items?.map((item: OrderItem) => {
+                          const itemId = item.id;
+                          const allocated = itemId ? (allocatedQtyMap[itemId] || 0) : 0;
+                          const totalQty = item.quantity || 1;
+                          const isFullyAllocated = allocated >= totalQty;
+                          const isPartiallyAllocated = allocated > 0 && allocated < totalQty;
 
-                    {/* Item Status Cards: Belum Dikemas vs Sebagian Dikemas vs Dikemas */}
-                    <div className="space-y-2">
-                      {order.items?.map((item: OrderItem) => {
-                        const itemId = item.id;
-                        const allocated = itemId ? (allocatedQtyMap[itemId] || 0) : 0;
-                        const totalQty = item.quantity || 1;
-                        const isFullyAllocated = allocated >= totalQty;
-                        const isPartiallyAllocated = allocated > 0 && allocated < totalQty;
-
-                        return (
-                          <div
-                            key={item.id || item.product_name}
-                            className="py-2.5 border-b border-slate-100 flex items-center justify-between gap-3"
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <div
-                                className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
-                                  isFullyAllocated
-                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
-                                    : 'bg-amber-100 text-amber-600 border-amber-300'
-                                }`}
-                              >
-                                {isFullyAllocated ? <CheckCircle2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
-                              </div>
-                              <div>
-                                <p className="text-xs font-heading font-bold text-slate-900 leading-normal">
-                                  {item.tree_name || item.product_name} (Grade {item.grade || 'A'})
-                                </p>
-                                <div className="mt-1">
-                                  {isFullyAllocated ? (
-                                    <span className="text-xs font-medium text-slate-500">
-                                      Dikemas: {order.order_date ? new Date(order.order_date).toLocaleDateString('id-ID') : '-'}
-                                    </span>
-                                  ) : isPartiallyAllocated ? (
-                                    <div className="space-y-0.5">
-                                      <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold inline-block">
-                                        Sebagian Dikemas
+                          return (
+                            <div
+                              key={item.id || item.product_name}
+                              className="py-2 flex items-center justify-between gap-3 text-xs"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div
+                                  className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 border ${
+                                    isFullyAllocated
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                                  }`}
+                                >
+                                  {isFullyAllocated ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-heading font-bold text-slate-900 truncate">
+                                    {item.tree_name || item.product_name} <span className="font-sans font-normal text-slate-500">(Grade {item.grade || 'A'})</span>
+                                  </p>
+                                  <div className="mt-0.5">
+                                    {isFullyAllocated ? (
+                                      <span className="text-[11px] font-medium text-emerald-700">
+                                        Sudah Masuk Paket
                                       </span>
-                                      <span className="text-xs font-bold text-amber-800 block mt-0.5">
-                                        {allocated} / {totalQty} Qty sudah masuk paket
+                                    ) : isPartiallyAllocated ? (
+                                      <span className="text-[11px] font-bold text-amber-800">
+                                        {allocated}/{totalQty} Qty dalam paket
                                       </span>
-                                    </div>
-                                  ) : (
-                                    <span className="px-2 py-0.5 rounded-md bg-amber-100/90 text-amber-900 border border-amber-200 text-xs font-bold">
-                                      Belum Dikemas
-                                    </span>
-                                  )}
+                                    ) : (
+                                      <span className="text-[11px] font-medium text-amber-700">
+                                        Belum Diatur ke Paket
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
+                              <span className="font-heading font-bold text-slate-800 shrink-0 text-xs">{item.quantity} Qty</span>
                             </div>
-                            <span className="text-xs font-bold text-slate-700 shrink-0">— {item.quantity} Qty</span>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
 
                     {/* Notes if available */}

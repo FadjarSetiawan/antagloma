@@ -416,10 +416,18 @@ export const OrderListPage: React.FC = () => {
                 </div>
 
                 {isPartiallyConfigured && role === 'admin' && (
-                  <div className="grid grid-cols-[1.35fr_1fr_1fr] gap-2 rounded-xl border border-amber-200 bg-amber-50/70 p-2.5 text-xs">
-                    <div className="flex items-center gap-1.5 text-amber-950 min-w-0"><PackageCheck className="w-4 h-4 text-[#04593f] shrink-0" /><div><p className="font-extrabold font-heading">Progress Pengaturan</p><p className="font-medium text-amber-800">{configuredPlantCount} dari {itemCount} tanaman diatur</p></div></div>
-                    <div className="border-l border-amber-200 pl-2"><p className="font-extrabold font-heading text-[#04593f]">✓ Sudah Diatur</p><p className="font-semibold text-slate-600 mt-0.5">{configuredPlantCount} tanaman</p></div>
-                    <div className="border-l border-amber-200 pl-2"><p className="font-extrabold font-heading text-amber-800">◷ Belum Diatur</p><p className="font-semibold text-slate-600 mt-0.5">{remainingPlantCount} tanaman</p></div>
+                  <div className="py-2.5 border-t border-b border-slate-100 flex items-center justify-between text-xs font-heading">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <PackageCheck className="w-4 h-4 text-[#04593f] shrink-0" />
+                      <span className="font-bold text-slate-800">
+                        {configuredPlantCount} dari {itemCount} tanaman diatur
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 text-xs font-bold shrink-0">
+                      <span className="text-[#04593f]">✓ {configuredPlantCount} diatur</span>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-amber-800">◷ {remainingPlantCount} belum</span>
+                    </div>
                   </div>
                 )}
 

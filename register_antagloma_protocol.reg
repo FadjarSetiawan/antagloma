@@ -1,0 +1,12 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\Classes\antaglomaprint]
+@="URL:Antagloma Print"
+"URL Protocol"=""
+
+[HKEY_CURRENT_USER\Software\Classes\antaglomaprint\shell]
+
+[HKEY_CURRENT_USER\Software\Classes\antaglomaprint\shell\open]
+
+[HKEY_CURRENT_USER\Software\Classes\antaglomaprint\shell\open\command]
+@="\"D:\\Project EXE\\Antagloma Print\\publish\\win-x64\\AntaglomaPrint.exe\" \"%1\""
