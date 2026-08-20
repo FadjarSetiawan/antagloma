@@ -83,13 +83,13 @@ export const AppSidebar: React.FC = () => {
             className="w-10 h-10 rounded-xl object-contain shadow-2xs flex-shrink-0 bg-emerald-50/50 p-1 border border-emerald-100"
           />
           <div className="min-w-0">
-            <h1 className="font-black text-sm text-slate-900 leading-tight truncate">Antagloma Florist</h1>
-            <p className="text-[11px] text-[#04593f] font-semibold leading-snug truncate">Sales Order Management</p>
+            <h1 className="font-heading font-black text-sm text-slate-900 leading-tight truncate">Antagloma Florist</h1>
+            <p className="text-xs text-[#04593f] font-semibold leading-snug truncate">Sales Order Management</p>
           </div>
         </div>
 
         {/* Navigation Links */}
-        <nav className="space-y-1 text-xs font-bold">
+        <nav className="space-y-1 text-xs font-bold font-heading">
           {navItems
             .filter((item) => item.show)
             .map((item) => {
@@ -115,17 +115,19 @@ export const AppSidebar: React.FC = () => {
       </div>
 
       {/* User Info & Logout */}
-      <div className="pt-4 border-t border-slate-100 space-y-3">
-        <div className="px-3 py-2.5 bg-slate-50 border border-slate-200/70 rounded-2xl">
-          <span className="font-bold text-xs text-slate-900 block truncate">{user?.name}</span>
-          <span className="text-[10px] text-[#04593f] font-extrabold uppercase tracking-wider block mt-0.5">
-            Role: {user?.role}
-          </span>
+      <div className="pt-3 border-t border-slate-100 space-y-2.5">
+        <div className="px-1 flex items-center justify-between">
+          <div className="min-w-0">
+            <span className="font-heading font-bold text-xs text-slate-900 block truncate">{user?.name}</span>
+            <span className="text-xs text-[#04593f] font-extrabold uppercase tracking-wider block">
+              Role: {user?.role}
+            </span>
+          </div>
         </div>
 
         <button
           onClick={logout}
-          className="w-full py-2.5 px-3 bg-slate-50 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-slate-600 border border-slate-200/80 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer"
+          className="w-full py-2.5 px-3 bg-slate-50 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-slate-600 border border-slate-200/80 rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
         >
           <LogOut className="w-4 h-4 text-slate-400 group-hover:text-rose-600 shrink-0" />
           <span>Keluar (Logout)</span>
