@@ -408,125 +408,146 @@ export const ReportsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Executive Financial Summary Hero Card */}
-      <div className="bg-gradient-to-br from-[#04593f] via-[#04593f] to-emerald-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg relative overflow-hidden space-y-4 border border-emerald-950 font-sans">
-        {/* Background Decorative Accent */}
-        <div className="absolute right-0 top-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+      {/* Executive Financial Summary Hero Card - Total Omzet */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm relative overflow-hidden space-y-4 font-sans">
+        {/* Soft Floral Background Accent on Right */}
+        <div 
+          className="absolute right-0 top-0 bottom-0 w-3/5 sm:w-2/5 bg-contain bg-right bg-no-repeat pointer-events-none opacity-85"
+          style={{ backgroundImage: "url('/adenium-accent.jpg')" }}
+        />
+        {/* Soft Left Gradient Mask so text is always 100% crisp */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none" />
 
         {/* Main Omset Figure */}
-        <div className="border-b border-emerald-800/80 pb-4 space-y-2 relative z-10">
-          <span className="text-[10px] uppercase font-extrabold text-emerald-200 tracking-wider block">
+        <div className="space-y-1.5 relative z-10">
+          <span className="text-[11px] uppercase font-extrabold text-[#04593f] tracking-wider block">
             TOTAL OMZET PENJUALAN TANAMAN
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-black text-[#04593f] tracking-tight">
             {isLoading ? '...' : `Rp ${totalPlantOmzet.toLocaleString('id-ID')}`}
           </h2>
-          <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-xs border border-white/15 px-3 py-1.5 rounded-xl text-[11px] font-bold text-emerald-100 shadow-2xs">
-            <ArrowUpRight className="w-3.5 h-3.5 text-emerald-300" />
-            <span>{completedOrdersCount} Pesanan Selesai ({completionRate}%)</span>
+          
+          <div className="flex items-center gap-3 pt-1">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200/60 text-[#04593f] flex items-center justify-center shrink-0">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">
+                {completedOrdersCount} Pesanan Selesai ({completionRate}%)
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium block">
+                Dibanding periode sebelumnya
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="bg-emerald-900/70 border border-emerald-300/30 rounded-2xl p-3.5 relative z-10 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-emerald-400/20 flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-5 h-5 text-emerald-200" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10px] uppercase font-extrabold text-emerald-200 tracking-wider block">ESTIMASI LABA BERSIH</span>
-              <span className="text-xl sm:text-2xl font-black text-white block mt-0.5 truncate">Rp {estimatedNetProfit.toLocaleString('id-ID')}</span>
-              <span className="text-[10px] text-emerald-200/80 block">Omzet setelah retur + selisih ongkir − komisi sales</span>
-            </div>
+        {/* Estimasi Laba Bersih Sub-Card */}
+        <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-2xl p-3.5 sm:p-4 relative z-10 flex items-center gap-3.5 shadow-2xs">
+          <div className="w-10 h-10 rounded-xl bg-emerald-100/80 text-[#04593f] flex items-center justify-center shrink-0">
+            <TrendingUp className="w-5 h-5" />
           </div>
-          <ArrowUpRight className="w-5 h-5 text-emerald-200 flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <span className="text-[10px] uppercase font-extrabold text-emerald-800 tracking-wider block">
+              ESTIMASI LABA BERSIH
+            </span>
+            <span className="text-xl sm:text-2xl font-black text-[#04593f] block mt-0.5 truncate">
+              Rp {estimatedNetProfit.toLocaleString('id-ID')}
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium block mt-0.5">
+              Omzet setelah retur + selisih ongkir − komisi sales
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Sub-Metrics 2x2 Clean White Grid */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 grid grid-cols-2 gap-2.5 sm:gap-3 text-xs shadow-2xs font-sans">
+        {/* Total Pesanan */}
+        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
+            <FileText className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Total Pesanan</span>
+            <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">{totalOrdersCount} Pesanan</span>
+          </div>
         </div>
 
-        {/* Sub-Metrics 2x2 Grid */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs relative z-10">
-          {/* Total Pesanan */}
-          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
-            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
-              <FileText className="w-3.5 h-3.5 text-emerald-200" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Total Pesanan</span>
-              <span className="text-xs font-bold text-white block mt-0.5 truncate">{totalOrdersCount} Pesanan</span>
-            </div>
+        {/* Komisi Sales */}
+        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
+            <Percent className="w-4 h-4" />
           </div>
+          <div className="min-w-0">
+            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Komisi Sales</span>
+            <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">Rp {totalSalesCommission.toLocaleString('id-ID')}</span>
+          </div>
+        </div>
 
-          {/* Komisi Sales */}
-          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
-            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
-              <Percent className="w-3.5 h-3.5 text-emerald-200" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Komisi Sales</span>
-              <span className="text-xs font-bold text-white block mt-0.5 truncate">Rp {totalSalesCommission.toLocaleString('id-ID')}</span>
-            </div>
+        {/* Total Tanaman Terjual */}
+        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
+            <TrendingUp className="w-4 h-4" />
           </div>
+          <div className="min-w-0">
+            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Tanaman Terjual</span>
+            <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">{totalPlantsCount} Pohon</span>
+          </div>
+        </div>
 
-          {/* Total Tanaman Terjual */}
-          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
-            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-200" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Tanaman Terjual</span>
-              <span className="text-xs font-bold text-white block mt-0.5 truncate">{totalPlantsCount} Pohon</span>
-            </div>
+        {/* Total Paket Dikirim */}
+        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
+            <Package className="w-4 h-4" />
           </div>
+          <div className="min-w-0">
+            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Paket Dikirim</span>
+            <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">{totalPackagesSent} Paket</span>
+          </div>
+        </div>
 
-          {/* Total Paket Dikirim */}
-          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
-            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
-              <Package className="w-3.5 h-3.5 text-emerald-200" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Paket Dikirim</span>
-              <span className="text-xs font-bold text-white block mt-0.5 truncate">{totalPackagesSent} Paket</span>
-            </div>
+        {/* Ongkir Dibayar Pembeli */}
+        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
+            <Truck className="w-4 h-4" />
           </div>
+          <div className="min-w-0">
+            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Ongkir Pembeli</span>
+            <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">Rp {totalShippingCost.toLocaleString('id-ID')}</span>
+          </div>
+        </div>
 
-          {/* Ongkir Dibayar Pembeli */}
-          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
-            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
-              <Truck className="w-3.5 h-3.5 text-emerald-200" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Ongkir Pembeli</span>
-              <span className="text-xs font-bold text-white block mt-0.5 truncate">Rp {totalShippingCost.toLocaleString('id-ID')}</span>
-            </div>
+        {/* Retur */}
+        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <RotateCcw className="w-4 h-4" />
           </div>
-          {/* Retur */}
-          <div className="bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2 shadow-2xs">
-            <div className="w-7 h-7 rounded-lg bg-rose-400/20 flex items-center justify-center flex-shrink-0">
-              <RotateCcw className="w-3.5 h-3.5 text-rose-200" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Retur</span>
-              <div className="flex items-baseline gap-1.5 min-w-0">
-                <span className="text-xs font-bold text-white block mt-0.5 truncate">{totalReturnedPackages} Paket</span>
-                <span className="text-[10px] font-bold text-rose-200 truncate">
-                  Rp {totalReturnAmount.toLocaleString('id-ID')}
-                </span>
-              </div>
-            </div>
-          </div>
-          {/* Selisih Ongkir — full width */}
-          <div className="col-span-2 bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 flex items-center gap-2.5 shadow-2xs">
-            <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
-              <RpIcon className="w-3.5 h-3.5 text-emerald-200" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[9.5px] text-emerald-200/80 font-medium block truncate">Selisih Ongkir
-                <span className="ml-1 text-emerald-200 font-normal">(Pembeli − Ekspedisi)</span>
-              </span>
-              <span className={`text-xs font-bold block mt-0.5 truncate ${
-                totalShippingDifference >= 0 ? 'text-white' : 'text-rose-200'
-              }`}>
-                {totalShippingDifference >= 0 ? '+' : '-'}Rp {Math.abs(totalShippingDifference).toLocaleString('id-ID')}
+          <div className="min-w-0">
+            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Retur</span>
+            <div className="flex items-baseline gap-1.5 min-w-0">
+              <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">{totalReturnedPackages} Paket</span>
+              <span className="text-[10.5px] font-bold text-rose-600 truncate">
+                Rp {totalReturnAmount.toLocaleString('id-ID')}
               </span>
             </div>
+          </div>
+        </div>
+
+        {/* Selisih Ongkir — full width */}
+        <div className="col-span-2 bg-emerald-50/50 p-3.5 rounded-2xl border border-emerald-100/90 flex items-center gap-3 shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-emerald-100/80 text-[#04593f] flex items-center justify-center shrink-0">
+            <RpIcon className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[10.5px] text-slate-600 font-semibold block truncate">Selisih Ongkir
+              <span className="ml-1 text-slate-400 font-normal">(Pembeli − Ekspedisi)</span>
+            </span>
+            <span className={`text-xs sm:text-sm font-black block mt-0.5 truncate ${
+              totalShippingDifference >= 0 ? 'text-[#04593f]' : 'text-rose-600'
+            }`}>
+              {totalShippingDifference >= 0 ? '+' : '-'}Rp {Math.abs(totalShippingDifference).toLocaleString('id-ID')}
+            </span>
           </div>
         </div>
       </div>
