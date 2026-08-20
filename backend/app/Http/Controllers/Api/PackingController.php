@@ -125,6 +125,7 @@ class PackingController extends Controller
                 }
                 $package = $order->packages()->updateOrCreate(['letter'=>$input['letter']], [
                     'package_type'=>$input['package_type'] ?? null,
+                    'weight' => isset($input['weight']) && is_numeric($input['weight']) ? (float) $input['weight'] : null,
                     'waiting_photo_at'=>null,
                     'configured_at'=>now(),
                 ]);

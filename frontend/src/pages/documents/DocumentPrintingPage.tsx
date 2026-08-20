@@ -43,20 +43,58 @@ export const DocumentPrintingPage: React.FC = () => {
     .flatMap((order) =>
       (order.packages || [])
         .filter((pkg) => !pkg.tracking_number)
-        .map((pkg) => ({
-          id: pkg.id,
-          packageId: pkg.id,
-          order,
-          subOrderNumber: `${order.order_number}-${pkg.letter}`,
-          packageType: pkg.package_type || 'Paket',
-          plantCount: (pkg.items || []).reduce((sum, item) => sum + item.quantity, 0),
-          itemLines: (pkg.items || []).map((item) => item.product_name || 'Tanaman'),
-          weightInfo: pkg.weight ? `${pkg.weight} kg` : '1 kg',
-          printedNota: pkg.nota_printed,
-          printedLabel: pkg.label_printed,
-          photoUploaded: pkg.photo_uploaded,
-          trackingNumber: pkg.tracking_number,
-        }))
+        .map((pkg) => {
+          const pkgTypeStr = (pkg.package_type || '').toLowerCase();
+          const isFullset = pkgTypeStr.includes('fullset') && !pkgTypeStr.includes('non');
+          const plantCount = (pkg.items || []).reduce((sum, item) => sum + item.quantity, 0);
+
+          let weightVal: number | null = pkg.weight != null && !isNaN(Number(pkg.weight)) ? Number(pkg.weight) : null;
+          if (weightVal === null || weightVal <= 0) {
+            let totalComputedWeight = 0;
+            (pkg.items || []).forEach((pkgItem) => {
+              const matchingOrderItem = (order.items || []).find((oi) => oi.id === pkgItem.order_item_id);
+              const grade = (matchingOrderItem?.grade || 'A').trim().toUpperCase();
+              let unitWeight = 0;
+              if (isFullset) {
+                if (['D', 'D+'].includes(grade)) unitWeight = 6.0;
+                else if (grade === 'J') unitWeight = 8.0;
+                else if (grade === 'J+') unitWeight = 10.0;
+                else unitWeight = 0;
+              } else {
+                if (grade === 'A') unitWeight = 0.2;
+                else if (grade === 'B') unitWeight = 0.4;
+                else if (grade === 'B+') unitWeight = 0.5;
+                else if (grade === 'C') unitWeight = 0.6;
+                else if (['C+', 'C+'].includes(grade)) unitWeight = 1.0;
+                else if (['D', 'D+'].includes(grade)) unitWeight = 2.0;
+                else if (grade === 'J') unitWeight = 4.0;
+                else if (grade === 'J+') unitWeight = 5.0;
+                else unitWeight = 2.0;
+              }
+              totalComputedWeight += unitWeight * (pkgItem.quantity || 1);
+            });
+            if (totalComputedWeight > 0) {
+              weightVal = totalComputedWeight;
+            }
+          }
+
+          const weightInfo = weightVal && weightVal > 0 ? `${Number(weightVal.toFixed(2))} kg` : '';
+
+          return {
+            id: pkg.id,
+            packageId: pkg.id,
+            order,
+            subOrderNumber: `${order.order_number}-${pkg.letter}`,
+            packageType: pkg.package_type || 'Paket',
+            plantCount,
+            itemLines: (pkg.items || []).map((item) => item.product_name || 'Tanaman'),
+            weightInfo,
+            printedNota: pkg.nota_printed,
+            printedLabel: pkg.label_printed,
+            photoUploaded: pkg.photo_uploaded,
+            trackingNumber: pkg.tracking_number,
+          };
+        })
     );
 
   const getCardPrintStatus = (card: typeof expandedPackageCards[number]) => ({
@@ -274,7 +312,7 @@ export const DocumentPrintingPage: React.FC = () => {
                   <div className="space-y-1 text-sm">
                     <h4 className="text-sm font-bold text-slate-950">{pkgCard.order.customer_name}</h4>
                     <p className="text-sm text-slate-600 font-normal">
-                      {pkgCard.plantCount} tanaman • {pkgCard.weightInfo}
+                      {pkgCard.plantCount} tanaman{pkgCard.weightInfo ? ` • ${pkgCard.weightInfo}` : ''}
                     </p>
                   </div>
 

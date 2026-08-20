@@ -275,8 +275,21 @@ export const OrderPackagesModal: React.FC<OrderPackagesModalProps> = ({
 
     setIsLoading(true);
 
+    const packagesToSave = packages.map((pkg) => {
+      const isWeightVisible = shouldShowWeightBox(pkg);
+      const autoWeight = computePackageWeightInfo(pkg).autoWeight;
+      const finalWeight = pkg.customWeight !== undefined
+        ? pkg.customWeight
+        : (isWeightVisible ? autoWeight : (autoWeight > 0 ? autoWeight : null));
+
+      return {
+        ...pkg,
+        customWeight: finalWeight != null && finalWeight > 0 ? finalWeight : undefined,
+      };
+    });
+
     try {
-      await onSavePackages(order.id, packages);
+      await onSavePackages(order.id, packagesToSave);
       onClose();
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Gagal menyimpan pengaturan paket.');
