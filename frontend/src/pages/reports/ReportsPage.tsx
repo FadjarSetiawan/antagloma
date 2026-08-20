@@ -410,13 +410,13 @@ export const ReportsPage: React.FC = () => {
 
       {/* Executive Financial Summary Hero Card - Total Omzet */}
       <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xs relative overflow-hidden space-y-4 font-sans">
-        {/* Soft Floral Background Accent on Right */}
+        {/* Desktop Background Image covering the container */}
         <div 
-          className="absolute right-0 top-0 bottom-0 w-3/5 sm:w-2/5 bg-contain bg-right bg-no-repeat pointer-events-none opacity-85"
-          style={{ backgroundImage: "url('/adenium-accent.jpg')" }}
+          className="absolute inset-0 bg-cover bg-right bg-no-repeat pointer-events-none"
+          style={{ backgroundImage: "url('/bg-desktop.png')" }}
         />
-        {/* Soft Left Gradient Mask so text is always 100% crisp */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none" />
+        {/* Smooth Gradient Overlay: solid white on the left, fading gradually towards the right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 sm:via-white/75 to-transparent pointer-events-none" />
 
         {/* Main Omset Figure */}
         <div className="space-y-1 relative z-10">
