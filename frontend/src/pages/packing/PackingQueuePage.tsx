@@ -204,9 +204,9 @@ export const PackingQueuePage: React.FC = () => {
 
                     {/* Notes if available */}
                     {order.notes && (
-                      <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-2xl text-xs space-y-1">
+                      <div className="py-2.5 border-t border-slate-100 text-xs space-y-1">
                         <span className="font-heading font-extrabold text-amber-950 block text-xs">Catatan Tanaman / Packing:</span>
-                        <p className="text-amber-900 font-medium italic">“{order.notes}”</p>
+                        <p className="text-slate-700 font-medium italic">“{order.notes}”</p>
                       </div>
                     )}
                   </div>
