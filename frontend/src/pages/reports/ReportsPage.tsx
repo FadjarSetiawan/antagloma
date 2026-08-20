@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
 import { masterService } from '../../services/masterService';
 import { managementService, SalesCommissionOwnerView } from '../../services/managementService';
-import { Order } from '../../types/order';
+import { Order, MasterTree } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
 import { CustomDatePickerModal } from '../../components/shared/CustomDatePickerModal';
@@ -62,7 +62,7 @@ export const ReportsPage: React.FC = () => {
   });
 
   const allOrders: Order[] = data?.data || [];
-  const { data: masterTrees = [] } = useQuery({
+  const { data: masterTrees = [] } = useQuery<MasterTree[]>({
     queryKey: ['master-trees-report'],
     queryFn: () => masterService.getTrees(),
   });
@@ -278,7 +278,7 @@ export const ReportsPage: React.FC = () => {
     return summary;
   }, {});
   const soldPlants = Object.values(plantSales).sort((a, b) => b.quantity - a.quantity || b.omzet - a.omzet);
-  const unsoldPlants = masterTrees.filter((tree) => !plantSales[tree.code]);
+  const unsoldPlants = (masterTrees || []).filter((tree: MasterTree) => !plantSales[tree.code]);
 
   // Payment Breakdown
   const bcaOmzet = orders
@@ -706,7 +706,7 @@ export const ReportsPage: React.FC = () => {
             <p className="text-xs text-slate-400">Semua ID sudah memiliki penjualan.</p>
           ) : (
             <div className="flex flex-wrap gap-1.5">
-              {unsoldPlants.slice(0, 15).map((tree) => (
+              {unsoldPlants.slice(0, 15).map((tree: MasterTree) => (
                 <span key={tree.id} className="px-2.5 py-1 rounded-xl bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-700">
                   {tree.code}
                 </span>
