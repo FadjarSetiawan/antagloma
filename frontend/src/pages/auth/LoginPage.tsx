@@ -13,6 +13,8 @@ import {
   CheckCircle2,
   ArrowRight,
   AlertCircle,
+  Sprout,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
@@ -22,6 +24,7 @@ export const LoginPage: React.FC = () => {
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   // Register Form States (Allowed Roles: Sales & Admin)
   const [regName, setRegName] = useState('');
@@ -89,26 +92,41 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-100 flex items-center justify-center p-3 sm:p-6 font-sans text-slate-900">
-      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xl space-y-5 my-auto">
+    <div
+      className="min-h-screen w-full bg-slate-50 flex flex-col items-center justify-center p-4 sm:p-6 font-sans text-slate-900 relative bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/login-bg.jpg')" }}
+    >
+      {/* Background Soft Ambient Overlay */}
+      <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] pointer-events-none" />
+
+      {/* Main Glassmorphic Card Container */}
+      <div className="w-full max-w-[420px] bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-7 sm:p-9 shadow-2xl shadow-slate-900/10 border border-white/80 space-y-6 relative z-10 my-auto">
         
         {/* Brand Header */}
-        <div className="text-center space-y-1.5">
-          <img
-            src="/logo.png"
-            alt="Antagloma Florist Logo"
-            className="w-14 h-14 rounded-2xl object-cover mx-auto shadow-md border border-slate-200"
-          />
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight pt-1">
+        <div className="text-center space-y-2">
+          {/* Logo Badge */}
+          <div className="w-14 h-14 rounded-2xl bg-[#04593f] flex items-center justify-center mx-auto shadow-md p-2.5">
+            <Sprout className="w-8 h-8 text-emerald-100" />
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#04593f] tracking-tight">
             Antagloma Florist
           </h1>
-          <p className="text-xs text-slate-500 font-semibold">
+
+          {/* Botanical Divider */}
+          <div className="flex items-center justify-center gap-3 py-0.5">
+            <div className="h-px w-14 bg-slate-200" />
+            <Sprout className="w-4 h-4 text-[#04593f]" />
+            <div className="h-px w-14 bg-slate-200" />
+          </div>
+
+          <p className="text-xs text-slate-500 font-medium">
             Spesialis Tanaman Hias Adenium Bunga Tumpuk
           </p>
         </div>
 
-        {/* Tab Switcher: Masuk vs Daftar Akun Baru */}
-        <div className="grid grid-cols-2 bg-slate-100 rounded-2xl p-1 font-bold text-xs">
+        {/* Tab Switcher (Underline Style) */}
+        <div className="grid grid-cols-2 border-b border-slate-200 text-center font-bold text-xs sm:text-sm">
           <button
             type="button"
             onClick={() => {
@@ -116,13 +134,13 @@ export const LoginPage: React.FC = () => {
               setError('');
               setSuccessMsg('');
             }}
-            className={`py-2.5 rounded-xl transition-all cursor-pointer font-extrabold ${
+            className={`pb-3 transition-all cursor-pointer ${
               activeTab === 'login'
-                ? 'bg-[#04593f] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'text-[#04593f] border-b-2 border-[#04593f] font-extrabold'
+                : 'text-slate-400 font-bold hover:text-slate-700'
             }`}
           >
-            Masuk (Login)
+            Masuk
           </button>
 
           <button
@@ -132,10 +150,10 @@ export const LoginPage: React.FC = () => {
               setError('');
               setSuccessMsg('');
             }}
-            className={`py-2.5 rounded-xl transition-all cursor-pointer font-extrabold ${
+            className={`pb-3 transition-all cursor-pointer ${
               activeTab === 'register'
-                ? 'bg-[#04593f] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'text-[#04593f] border-b-2 border-[#04593f] font-extrabold'
+                : 'text-slate-400 font-bold hover:text-slate-700'
             }`}
           >
             Daftar Akun Baru
@@ -157,7 +175,7 @@ export const LoginPage: React.FC = () => {
           </div>
         )}
 
-        {/* Form 1: LOGIN FORM */}
+        {/* FORM 1: LOGIN FORM */}
         {activeTab === 'login' ? (
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div>
@@ -174,7 +192,7 @@ export const LoginPage: React.FC = () => {
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                   placeholder="nama@antagloma.com"
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#04593f] focus:border-[#04593f] bg-white transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#04593f] focus:border-[#04593f] shadow-2xs transition-all"
                 />
               </div>
             </div>
@@ -192,7 +210,7 @@ export const LoginPage: React.FC = () => {
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-11 py-3 border border-slate-300 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#04593f] focus:border-[#04593f] bg-white transition-all"
+                  className="w-full pl-10 pr-11 py-3 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#04593f] focus:border-[#04593f] shadow-2xs transition-all"
                 />
                 <button
                   type="button"
@@ -205,10 +223,32 @@ export const LoginPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Remember Me & Forgot Password Row */}
+            <div className="flex items-center justify-between text-xs pt-0.5">
+              <label className="flex items-center gap-2 text-slate-600 font-medium cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded-md border-slate-300 text-[#04593f] focus:ring-[#04593f] cursor-pointer"
+                />
+                <span>Ingat saya</span>
+              </label>
+
+              <button
+                type="button"
+                onClick={() => alert('Untuk reset password akun, silakan hubungi Administrator sistem.')}
+                className="text-xs text-[#04593f] font-bold hover:underline cursor-pointer bg-transparent border-0 p-0"
+              >
+                Lupa password?
+              </button>
+            </div>
+
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 bg-[#04593f] hover:bg-[#034631] text-white rounded-2xl font-extrabold text-xs sm:text-sm shadow-md transition-all active:scale-[0.99] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+              className="w-full py-3.5 bg-[#04593f] hover:bg-[#034631] text-white rounded-2xl font-bold text-sm shadow-md shadow-emerald-950/20 transition-all active:scale-[0.99] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
               {isLoading ? (
                 <span>Memproses Masuk...</span>
@@ -221,7 +261,7 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
         ) : (
-          /* Form 2: REGISTER FORM (Sales & Admin Role) */
+          /* FORM 2: REGISTER FORM (Sales & Admin Role) */
           <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
             <div>
               <label className="block text-xs font-bold text-slate-800 mb-1.5">
@@ -235,7 +275,7 @@ export const LoginPage: React.FC = () => {
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
                   placeholder="Budi Santoso"
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#04593f] focus:border-[#04593f] bg-white transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#04593f] focus:border-[#04593f] shadow-2xs transition-all"
                 />
               </div>
             </div>
@@ -254,7 +294,7 @@ export const LoginPage: React.FC = () => {
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   placeholder="budi@antagloma.com"
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#04593f] focus:border-[#04593f] bg-white transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#04593f] focus:border-[#04593f] shadow-2xs transition-all"
                 />
               </div>
             </div>
@@ -271,7 +311,7 @@ export const LoginPage: React.FC = () => {
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-11 py-3 border border-slate-300 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#04593f] focus:border-[#04593f] bg-white transition-all"
+                  className="w-full pl-10 pr-11 py-3 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#04593f] focus:border-[#04593f] shadow-2xs transition-all"
                 />
                 <button
                   type="button"
@@ -326,7 +366,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 bg-[#04593f] hover:bg-[#034631] text-white rounded-2xl font-extrabold text-xs sm:text-sm shadow-md transition-all active:scale-[0.99] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+              className="w-full py-3.5 bg-[#04593f] hover:bg-[#034631] text-white rounded-2xl font-bold text-sm shadow-md shadow-emerald-950/20 transition-all active:scale-[0.99] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
               {isLoading ? (
                 <span>Mendaftarkan Akun...</span>
@@ -340,14 +380,24 @@ export const LoginPage: React.FC = () => {
           </form>
         )}
 
-        {/* Card Footer */}
-        <div className="pt-2 text-center border-t border-slate-100">
-          <p className="text-[11px] text-slate-400 font-medium">
-            © 2026 Antagloma Florist. Sistem Manajemen Pesanan.
+        {/* Security / Trust Card Badge */}
+        <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <p className="text-[11px] text-slate-500 font-medium leading-tight">
+            Akses aman dan hanya untuk staff yang terdaftar.
           </p>
         </div>
 
       </div>
+
+      {/* Outside Footer */}
+      <div className="text-center text-[11px] text-slate-600 font-medium space-y-0.5 pt-4 relative z-10">
+        <p>© 2026 Antagloma Florist</p>
+        <p>Sistem Manajemen Pesanan</p>
+      </div>
+
     </div>
   );
 };
