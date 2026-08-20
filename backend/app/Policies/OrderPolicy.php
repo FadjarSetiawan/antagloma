@@ -33,9 +33,12 @@ class OrderPolicy
     public function update(User $user, Order $order): bool
     {
         $role = $user->role->value ?? $user->role;
-        // Sales are read-only after order creation. Generic PUT/PATCH updates
-        // are reserved for Owner/Admin so status cannot be manipulated via API.
-        return in_array($role, ['owner', 'admin']);
+        if (in_array($role, ['owner', 'admin'], true)) {
+            return true;
+        }
+
+        $status = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
+        return $role === 'sales' && $order->created_by === $user->id && $status === 'WAITING_PROCESS';
     }
 
     public function approve(User $user, Order $order): bool

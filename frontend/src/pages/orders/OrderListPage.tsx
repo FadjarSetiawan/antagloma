@@ -310,8 +310,8 @@ export const OrderListPage: React.FC = () => {
             // for a photo. Once packing is complete or delivery is complete,
             // the order must remain immutable and the pencil is hidden.
             const canModifySalesOrder =
-              (role === 'admin' || role === 'owner') &&
-              ['WAITING_PROCESS', 'WAITING_PACKING'].includes(order.status);
+              ((role === 'admin' || role === 'owner') && ['WAITING_PROCESS', 'WAITING_PACKING'].includes(order.status)) ||
+              (role === 'sales' && order.status === 'WAITING_PROCESS');
             const canDeleteOrder = role === 'owner';
             const isReturnedOrder = order.status === 'RETURNED_PARTIAL' || order.status === 'RETURNED';
             const returnedPackages = (order.packages || []).filter((pkg) => pkg.returned || pkg.returned_at);
