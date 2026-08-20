@@ -520,14 +520,14 @@ export const ReportsPage: React.FC = () => {
 
         {/* Retur */}
         <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
-          <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
             <RotateCcw className="w-4 h-4" />
           </div>
           <div className="min-w-0">
             <span className="text-[10.5px] text-slate-500 font-medium block truncate">Retur</span>
             <div className="flex items-baseline gap-1.5 min-w-0">
               <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">{totalReturnedPackages} Paket</span>
-              <span className="text-[10.5px] font-bold text-rose-600 truncate">
+              <span className="text-[10.5px] font-bold text-slate-700 truncate">
                 Rp {totalReturnAmount.toLocaleString('id-ID')}
               </span>
             </div>
@@ -544,7 +544,7 @@ export const ReportsPage: React.FC = () => {
               <span className="ml-1 text-slate-400 font-normal">(Pembeli − Ekspedisi)</span>
             </span>
             <span className={`text-xs sm:text-sm font-black block mt-0.5 truncate ${
-              totalShippingDifference >= 0 ? 'text-[#04593f]' : 'text-rose-600'
+              totalShippingDifference >= 0 ? 'text-[#04593f]' : 'text-slate-800'
             }`}>
               {totalShippingDifference >= 0 ? '+' : '-'}Rp {Math.abs(totalShippingDifference).toLocaleString('id-ID')}
             </span>
