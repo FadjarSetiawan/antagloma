@@ -1,6 +1,5 @@
 import { api } from './api';
 import { Order, OrderItem, OrderPackage, Region } from '../types/order';
-
 export type { Region } from '../types/order';
 
 export interface CreateOrderPayload {
@@ -20,6 +19,7 @@ export interface CreateOrderPayload {
   bank_name?: string;
   buyer_shipping_cost?: number;
   payment_proof?: File | null;
+  plant_photo?: File | null;
   items: Omit<OrderItem, 'id'>[];
 }
 
@@ -85,6 +85,9 @@ export const orderService = {
 
     if (payload.payment_proof) {
       formData.append('payment_proof', payload.payment_proof);
+    }
+    if (payload.plant_photo) {
+      formData.append('plant_photo', payload.plant_photo);
     }
 
     formData.append('items', JSON.stringify(payload.items));

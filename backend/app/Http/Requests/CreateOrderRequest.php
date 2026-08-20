@@ -44,6 +44,7 @@ class CreateOrderRequest extends FormRequest
             'bank_name'           => ['nullable', 'string', 'in:BCA,BRI'],
             'buyer_shipping_cost' => ['nullable', 'numeric', 'min:0'],
             'payment_proof'       => ['nullable', 'file', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
+            'plant_photo'         => ['nullable', 'file', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
             'items'               => ['required', 'array', 'min:1'],
             'items.*.product_name' => ['nullable', 'string', 'max:255'],
             'items.*.tree_code'    => ['nullable', 'string', 'max:20'],

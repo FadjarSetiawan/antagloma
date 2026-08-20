@@ -55,6 +55,8 @@ class OrderResource extends JsonResource
             ])),
             'is_verified'         => $isVerified,
             'payment_proof_url'   => $this->payment_proof_path ? asset('storage/' . $this->payment_proof_path) : null,
+            'plant_photo_path'    => $this->plant_photo_path,
+            'plant_photo_url'     => $this->plant_photo_path ? asset('storage/' . $this->plant_photo_path) : null,
             'payment_status'      => $this->payment_status ?? 'PENDING',
             ...(!$isSales ? ['shipping_cost' => $this->shipping_cost] : []),
             'tracking_number'     => $this->tracking_number,

@@ -247,7 +247,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               {/* Bukti Transfer Image Attachment */}
               {order.payment_proof_url && (
                 <div className="pt-1">
-                  <span className="text-[10px] text-slate-500 font-bold block mb-1">Bukti Transfer Pembayaran:</span>
+                  <span className="text-xs text-slate-600 font-bold block mb-1">Bukti Transfer Pembayaran:</span>
                   <div
                     onClick={() => setZoomImage(order.payment_proof_url || null)}
                     className="relative w-28 h-28 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-2xs"
@@ -264,6 +264,46 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 </div>
               )}
             </div>
+
+            {/* FOTO TANAMAN PESANAN (SEBELUM PACKING) */}
+            {order.plant_photo_url && (
+              <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 space-y-2">
+                <span className="text-xs font-heading font-extrabold uppercase text-slate-700 block border-b border-slate-200/80 pb-1.5 tracking-wider">
+                  Foto Tanaman Pesanan (Sebelum Packing)
+                </span>
+
+                <div className="flex items-start gap-3 pt-0.5">
+                  <div
+                    onClick={() => setZoomImage(order.plant_photo_url || null)}
+                    className="relative w-32 h-32 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-2xs shrink-0"
+                  >
+                    <img
+                      src={order.plant_photo_url}
+                      alt="Foto Tanaman Pesanan"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                    <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                      <ZoomIn className="w-5 h-5" />
+                    </div>
+                  </div>
+                  <div className="space-y-2 min-w-0">
+                    <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                      Foto dokumentasi tanaman yang diunggah Sales saat pembuatan order untuk pengecekan Admin & Packing.
+                    </p>
+                    <a
+                      href={order.plant_photo_url}
+                      download={`foto-tanaman-${order.order_number}.jpg`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#04593f] hover:bg-emerald-950 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                    >
+                      <Download className="w-3.5 h-3.5 text-white" />
+                      <span>Unduh Foto Tanaman</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* FOTO BUKTI PACKING TANAMAN (Jika ada) */}
             {order.packing_images && order.packing_images.length > 0 && (

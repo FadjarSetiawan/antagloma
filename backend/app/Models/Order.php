@@ -33,6 +33,7 @@ class Order extends Model
         'bank_name',
         'buyer_shipping_cost',
         'payment_proof_path',
+        'plant_photo_path',
         'payment_status',
         'shipping_cost',
         'tracking_number',

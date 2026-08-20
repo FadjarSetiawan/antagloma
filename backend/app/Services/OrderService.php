@@ -71,6 +71,11 @@ class OrderService
                 $proofPath = $data['payment_proof']->store('payment_proofs', 'public');
             }
 
+            $plantPhotoPath = null;
+            if (isset($data['plant_photo']) && $data['plant_photo'] instanceof \Illuminate\Http\UploadedFile) {
+                $plantPhotoPath = $data['plant_photo']->store('plant_photos', 'public');
+            }
+
             $payload = [
                 'order_number'        => $orderNumber,
                 'order_date'          => $orderDate,
@@ -90,6 +95,7 @@ class OrderService
                 'bank_name'           => $data['payment_method'] === 'Transfer Bank' ? ($data['bank_name'] ?? null) : null,
                 'buyer_shipping_cost' => in_array($data['delivery_method'], ['Kirim Paket', 'Packing Kayu'], true) ? ($data['buyer_shipping_cost'] ?? 0) : 0,
                 'payment_proof_path'  => $proofPath,
+                'plant_photo_path'    => $plantPhotoPath,
                 'payment_status'      => 'PAID',
                 'created_by'          => $user->id,
             ];

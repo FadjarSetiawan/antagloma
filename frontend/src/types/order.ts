@@ -92,6 +92,8 @@ export interface Order {
   bank_name?: 'BCA' | 'BRI';
   buyer_shipping_cost?: number;
   payment_proof_url?: string;
+  plant_photo_path?: string;
+  plant_photo_url?: string;
   payment_status?: string;
   /** False while payment is still waiting for admin verification. */
   is_verified?: boolean;

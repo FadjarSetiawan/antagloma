@@ -80,6 +80,9 @@ class OrderController extends Controller
         if ($request->hasFile('payment_proof')) {
             $validated['payment_proof'] = $request->file('payment_proof');
         }
+        if ($request->hasFile('plant_photo')) {
+            $validated['plant_photo'] = $request->file('plant_photo');
+        }
 
         $order = $this->orderService->createOrder($validated, $request->user());
 

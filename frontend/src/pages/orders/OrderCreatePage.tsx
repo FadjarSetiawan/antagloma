@@ -25,6 +25,7 @@ import {
   Banknote,
   ShoppingBag,
   Calendar as CalendarIcon,
+  Camera,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -52,8 +53,11 @@ export const OrderCreatePage: React.FC = () => {
   const [deliveryMethod, setDeliveryMethod] = useState<string>('Kirim Paket');
   const [fullAddress, setFullAddress] = useState('');
 
-  // Form Fields - Step 2 (Detail Tanaman & Catatan Pengiriman)
+  // Form Fields - Step 2 (Detail Tanaman, Foto Tanaman & Catatan Pengiriman)
   const [items, setItems] = useState<OrderItem[]>([]);
+  const [plantPhotoFile, setPlantPhotoFile] = useState<File | null>(null);
+  const [plantPhotoPreview, setPlantPhotoPreview] = useState<string | null>(null);
+  const plantPhotoInputRef = useRef<HTMLInputElement>(null);
   const [notes, setNotes] = useState('');
   const [isAddPlantModalOpen, setIsAddPlantModalOpen] = useState(false);
 
@@ -137,6 +141,15 @@ export const OrderCreatePage: React.FC = () => {
     setSelectedDistrict(dist);
   };
 
+  // Plant Photo Upload Handler
+  const handlePlantPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setPlantPhotoFile(file);
+      setPlantPhotoPreview(URL.createObjectURL(file));
+    }
+  };
+
   // Payment Proof Image Upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -154,7 +167,7 @@ export const OrderCreatePage: React.FC = () => {
 
   // Step Validation Rules
   const isStep1Valid = customerName.trim() !== '' && phone.trim() !== '' && fullAddress.trim() !== '';
-  const isStep2Valid = items.length > 0;
+  const isStep2Valid = items.length > 0 && plantPhotoFile !== null;
   const isStep3Valid = paymentProofFile !== null;
 
   const handleAddPlant = (plant: OrderItem) => {
@@ -210,6 +223,7 @@ export const OrderCreatePage: React.FC = () => {
         bank_name: paymentMethod === 'Transfer Bank' ? bankName : undefined,
         buyer_shipping_cost: actualShippingCost,
         payment_proof: paymentProofFile,
+        plant_photo: plantPhotoFile,
         items,
       });
 
@@ -627,8 +641,92 @@ export const OrderCreatePage: React.FC = () => {
               </div>
             )}
 
+            {/* UPLOAD FOTO TANAMAN (Wajib sebelum lanjut ke pembayaran) */}
+            <div className="p-4 bg-emerald-50/40 border border-dashed border-emerald-300 rounded-2xl space-y-3 shadow-2xs font-sans">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-emerald-100/80 text-[#04593f] flex items-center justify-center relative flex-shrink-0">
+                  <Camera className="w-6 h-6" />
+                  <div className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#04593f] text-white flex items-center justify-center text-[10px] font-bold">
+                    +
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-xs sm:text-sm font-extrabold text-slate-900">
+                    Upload Foto Tanaman <span className="text-rose-600 font-bold">(Wajib)</span>
+                  </h4>
+                  <p className="text-xs text-slate-600 font-medium leading-relaxed mt-0.5">
+                    Upload 1 foto yang berisi semua tanaman pesanan sebelum packing.
+                  </p>
+                </div>
+              </div>
+
+              {/* Upload Input & Trigger Button / Preview */}
+              <input
+                ref={plantPhotoInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/jpg,image/webp"
+                className="hidden"
+                onChange={handlePlantPhotoChange}
+              />
+
+              {plantPhotoPreview ? (
+                <div className="p-3 bg-white border border-emerald-200 rounded-xl flex items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img
+                      src={plantPhotoPreview}
+                      alt="Foto Tanaman"
+                      className="w-14 h-14 rounded-lg object-cover border border-slate-200 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-slate-900 block truncate">
+                        {plantPhotoFile?.name || 'Foto Tanaman Terlampir'}
+                      </span>
+                      <span className="text-xs text-emerald-700 font-medium flex items-center gap-1 mt-0.5">
+                        <Check className="w-3.5 h-3.5" /> Foto berhasil dipilih
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => plantPhotoInputRef.current?.click()}
+                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      Ganti
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPlantPhotoFile(null);
+                        setPlantPhotoPreview(null);
+                        if (plantPhotoInputRef.current) plantPhotoInputRef.current.value = '';
+                      }}
+                      className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                      title="Hapus foto"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => plantPhotoInputRef.current?.click()}
+                  className="w-full py-2.5 px-4 bg-[#04593f] hover:bg-emerald-950 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Upload Foto Tanaman</span>
+                </button>
+              )}
+
+              <p className="text-center text-xs text-slate-500 font-medium">
+                Format: JPG, JPEG, PNG • Maks. 5MB
+              </p>
+            </div>
+
             {/* Kolom Catatan Pengiriman (Directly under plant list) */}
-            <div className="pt-2">
+            <div className="pt-1">
               <label className="block text-xs font-extrabold text-slate-900 mb-1.5 flex items-center gap-1.5">
                 <Truck className="w-4 h-4 text-[#04593f]" />
                 <span>Catatan Pengiriman (Opsional)</span>
@@ -679,22 +777,31 @@ export const OrderCreatePage: React.FC = () => {
           </div>
 
           {/* Step 2 Bottom Navigation Buttons (Side-by-Side Kanan Kiri) */}
-          <div className="grid grid-cols-2 gap-2.5 pt-2">
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="py-3 px-2.5 bg-white border-2 border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-[11px] sm:text-xs font-black cursor-pointer shadow-xs truncate text-center"
-            >
-              ← Kembali ke Langkah 1
-            </button>
-            <button
-              type="button"
-              disabled={!isStep2Valid}
-              onClick={() => setStep(3)}
-              className="py-3 px-2.5 bg-[#04593f] hover:bg-emerald-900 disabled:opacity-50 text-white rounded-2xl text-[11px] sm:text-xs font-black shadow-md transition-all cursor-pointer truncate text-center"
-            >
-              Lanjut ke Langkah 3 →
-            </button>
+          <div className="space-y-1.5 pt-2 font-sans">
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="py-3 px-2.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-bold cursor-pointer shadow-xs truncate text-center transition-colors"
+              >
+                ← Kembali ke Langkah 1
+              </button>
+              <button
+                type="button"
+                disabled={!isStep2Valid}
+                onClick={() => setStep(3)}
+                className="py-3 px-2.5 bg-[#04593f] hover:bg-emerald-950 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl text-xs font-bold shadow-md transition-all cursor-pointer truncate text-center"
+              >
+                Lanjut ke Langkah 3 →
+              </button>
+            </div>
+            {!isStep2Valid && (
+              <p className="text-center text-xs text-amber-700 font-medium">
+                {items.length === 0
+                  ? '* Tambahkan minimal 1 varian pohon adenium'
+                  : '* Upload foto tanaman terlebih dahulu untuk melanjutkan ke pembayaran'}
+              </p>
+            )}
           </div>
         </div>
       )}
