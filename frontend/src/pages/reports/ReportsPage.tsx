@@ -578,7 +578,7 @@ export const ReportsPage: React.FC = () => {
                     <div className="min-w-0">
                       <span className="block text-xs font-bold text-slate-900 truncate">{sales.name}</span>
                       <span className="block text-[10px] text-slate-400">{sales.orderCount} pesanan</span>
-                      <span className={`block text-[10px] ${sales.returnCount > 0 ? 'text-rose-600' : 'text-slate-400'}`}>Retur: {sales.returnCount > 0 ? `${sales.returnCount} paket · Rp ${sales.returnAmount.toLocaleString('id-ID')}` : 'Tidak ada'}</span>
+                      <span className={`block text-[10px] ${sales.returnCount > 0 ? 'text-slate-600 font-medium' : 'text-slate-400'}`}>Retur: {sales.returnCount > 0 ? `${sales.returnCount} paket · Rp ${sales.returnAmount.toLocaleString('id-ID')}` : 'Tidak ada'}</span>
                     </div>
                     <span className="text-xs font-extrabold text-slate-900 whitespace-nowrap">Rp {sales.omzet.toLocaleString('id-ID')}</span>
                   </div>
@@ -692,13 +692,13 @@ export const ReportsPage: React.FC = () => {
             </button>
           )}
         </div>
-        <div className="bg-white border border-orange-200/80 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-2xs">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-2xs">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-orange-700">ID Belum Terjual</h2>
+              <h2 className="text-sm font-bold text-slate-900">ID Belum Terjual</h2>
               <p className="text-[10px] text-slate-400 mt-0.5">ID tanaman yang belum ada penjualan pada periode ini.</p>
             </div>
-            <span className="px-2.5 py-1 rounded-xl bg-orange-50 text-orange-700 text-xs font-bold flex-shrink-0">
+            <span className="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold flex-shrink-0">
               {unsoldPlants.length} ID
             </span>
           </div>
@@ -707,12 +707,12 @@ export const ReportsPage: React.FC = () => {
           ) : (
             <div className="flex flex-wrap gap-1.5">
               {unsoldPlants.slice(0, 15).map((tree) => (
-                <span key={tree.id} className="px-2.5 py-1 rounded-xl bg-orange-50 border border-orange-100 text-[10px] font-bold text-orange-700">
+                <span key={tree.id} className="px-2.5 py-1 rounded-xl bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-700">
                   {tree.code}
                 </span>
               ))}
               {unsoldPlants.length > 15 && (
-                <span className="px-2.5 py-1 text-[10px] font-bold text-orange-500">...</span>
+                <span className="px-2.5 py-1 text-[10px] font-bold text-slate-500">...</span>
               )}
             </div>
           )}
