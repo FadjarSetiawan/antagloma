@@ -7,12 +7,12 @@ frontend/node_modules/
 # Laravel / Backend
 backend/.env
 backend/storage/*.key
-backend/storage/logs/
-backend/storage/framework/cache/
-backend/storage/framework/sessions/
-backend/storage/framework/views/
-backend/storage/app/public/packing_proofs/
-backend/storage/app/public/payment_proofs/
+backend/storage/logs/*
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/app/public/*
+!backend/storage/app/public/.gitignore
 backend/bootstrap/cache/*.php
 
 # IDE / System
