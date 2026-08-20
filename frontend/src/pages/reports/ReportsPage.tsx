@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../../services/orderService';
 import { masterService } from '../../services/masterService';
-import { managementService } from '../../services/managementService';
+import { managementService, SalesCommissionOwnerView } from '../../services/managementService';
 import { Order } from '../../types/order';
 import { OrderStatusBadge } from '../../components/shared/OrderStatusBadge';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
@@ -66,11 +66,11 @@ export const ReportsPage: React.FC = () => {
     queryKey: ['master-trees-report'],
     queryFn: () => masterService.getTrees(),
   });
-  const { data: salesResponse } = useQuery({
+  const { data: salesResponse } = useQuery<{ success: boolean; data: SalesCommissionOwnerView[] }>({
     queryKey: ['reports-sales-list'],
     queryFn: () => managementService.getCommissions(),
   });
-  const salesList = salesResponse?.data || [];
+  const salesList: SalesCommissionOwnerView[] = salesResponse?.data || [];
 
   const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const reportPeriodLabel = periodFilter === 'date'
@@ -398,13 +398,13 @@ export const ReportsPage: React.FC = () => {
           {periodFilter === 'all' && <span className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold">Semua transaksi penjualan</span>}
           <div className="w-full sm:w-48">
             <CustomSelect
-              options={[{ value: 'all', label: 'Semua Sales' }, ...(salesList || []).map((sales) => ({ value: String(sales.id), label: sales.name }))]}
+              options={[{ value: 'all', label: 'Semua Sales' }, ...(salesList || []).map((sales: SalesCommissionOwnerView) => ({ value: String(sales.id), label: sales.name }))]}
               value={selectedSalesId}
               onChange={setSelectedSalesId}
             />
           </div>
           <span className="text-[11px] text-slate-400 font-semibold">Menampilkan: <b className="text-slate-700">{reportPeriodLabel}</b></span>
-          <span className="text-[11px] text-slate-400 font-semibold">• <b className="text-slate-700">{selectedSalesId === 'all' ? 'Semua Sales' : (salesList || []).find((sales) => String(sales.id) === selectedSalesId)?.name || 'Sales'}</b></span>
+          <span className="text-[11px] text-slate-400 font-semibold">• <b className="text-slate-700">{selectedSalesId === 'all' ? 'Semua Sales' : (salesList || []).find((sales: SalesCommissionOwnerView) => String(sales.id) === selectedSalesId)?.name || 'Sales'}</b></span>
         </div>
       </section>
 
