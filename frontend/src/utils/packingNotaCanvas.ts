@@ -3,6 +3,7 @@ export interface PackingNotaCanvasData {
   customerName: string;
   customerPhone: string;
   packageType: string;
+  weight?: string;
   address: string;
   items: Array<{ name: string; quantity: number }>;
   note: string;
@@ -52,7 +53,8 @@ export const createPackingNotaCanvas = (data: PackingNotaCanvasData) => {
   text('PENERIMA / CUSTOMER:', 18, y, 19, true); y += 34;
   text(data.customerName, 18, y, 29, true); y += 31;
   text(data.customerPhone, 18, y, 22); y += 31;
-  text(`[ ${data.packageType.toUpperCase()} ]`, 18, y, 19, true); y += 28; divider(y); y += 36;
+  const packageTypeLabel = `[ ${data.packageType.toUpperCase()} ]${data.weight ? `  •  ${data.weight}` : ''}`;
+  text(packageTypeLabel, 18, y, 19, true); y += 28; divider(y); y += 36;
   text('ALAMAT PENGIRIMAN:', 18, y, 19, true); y += 33;
   addressLines.forEach((line) => { text(line, 18, y, 23, true); y += 32; }); y += 7; divider(y); y += 36;
   text('ITEM TANAMAN & BONSAI POT', 18, y, 21, true); y += 36;

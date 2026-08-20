@@ -54,10 +54,45 @@ export const PackingNotaModal: React.FC<PackingNotaModalProps> = ({ order, packa
       const notes = 'notes' in item && item.notes ? ` (${item.notes})` : '';
       return { name: `${name} (${grade})${notes}`, quantity: item.quantity || 0 };
     });
+
+    const isFullset = packageType === 'Fullset';
+    let computedWeightStr = '';
+    if (packageInfo?.weight != null && Number(packageInfo.weight) > 0) {
+      computedWeightStr = `${Number(packageInfo.weight)} kg`;
+    } else {
+      let calculatedWeight = 0;
+      packageItems.forEach((item) => {
+        const grade = ('grade' in item ? item.grade : (order?.items?.find((i) => i.id === ('order_item_id' in item ? item.order_item_id : undefined))?.grade || 'A')) || 'A';
+        const g = String(grade).trim().toUpperCase();
+        let unitWeight = 0;
+        if (isFullset) {
+          if (['D', 'D+'].includes(g)) unitWeight = 6.0;
+          else if (g === 'J') unitWeight = 8.0;
+          else if (g === 'J+') unitWeight = 10.0;
+          else unitWeight = 1.0;
+        } else {
+          if (g === 'A') unitWeight = 0.2;
+          else if (g === 'B') unitWeight = 0.4;
+          else if (g === 'B+') unitWeight = 0.5;
+          else if (g === 'C') unitWeight = 0.6;
+          else if (['C+', 'C+'].includes(g)) unitWeight = 1.0;
+          else if (['D', 'D+'].includes(g)) unitWeight = 2.0;
+          else if (g === 'J') unitWeight = 4.0;
+          else if (g === 'J+') unitWeight = 5.0;
+          else unitWeight = 2.0;
+        }
+        calculatedWeight += unitWeight * (item.quantity || 1);
+      });
+      if (calculatedWeight > 0) {
+        computedWeightStr = `${Number(calculatedWeight.toFixed(2))} kg`;
+      }
+    }
+
     const address = [[order.district_name, order.regency_name, order.province_name].filter(Boolean).join(', '), order.full_address].filter(Boolean).join(', ');
     setNotaPreviewUrl(createPackingNotaCanvas({
       orderNumber: order.order_number,
       customerName: order.customer_name || '-', customerPhone: order.phone || '-', packageType: packageType || 'Non Fullset',
+      weight: computedWeightStr,
       address, items, note: customNotes || '-', packageLetter: packageInfo?.letter || 'A',
       salesName: order.creator?.name || 'Sales Staff', adminName: order.verifier?.name || 'Admin Operasional',
     }).toDataURL('image/png'));

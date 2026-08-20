@@ -447,15 +447,74 @@ export const OrderListPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Body Details: returned orders show package-level outcome for Sales */}
-                {isReturnedOrder && role === 'sales' ? (
+                {/* Body Details: returned orders show package-level outcome for Sales, Admin, and Owner */}
+                {isReturnedOrder ? (
                   <>
-                    {order.status === 'RETURNED' && <div className="flex items-center justify-between rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-700"><span><b className="block text-sm">Semua paket dalam order ini telah diretur</b><span className="text-[11px] text-rose-600">Retur dilakukan pada {order.returns?.[order.returns.length - 1]?.returned_at ? new Date(order.returns[order.returns.length - 1].returned_at).toLocaleString('id-ID') : 'tanggal tercatat'}</span></span><RotateCcw className="h-5 w-5" /></div>}
+                    {order.status === 'RETURNED' && (
+                      <div className="flex items-center justify-between rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-700">
+                        <span>
+                          <b className="block text-sm">Semua paket dalam order ini telah diretur</b>
+                          <span className="text-[11px] text-rose-600">
+                            Retur dilakukan pada {order.returns?.[order.returns.length - 1]?.returned_at ? new Date(order.returns[order.returns.length - 1].returned_at).toLocaleString('id-ID') : 'tanggal tercatat'}
+                          </span>
+                        </span>
+                        <RotateCcw className="h-5 w-5" />
+                      </div>
+                    )}
+                    {order.status === 'RETURNED_PARTIAL' && (
+                      <div className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900">
+                        <span>
+                          <b className="block text-sm">Sebagian paket dalam order ini telah diretur</b>
+                          <span className="text-[11px] text-amber-700">
+                            {returnedPackages.length} dari {(order.packages || []).length} paket diretur
+                          </span>
+                        </span>
+                        <RotateCcw className="h-5 w-5 text-amber-700" />
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-normal text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
-                      <div><span className="text-[10px] uppercase font-bold text-slate-400 block">Pemesan</span><span className="font-bold text-slate-900 text-xs block">{order.customer_name}</span><span className="text-slate-500 text-[11px] font-medium flex items-center gap-1 mt-0.5"><Phone className="w-3 h-3 text-slate-400" />{order.phone}</span></div>
-                      <div><span className="text-[10px] uppercase font-bold text-slate-400 block">Pengiriman & Item</span>{(order.packages || []).map(pkg => <span key={pkg.id} className={`block font-bold ${pkg.returned ? 'text-rose-600' : 'text-emerald-700'}`}><Truck className="mr-1 inline h-3.5 w-3.5" />Paket {pkg.letter} <span className="font-normal">{pkg.returned ? '↩ Retur' : '✓ Selesai'}</span></span>)}<span className="text-slate-500 font-normal text-[11px] block mt-0.5">{itemCount} tanaman • Rp {totalOrderAmount.toLocaleString('id-ID')}</span></div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Pemesan</span>
+                        <span className="font-bold text-slate-900 text-xs block">{order.customer_name}</span>
+                        <span className="text-slate-500 text-[11px] font-medium flex items-center gap-1 mt-0.5">
+                          <Phone className="w-3 h-3 text-slate-400" />{order.phone}
+                        </span>
+                        {(role === 'admin' || role === 'owner') && (
+                          <span className="mt-1.5 flex items-center gap-1 text-[11px] font-bold text-[#04593f]">
+                            <User className="h-3 w-3" /> Sales: {order.creator?.name || 'Tidak diketahui'}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Pengiriman & Item</span>
+                        {(order.packages || []).map((pkg) => (
+                          <span key={pkg.id} className={`block font-bold ${pkg.returned ? 'text-rose-600' : 'text-emerald-700'}`}>
+                            <Truck className="mr-1 inline h-3.5 w-3.5" />Paket {pkg.letter} <span className="font-normal">{pkg.returned ? '↩ Retur' : '✓ Selesai'}</span>
+                          </span>
+                        ))}
+                        <span className="text-slate-500 font-normal text-[11px] block mt-0.5">
+                          {itemCount} tanaman • Rp {totalOrderAmount.toLocaleString('id-ID')}
+                        </span>
+                      </div>
                     </div>
-                    <div className={`grid grid-cols-3 gap-2 rounded-xl border p-3 text-[10px] ${order.status === 'RETURNED' ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50'}`}><div><span className="block uppercase font-bold text-amber-800">Ringkasan Retur</span><b className="mt-1 block text-sm text-rose-600">{returnedPackages.length} dari {(order.packages || []).length} paket</b></div><div className="border-l border-amber-200 pl-2"><span className="block uppercase font-bold text-amber-800">Nominal Retur</span><b className="mt-1 block text-sm text-rose-600">Rp {(order.return_total || 0).toLocaleString('id-ID')}</b></div><div className="border-l border-amber-200 pl-2"><span className="block uppercase font-bold text-amber-800">Komisi Dikurangi</span><b className="mt-1 block text-sm text-rose-600">- Rp {Math.round((order.return_total || 0) * (Number(order.creator?.commission_rate) || 5) / 100).toLocaleString('id-ID')}</b></div></div>
+                    <div className={`grid grid-cols-3 gap-2 rounded-xl border p-3 text-[10px] ${order.status === 'RETURNED' ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50'}`}>
+                      <div>
+                        <span className="block uppercase font-bold text-amber-900">Ringkasan Retur</span>
+                        <b className="mt-1 block text-sm text-rose-600">{returnedPackages.length} dari {(order.packages || []).length} paket</b>
+                      </div>
+                      <div className="border-l border-amber-200 pl-2">
+                        <span className="block uppercase font-bold text-amber-900">Nominal Retur</span>
+                        <b className="mt-1 block text-sm text-rose-600">Rp {(order.return_total || 0).toLocaleString('id-ID')}</b>
+                      </div>
+                      <div className="border-l border-amber-200 pl-2">
+                        <span className="block uppercase font-bold text-amber-900">{role === 'sales' ? 'Komisi Dikurangi' : 'Koreksi Omzet'}</span>
+                        <b className="mt-1 block text-sm text-rose-600">
+                          {role === 'sales'
+                            ? `- Rp ${Math.round((order.return_total || 0) * (Number(order.creator?.commission_rate) || 5) / 100).toLocaleString('id-ID')}`
+                            : `- Rp ${(order.return_total || 0).toLocaleString('id-ID')}`}
+                        </b>
+                      </div>
+                    </div>
                   </>
                 ) : <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-normal text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
                   <div>
