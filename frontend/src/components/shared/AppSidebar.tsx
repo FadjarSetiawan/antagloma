@@ -11,7 +11,6 @@ import {
   LogOut,
   Sprout,
   Wallet,
-  CheckCircle,
   Percent,
   History,
 } from 'lucide-react';
@@ -74,18 +73,18 @@ export const AppSidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 text-white min-h-screen p-4 flex flex-col justify-between hidden md:flex font-sans">
+    <aside className="w-64 bg-white border-r border-slate-200/90 text-slate-700 min-h-screen p-4 flex flex-col justify-between hidden md:flex font-sans shadow-2xs">
       <div className="space-y-6">
         {/* Brand */}
-        <div className="flex items-center gap-3 px-2 pt-2">
+        <div className="flex items-center gap-3 px-2 pt-2 border-b border-slate-100 pb-4">
           <img
-            src="/logo.png"
+            src="/antagloma-logo.png"
             alt="Antagloma Florist Logo"
-            className="w-9 h-9 rounded-xl object-cover shadow-xs flex-shrink-0"
+            className="w-10 h-10 rounded-xl object-contain shadow-2xs flex-shrink-0 bg-emerald-50/50 p-1 border border-emerald-100"
           />
-          <div>
-            <h1 className="font-extrabold text-sm text-white leading-tight">Antagloma Florist</h1>
-            <p className="text-xs text-slate-400 font-medium leading-snug">Sales Order Management</p>
+          <div className="min-w-0">
+            <h1 className="font-black text-sm text-slate-900 leading-tight truncate">Antagloma Florist</h1>
+            <p className="text-[11px] text-[#04593f] font-semibold leading-snug truncate">Sales Order Management</p>
           </div>
         </div>
 
@@ -102,13 +101,13 @@ export const AppSidebar: React.FC = () => {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
                       isActive
-                        ? 'bg-[#04593f] text-white shadow-xs'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                        ? 'bg-emerald-50 text-[#04593f] border border-emerald-200/80 shadow-2xs font-extrabold'
+                        : 'text-slate-600 hover:text-slate-950 hover:bg-slate-50 font-semibold'
                     }`
                   }
                 >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
                 </NavLink>
               );
             })}
@@ -116,19 +115,19 @@ export const AppSidebar: React.FC = () => {
       </div>
 
       {/* User Info & Logout */}
-      <div className="pt-4 border-t border-slate-800 space-y-3">
-        <div className="px-2">
-          <span className="font-bold text-xs text-white block truncate">{user?.name}</span>
-          <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block mt-0.5">
+      <div className="pt-4 border-t border-slate-100 space-y-3">
+        <div className="px-3 py-2.5 bg-slate-50 border border-slate-200/70 rounded-2xl">
+          <span className="font-bold text-xs text-slate-900 block truncate">{user?.name}</span>
+          <span className="text-[10px] text-[#04593f] font-extrabold uppercase tracking-wider block mt-0.5">
             Role: {user?.role}
           </span>
         </div>
 
         <button
           onClick={logout}
-          className="w-full py-2.5 px-3 bg-slate-800 hover:bg-rose-900/50 hover:text-rose-300 text-slate-400 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer"
+          className="w-full py-2.5 px-3 bg-slate-50 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-slate-600 border border-slate-200/80 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-4 h-4 text-slate-400 group-hover:text-rose-600 shrink-0" />
           <span>Keluar (Logout)</span>
         </button>
       </div>

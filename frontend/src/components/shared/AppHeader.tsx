@@ -20,21 +20,27 @@ export const AppHeader: React.FC = () => {
   return (
     <header className="bg-white border-b-2 border-slate-200 sticky top-0 z-30 shadow-xs">
       <div className="h-16 px-4 md:px-6 flex items-center justify-between">
-        {/* Brand Title Aligned Full Left */}
+        {/* Brand Title: Mobile only (Desktop has logo in sidebar) */}
         <div
           onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2.5 cursor-pointer group"
+          className="flex md:hidden items-center gap-2.5 cursor-pointer group"
         >
           <img
-            src="/logo.png"
+            src="/antagloma-logo.png"
             alt="Antagloma Florist Logo"
-            className="w-9 h-9 rounded-xl object-cover shadow-xs flex-shrink-0 group-hover:opacity-90 transition-opacity"
+            className="w-9 h-9 rounded-xl object-contain shadow-2xs flex-shrink-0 group-hover:opacity-90 transition-opacity bg-emerald-50/50 p-0.5 border border-emerald-100"
           />
           <div>
-            <span className="font-extrabold text-slate-900 block leading-tight text-base sm:text-lg tracking-tight">
+            <span className="font-black text-slate-900 block leading-tight text-base tracking-tight">
               Antagloma Florist
             </span>
           </div>
+        </div>
+
+        {/* Desktop Left Breadcrumb / System Tag */}
+        <div className="hidden md:flex items-center gap-2 text-xs font-bold text-slate-600">
+          <span className="w-2 h-2 rounded-full bg-[#04593f]"></span>
+          <span>Antagloma Sales Order Management System</span>
         </div>
 
         {/* Right Section: User Profile Pill & Notification Bell */}
