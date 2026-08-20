@@ -359,15 +359,15 @@ export const ReportsPage: React.FC = () => {
       {/* Top Header Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
         <div>
-          <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Laporan Penjualan</h1>
-          <p className="text-xs text-slate-500 font-normal mt-0.5">
+          <h1 className="text-xl sm:text-2xl font-heading font-extrabold text-slate-900 leading-tight">Laporan Penjualan</h1>
+          <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
             Analisis performa omset, transaksi tanaman, dan arus keuangan toko.
           </p>
         </div>
 
         <button
           onClick={handleExportCSV}
-          className="w-full sm:w-auto px-4 py-2 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+          className="w-full sm:w-auto px-4 py-2.5 bg-[#04593f] hover:bg-emerald-950 text-white rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
         >
           <Download className="w-4 h-4 text-white" />
           <span>Export CSV Laporan</span>
@@ -375,27 +375,27 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Period filter — the same controls used on Komisi Sales. */}
-      <section className="bg-white border border-slate-200/90 rounded-2xl p-2.5 space-y-2.5 shadow-2xs">
+      <section className="bg-white border border-slate-200/90 rounded-2xl p-3 space-y-2.5 shadow-2xs">
         <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2 overflow-x-auto">
-          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider shrink-0">Periode Laporan:</span>
-          <div className="flex items-center gap-1 shrink-0">
+          <span className="text-xs font-heading font-extrabold text-slate-700 uppercase tracking-wider shrink-0">Periode Laporan:</span>
+          <div className="flex items-center gap-1 shrink-0 font-heading">
             {([
               ['date', 'Harian'],
               ['month', 'Bulanan'],
               ['year', 'Tahunan'],
               ['all', 'Semua'],
             ] as const).map(([value, label]) => (
-              <button key={value} type="button" onClick={() => { setPeriodFilter(value); if (value === 'date') setIsDatePickerOpen(true); }} className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${periodFilter === value ? 'bg-[#04593f] text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+              <button key={value} type="button" onClick={() => { setPeriodFilter(value); if (value === 'date') setIsDatePickerOpen(true); }} className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${periodFilter === value ? 'bg-[#04593f] text-white shadow-2xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
                 {label}
               </button>
             ))}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 pt-0.5">
-          {periodFilter === 'date' && <button type="button" onClick={() => setIsDatePickerOpen(true)} className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 rounded-xl px-3 py-2 text-xs font-extrabold text-[#04593f] cursor-pointer"><CalendarIcon className="w-4 h-4" />{reportPeriodLabel}</button>}
+          {periodFilter === 'date' && <button type="button" onClick={() => setIsDatePickerOpen(true)} className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 rounded-xl px-3 py-2 text-xs font-heading font-bold text-[#04593f] cursor-pointer"><CalendarIcon className="w-4 h-4" />{reportPeriodLabel}</button>}
           {periodFilter === 'month' && <><div className="w-36"><CustomSelect options={monthNames.map((label, index) => ({ value: String(index + 1), label }))} value={String(selectedMonth)} onChange={(value) => setSelectedMonth(Number(value))} /></div><div className="w-28"><CustomSelect options={[2024, 2025, 2026, 2027, 2028].map((year) => ({ value: String(year), label: String(year) }))} value={String(selectedYear)} onChange={(value) => setSelectedYear(Number(value))} /></div></>}
           {periodFilter === 'year' && <div className="w-36"><CustomSelect options={[2024, 2025, 2026, 2027, 2028].map((year) => ({ value: String(year), label: `Tahun ${year}` }))} value={String(selectedYear)} onChange={(value) => setSelectedYear(Number(value))} /></div>}
-          {periodFilter === 'all' && <span className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold">Semua transaksi penjualan</span>}
+          {periodFilter === 'all' && <span className="px-3 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-heading font-bold">Semua transaksi penjualan</span>}
           <div className="w-full sm:w-48">
             <CustomSelect
               options={[{ value: 'all', label: 'Semua Sales' }, ...(salesList || []).map((sales: SalesCommissionOwnerView) => ({ value: String(sales.id), label: sales.name }))]}
@@ -403,13 +403,13 @@ export const ReportsPage: React.FC = () => {
               onChange={setSelectedSalesId}
             />
           </div>
-          <span className="text-[11px] text-slate-400 font-semibold">Menampilkan: <b className="text-slate-700">{reportPeriodLabel}</b></span>
-          <span className="text-[11px] text-slate-400 font-semibold">• <b className="text-slate-700">{selectedSalesId === 'all' ? 'Semua Sales' : (salesList || []).find((sales: SalesCommissionOwnerView) => String(sales.id) === selectedSalesId)?.name || 'Sales'}</b></span>
+          <span className="text-xs text-slate-600 font-medium">Menampilkan: <b className="text-slate-900 font-bold">{reportPeriodLabel}</b></span>
+          <span className="text-xs text-slate-600 font-medium">• <b className="text-slate-900 font-bold">{selectedSalesId === 'all' ? 'Semua Sales' : (salesList || []).find((sales: SalesCommissionOwnerView) => String(sales.id) === selectedSalesId)?.name || 'Sales'}</b></span>
         </div>
       </section>
 
       {/* Executive Financial Summary Hero Card - Total Omzet */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm relative overflow-hidden space-y-4 font-sans">
+      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xs relative overflow-hidden space-y-4 font-sans">
         {/* Soft Floral Background Accent on Right */}
         <div 
           className="absolute right-0 top-0 bottom-0 w-3/5 sm:w-2/5 bg-contain bg-right bg-no-repeat pointer-events-none opacity-85"
@@ -419,11 +419,11 @@ export const ReportsPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none" />
 
         {/* Main Omset Figure */}
-        <div className="space-y-1.5 relative z-10">
-          <span className="text-[11px] uppercase font-extrabold text-[#04593f] tracking-wider block">
-            TOTAL OMZET PENJUALAN TANAMAN
+        <div className="space-y-1 relative z-10">
+          <span className="text-xs font-heading font-extrabold text-[#04593f] uppercase tracking-wider block">
+            Total Omzet Penjualan Tanaman
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-[#04593f] tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-heading font-black text-[#04593f] tracking-tight">
             {isLoading ? '...' : `Rp ${totalPlantOmzet.toLocaleString('id-ID')}`}
           </h2>
           
@@ -432,119 +432,116 @@ export const ReportsPage: React.FC = () => {
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-800 block">
+              <span className="text-xs font-heading font-bold text-slate-900 block">
                 {completedOrdersCount} Pesanan Selesai ({completionRate}%)
               </span>
-              <span className="text-[10px] text-slate-400 font-medium block">
+              <span className="text-xs text-slate-500 font-medium block">
                 Dibanding periode sebelumnya
               </span>
             </div>
           </div>
         </div>
 
-        {/* Estimasi Laba Bersih Sub-Card */}
-        <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-2xl p-3.5 sm:p-4 relative z-10 flex items-center gap-3.5 shadow-2xs">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100/80 text-[#04593f] flex items-center justify-center shrink-0">
-            <TrendingUp className="w-5 h-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <span className="text-[10px] uppercase font-extrabold text-emerald-800 tracking-wider block">
-              ESTIMASI LABA BERSIH
+        {/* Estimasi Laba Bersih Integrated Row */}
+        <div className="pt-3 border-t border-emerald-100 relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span className="text-xs font-heading font-extrabold text-emerald-800 uppercase tracking-wider block">
+              Estimasi Laba Bersih
             </span>
-            <span className="text-xl sm:text-2xl font-black text-[#04593f] block mt-0.5 truncate">
+            <span className="text-xl sm:text-2xl font-heading font-black text-[#04593f] block mt-0.5">
               Rp {estimatedNetProfit.toLocaleString('id-ID')}
             </span>
-            <span className="text-[10px] text-slate-500 font-medium block mt-0.5">
-              Omzet setelah retur + selisih ongkir − komisi sales
-            </span>
           </div>
+          <span className="text-xs text-slate-600 font-medium">
+            Omzet setelah retur + selisih ongkir − komisi sales
+          </span>
         </div>
       </div>
 
-      {/* Sub-Metrics 2x2 Clean White Grid */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 grid grid-cols-2 gap-2.5 sm:gap-3 text-xs shadow-2xs font-sans">
+      {/* Sub-Metrics 2x3 Flat Clean Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3.5 text-xs font-sans">
         {/* Total Pesanan */}
-        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+        <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 flex items-center gap-3 shadow-2xs">
           <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
             <FileText className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Total Pesanan</span>
-            <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">{totalOrdersCount} Pesanan</span>
+            <span className="text-xs text-slate-600 font-medium block truncate">Total Pesanan</span>
+            <span className="text-xs sm:text-sm font-heading font-black text-slate-900 block mt-0.5 truncate">{totalOrdersCount} Pesanan</span>
           </div>
         </div>
 
         {/* Komisi Sales */}
-        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+        <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 flex items-center gap-3 shadow-2xs">
           <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
             <Percent className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Komisi Sales</span>
-            <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">Rp {totalSalesCommission.toLocaleString('id-ID')}</span>
+            <span className="text-xs text-slate-600 font-medium block truncate">Komisi Sales</span>
+            <span className="text-xs sm:text-sm font-heading font-black text-slate-900 block mt-0.5 truncate">Rp {totalSalesCommission.toLocaleString('id-ID')}</span>
           </div>
         </div>
 
         {/* Total Tanaman Terjual */}
-        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+        <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 flex items-center gap-3 shadow-2xs">
           <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
             <TrendingUp className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Tanaman Terjual</span>
-            <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">{totalPlantsCount} Pohon</span>
+            <span className="text-xs text-slate-600 font-medium block truncate">Tanaman Terjual</span>
+            <span className="text-xs sm:text-sm font-heading font-black text-slate-900 block mt-0.5 truncate">{totalPlantsCount} Pohon</span>
           </div>
         </div>
 
         {/* Total Paket Dikirim */}
-        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+        <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 flex items-center gap-3 shadow-2xs">
           <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
             <Package className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Paket Dikirim</span>
-            <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">{totalPackagesSent} Paket</span>
+            <span className="text-xs text-slate-600 font-medium block truncate">Paket Dikirim</span>
+            <span className="text-xs sm:text-sm font-heading font-black text-slate-900 block mt-0.5 truncate">{totalPackagesSent} Paket</span>
           </div>
         </div>
 
         {/* Ongkir Dibayar Pembeli */}
-        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+        <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 flex items-center gap-3 shadow-2xs">
           <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
             <Truck className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Ongkir Pembeli</span>
-            <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">Rp {totalShippingCost.toLocaleString('id-ID')}</span>
+            <span className="text-xs text-slate-600 font-medium block truncate">Ongkir Pembeli</span>
+            <span className="text-xs sm:text-sm font-heading font-black text-slate-900 block mt-0.5 truncate">Rp {totalShippingCost.toLocaleString('id-ID')}</span>
           </div>
         </div>
 
         {/* Retur */}
-        <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-2xs">
+        <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 flex items-center gap-3 shadow-2xs">
           <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
             <RotateCcw className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10.5px] text-slate-500 font-medium block truncate">Retur</span>
+            <span className="text-xs text-slate-600 font-medium block truncate">Retur Paket</span>
             <div className="flex items-baseline gap-1.5 min-w-0">
-              <span className="text-xs sm:text-sm font-black text-slate-900 block mt-0.5 truncate">{totalReturnedPackages} Paket</span>
-              <span className="text-[10.5px] font-bold text-slate-700 truncate">
+              <span className="text-xs sm:text-sm font-heading font-black text-slate-900 block mt-0.5 truncate">{totalReturnedPackages} Paket</span>
+              <span className="text-xs font-bold text-rose-600 truncate">
                 Rp {totalReturnAmount.toLocaleString('id-ID')}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Selisih Ongkir — full width */}
-        <div className="col-span-2 bg-emerald-50/50 p-3.5 rounded-2xl border border-emerald-100/90 flex items-center gap-3 shadow-2xs">
-          <div className="w-8 h-8 rounded-xl bg-emerald-100/80 text-[#04593f] flex items-center justify-center shrink-0">
+        {/* Selisih Ongkir — full width on small screens, col-span-full */}
+        <div className="col-span-2 lg:col-span-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 flex items-center gap-3 shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#04593f] flex items-center justify-center shrink-0">
             <RpIcon className="w-4 h-4" />
           </div>
-          <div className="min-w-0">
-            <span className="text-[10.5px] text-slate-600 font-semibold block truncate">Selisih Ongkir
-              <span className="ml-1 text-slate-400 font-normal">(Pembeli − Ekspedisi)</span>
+          <div className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <span className="text-xs text-slate-700 font-medium block truncate">
+              Selisih Ongkos Kirim (Pembeli − Ekspedisi)
             </span>
-            <span className={`text-xs sm:text-sm font-black block mt-0.5 truncate ${
-              totalShippingDifference >= 0 ? 'text-[#04593f]' : 'text-slate-800'
+            <span className={`text-sm sm:text-base font-heading font-black block truncate ${
+              totalShippingDifference >= 0 ? 'text-[#04593f]' : 'text-rose-600'
             }`}>
               {totalShippingDifference >= 0 ? '+' : '-'}Rp {Math.abs(totalShippingDifference).toLocaleString('id-ID')}
             </span>
@@ -560,33 +557,33 @@ export const ReportsPage: React.FC = () => {
               <UserRound className="w-4 h-4" />
             </span>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">Performa Sales</h2>
-              <p className="text-[10px] text-slate-400 mt-0.5">Persentase = omzet sales ÷ total omzet × 100%</p>
+              <h2 className="text-sm font-heading font-extrabold text-slate-900">Performa Sales</h2>
+              <p className="text-xs text-slate-600 font-medium mt-0.5">Persentase = omzet sales ÷ total omzet × 100%</p>
             </div>
           </div>
-          <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">{salesPerformance.length} Sales</span>
+          <span className="text-xs font-heading font-bold text-slate-700 whitespace-nowrap">{salesPerformance.length} Sales</span>
         </div>
         {salesPerformance.length === 0 ? (
-          <p className="py-5 text-center text-xs text-slate-400">Belum ada data penjualan sales pada periode ini.</p>
+          <p className="py-5 text-center text-xs text-slate-500 font-medium">Belum ada data penjualan sales pada periode ini.</p>
         ) : (
           <div className="space-y-3">
             {salesPerformance.map((sales, index) => (
               <div key={String(sales.id)} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5">
-                <span className="w-7 h-7 rounded-full bg-emerald-50 text-[#04593f] flex items-center justify-center text-xs font-black">{index + 1}</span>
+                <span className="w-7 h-7 rounded-full bg-emerald-50 text-[#04593f] flex items-center justify-center text-xs font-heading font-black">{index + 1}</span>
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <span className="block text-xs font-bold text-slate-900 truncate">{sales.name}</span>
-                      <span className="block text-[10px] text-slate-400">{sales.orderCount} pesanan</span>
-                      <span className={`block text-[10px] ${sales.returnCount > 0 ? 'text-slate-600 font-medium' : 'text-slate-400'}`}>Retur: {sales.returnCount > 0 ? `${sales.returnCount} paket · Rp ${sales.returnAmount.toLocaleString('id-ID')}` : 'Tidak ada'}</span>
+                      <span className="block text-xs font-heading font-bold text-slate-900 truncate">{sales.name}</span>
+                      <span className="block text-xs text-slate-600 font-medium">{sales.orderCount} pesanan</span>
+                      <span className={`block text-xs font-medium ${sales.returnCount > 0 ? 'text-rose-600' : 'text-slate-500'}`}>Retur: {sales.returnCount > 0 ? `${sales.returnCount} paket · Rp ${sales.returnAmount.toLocaleString('id-ID')}` : 'Tidak ada'}</span>
                     </div>
-                    <span className="text-xs font-extrabold text-slate-900 whitespace-nowrap">Rp {sales.omzet.toLocaleString('id-ID')}</span>
+                    <span className="text-xs font-heading font-black text-slate-900 whitespace-nowrap">Rp {sales.omzet.toLocaleString('id-ID')}</span>
                   </div>
                   <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1.5">
                     <div className="h-full bg-[#04593f] rounded-full" style={{ width: `${Math.min(100, Math.max(0, sales.percentage))}%` }} />
                   </div>
                 </div>
-                <span className="text-xs font-bold text-[#04593f] w-12 text-right">{sales.percentage.toFixed(1)}%</span>
+                <span className="text-xs font-heading font-bold text-[#04593f] w-12 text-right">{sales.percentage.toFixed(1)}%</span>
               </div>
             ))}
           </div>
@@ -596,36 +593,36 @@ export const ReportsPage: React.FC = () => {
       {/* Financial Breakdown Section (Bank Breakdown & Shipping) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 space-y-1.5 shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+          <div className="flex items-center justify-between text-xs text-slate-600 font-medium">
             <span>Transfer BCA</span>
             <Wallet className="w-4 h-4 text-blue-600" />
           </div>
-          <span className="text-lg font-extrabold text-slate-900 block">
+          <span className="text-lg font-heading font-black text-slate-900 block">
             Rp {bcaOmzet.toLocaleString('id-ID')}
           </span>
-          <span className="text-[10px] text-slate-400 font-normal block">Pembayaran via Bank BCA</span>
+          <span className="text-xs text-slate-600 font-medium block">Pembayaran via Bank BCA</span>
         </div>
 
         <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 space-y-1.5 shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+          <div className="flex items-center justify-between text-xs text-slate-600 font-medium">
             <span>Transfer BRI</span>
             <Wallet className="w-4 h-4 text-blue-800" />
           </div>
-          <span className="text-lg font-extrabold text-slate-900 block">
+          <span className="text-lg font-heading font-black text-slate-900 block">
             Rp {briOmzet.toLocaleString('id-ID')}
           </span>
-          <span className="text-[10px] text-slate-400 font-normal block">Pembayaran via Bank BRI</span>
+          <span className="text-xs text-slate-600 font-medium block">Pembayaran via Bank BRI</span>
         </div>
 
         <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 space-y-1.5 shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+          <div className="flex items-center justify-between text-xs text-slate-600 font-medium">
             <span>Total Ongkos Kirim</span>
             <Truck className="w-4 h-4 text-[#04593f]" />
           </div>
-          <span className="text-lg font-extrabold text-slate-900 block">
+          <span className="text-lg font-heading font-black text-slate-900 block">
             Rp {totalShippingCost.toLocaleString('id-ID')}
           </span>
-          <span className="text-[10px] text-slate-400 font-normal block">Ongkir dibayar pembeli</span>
+          <span className="text-xs text-slate-600 font-medium block">Ongkir dibayar pembeli</span>
         </div>
       </div>
 
@@ -782,39 +779,39 @@ export const ReportsPage: React.FC = () => {
       </div>}
 
       {/* Transactions List Container */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 space-y-3.5 shadow-2xs">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
+      <div className="space-y-3.5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
           <div>
-            <h2 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+            <h2 className="text-sm sm:text-base font-heading font-extrabold text-slate-900 flex items-center gap-1.5">
               <FileText className="w-4 h-4 text-[#04593f]" />
               <span>Rincian Transaksi Penjualan</span>
             </h2>
-            <p className="text-[10px] sm:text-[11px] text-slate-400 font-normal mt-0.5">
+            <p className="text-xs text-slate-600 font-medium mt-0.5">
               Daftar transaksi order beserta rincian nominal omset
             </p>
           </div>
 
           {/* Search Box */}
           <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari order / customer..."
-              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-700 text-slate-900"
+              className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-700 text-slate-900 shadow-2xs"
             />
           </div>
         </div>
 
         {isLoading ? (
-          <div className="py-8 text-center text-xs font-normal text-slate-400">
+          <div className="py-12 text-center text-xs font-medium text-slate-500 bg-white rounded-2xl border border-slate-200">
             Memuat transaksi penjualan...
           </div>
         ) : orders.length === 0 ? (
-          <div className="py-8 text-center space-y-1">
-            <p className="text-xs font-bold text-slate-700">Belum Ada Transaksi Penjualan</p>
-            <p className="text-[10px] sm:text-[11px] text-slate-400">Transaksi order penjualan akan tercatat otomatis di sini.</p>
+          <div className="py-12 text-center space-y-1 bg-white rounded-2xl border border-slate-200">
+            <p className="text-xs font-heading font-bold text-slate-700">Belum Ada Transaksi Penjualan</p>
+            <p className="text-xs text-slate-500 font-medium">Transaksi order penjualan akan tercatat otomatis di sini.</p>
           </div>
         ) : (
           <>
@@ -826,32 +823,32 @@ export const ReportsPage: React.FC = () => {
                 const grandTotal = itemsTotal + shipping;
 
                 return (
-                  <div key={order.id} className="p-3 bg-slate-50/90 border border-slate-200/90 rounded-xl space-y-2 text-xs">
+                  <div key={order.id} className="p-3.5 bg-white border border-slate-200/90 rounded-2xl space-y-2.5 text-xs shadow-2xs font-sans">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="font-bold text-slate-900 block text-xs">{order.order_number}</span>
-                        <span className="text-[10px] text-slate-400">{order.order_date}</span>
+                        <span className="font-heading font-bold text-slate-900 block text-xs">{order.order_number}</span>
+                        <span className="text-xs text-slate-500 font-medium">{order.order_date}</span>
                       </div>
                       <OrderStatusBadge status={order.status} />
                     </div>
 
-                    <div className="space-y-1 text-[11px] text-slate-600 border-t border-slate-200/60 pt-2">
+                    <div className="space-y-1 text-xs text-slate-700 border-t border-slate-100 pt-2">
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Customer:</span>
-                        <span className="font-bold text-slate-900">{order.customer_name} ({order.phone})</span>
+                        <span className="text-slate-500 font-medium">Customer:</span>
+                        <span className="font-heading font-bold text-slate-900">{order.customer_name} ({order.phone})</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Metode & Bayar:</span>
+                        <span className="text-slate-500 font-medium">Metode & Bayar:</span>
                         <span className="font-medium text-slate-800">
                           {order.delivery_method} • {order.payment_method} {order.bank_name ? `(${order.bank_name})` : ''}
                         </span>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] text-slate-400 font-medium block">Grand Total Omzet</span>
-                        <span className="text-sm font-extrabold text-[#04593f]">
+                        <span className="text-xs text-slate-500 font-medium block">Grand Total Omzet</span>
+                        <span className="text-sm font-heading font-black text-[#04593f]">
                           Rp {grandTotal.toLocaleString('id-ID')}
                         </span>
                       </div>
@@ -859,9 +856,9 @@ export const ReportsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setSelectedDetailOrder(order)}
-                        className="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-heading font-bold inline-flex items-center gap-1 cursor-pointer"
                       >
-                        <Eye className="w-3.5 h-3.5 text-slate-500" />
+                        <Eye className="w-3.5 h-3.5 text-slate-600" />
                         <span>Detail</span>
                       </button>
                     </div>
@@ -871,23 +868,23 @@ export const ReportsPage: React.FC = () => {
             </div>
 
             {/* DESKTOP VIEW (>= md screens): Full Data Table */}
-            <div className="hidden md:block overflow-x-auto">
+            <div className="hidden md:block overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200/80 text-slate-600 font-bold text-[11px]">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-heading font-extrabold text-xs">
                   <tr>
-                    <th className="py-2.5 px-3">No Order</th>
-                    <th className="py-2.5 px-3">Tanggal</th>
-                    <th className="py-2.5 px-3">Customer</th>
-                    <th className="py-2.5 px-3">Metode Pengiriman</th>
-                    <th className="py-2.5 px-3">Pembayaran</th>
-                    <th className="py-2.5 px-3 text-right">Total Tanaman</th>
-                    <th className="py-2.5 px-3 text-right">Ongkir Pembeli</th>
-                    <th className="py-2.5 px-3 text-right">Grand Total</th>
-                    <th className="py-2.5 px-3 text-center">Status</th>
-                    <th className="py-2.5 px-3 text-center">Aksi</th>
+                    <th className="py-3 px-3.5">No Order</th>
+                    <th className="py-3 px-3.5">Tanggal</th>
+                    <th className="py-3 px-3.5">Customer</th>
+                    <th className="py-3 px-3.5">Metode Pengiriman</th>
+                    <th className="py-3 px-3.5">Pembayaran</th>
+                    <th className="py-3 px-3.5 text-right">Total Tanaman</th>
+                    <th className="py-3 px-3.5 text-right">Ongkir Pembeli</th>
+                    <th className="py-3 px-3.5 text-right">Grand Total</th>
+                    <th className="py-3 px-3.5 text-center">Status</th>
+                    <th className="py-3 px-3.5 text-center">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
+                <tbody className="divide-y divide-slate-100 text-slate-800">
                   {orders.map((order) => {
                     const itemsTotal = calculateOrderItemsTotal(order);
                     const shipping = order.delivery_method === 'Kirim Paket' ? Number(order.buyer_shipping_cost) || 0 : 0;
@@ -895,35 +892,35 @@ export const ReportsPage: React.FC = () => {
 
                     return (
                       <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3 px-3 font-bold text-slate-900">{order.order_number}</td>
-                        <td className="py-3 px-3 text-slate-500 font-normal whitespace-nowrap">{order.order_date}</td>
-                        <td className="py-3 px-3">
-                          <span className="font-bold text-slate-900 block">{order.customer_name}</span>
-                          <span className="text-[10px] text-slate-500 font-medium">{order.phone}</span>
+                        <td className="py-3 px-3.5 font-heading font-bold text-slate-900">{order.order_number}</td>
+                        <td className="py-3 px-3.5 text-slate-500 font-medium whitespace-nowrap">{order.order_date}</td>
+                        <td className="py-3 px-3.5">
+                          <span className="font-heading font-bold text-slate-900 block">{order.customer_name}</span>
+                          <span className="text-xs text-slate-500 font-medium">{order.phone}</span>
                         </td>
-                        <td className="py-3 px-3 font-medium text-slate-700">{order.delivery_method}</td>
-                        <td className="py-3 px-3 font-medium text-slate-700">
+                        <td className="py-3 px-3.5 font-medium text-slate-700">{order.delivery_method}</td>
+                        <td className="py-3 px-3.5 font-medium text-slate-700">
                           {order.payment_method} {order.bank_name ? `(${order.bank_name})` : ''}
                         </td>
-                        <td className="py-3 px-3 text-right font-medium">
+                        <td className="py-3 px-3.5 text-right font-medium">
                           Rp {itemsTotal.toLocaleString('id-ID')}
                         </td>
-                        <td className="py-3 px-3 text-right font-medium text-slate-500">
+                        <td className="py-3 px-3.5 text-right font-medium text-slate-500">
                           Rp {shipping.toLocaleString('id-ID')}
                         </td>
-                        <td className="py-3 px-3 text-right font-extrabold text-[#04593f]">
+                        <td className="py-3 px-3.5 text-right font-heading font-black text-[#04593f]">
                           Rp {grandTotal.toLocaleString('id-ID')}
                         </td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-3 px-3.5 text-center">
                           <OrderStatusBadge status={order.status} />
                         </td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-3 px-3.5 text-center">
                           <button
                             type="button"
                             onClick={() => setSelectedDetailOrder(order)}
-                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold inline-flex items-center gap-1 cursor-pointer transition-colors"
+                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-heading font-bold inline-flex items-center gap-1 cursor-pointer transition-colors"
                           >
-                            <Eye className="w-3.5 h-3.5 text-slate-500" />
+                            <Eye className="w-3.5 h-3.5 text-slate-600" />
                             <span>Detail</span>
                           </button>
                         </td>
