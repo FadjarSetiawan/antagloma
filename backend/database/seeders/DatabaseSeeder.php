@@ -17,26 +17,21 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Seed Users
-        $owner = User::updateOrCreate(
-            ['email' => 'owner@antagloma.com'],
-            ['name' => 'Owner Antagloma', 'password' => Hash::make('password123'), 'role' => 'owner']
-        );
+        // 1. Seed Users (Support both @antaglomaflorist.id and @antagloma.com)
+        $users = [
+            ['email' => 'owner@antaglomaflorist.id', 'name' => 'Owner Antagloma', 'password' => Hash::make('password123'), 'role' => 'owner'],
+            ['email' => 'admin@antaglomaflorist.id', 'name' => 'Admin Operasional', 'password' => Hash::make('password123'), 'role' => 'admin'],
+            ['email' => 'sales@antaglomaflorist.id', 'name' => 'Sales Staff', 'password' => Hash::make('password123'), 'role' => 'sales'],
+            ['email' => 'packing@antaglomaflorist.id', 'name' => 'Packing Specialist', 'password' => Hash::make('password123'), 'role' => 'packing'],
+            ['email' => 'owner@antagloma.com', 'name' => 'Owner Antagloma', 'password' => Hash::make('password123'), 'role' => 'owner'],
+            ['email' => 'sales@antagloma.com', 'name' => 'Sales Staff', 'password' => Hash::make('password123'), 'role' => 'sales'],
+            ['email' => 'admin@antagloma.com', 'name' => 'Admin Operasional', 'password' => Hash::make('password123'), 'role' => 'admin'],
+            ['email' => 'packing@antagloma.com', 'name' => 'Packing Specialist', 'password' => Hash::make('password123'), 'role' => 'packing'],
+        ];
 
-        $sales = User::updateOrCreate(
-            ['email' => 'sales@antagloma.com'],
-            ['name' => 'Sales Staff', 'password' => Hash::make('password123'), 'role' => 'sales']
-        );
-
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@antagloma.com'],
-            ['name' => 'Admin Operasional', 'password' => Hash::make('password123'), 'role' => 'admin']
-        );
-
-        $packing = User::updateOrCreate(
-            ['email' => 'packing@antagloma.com'],
-            ['name' => 'Packing Specialist', 'password' => Hash::make('password123'), 'role' => 'packing']
-        );
+        foreach ($users as $u) {
+            User::updateOrCreate(['email' => $u['email']], $u);
+        }
 
         // 2. Seed Master Grades
         $grades = [
