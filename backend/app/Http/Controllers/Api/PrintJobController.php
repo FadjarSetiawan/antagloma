@@ -69,6 +69,7 @@ class PrintJobController extends Controller
             'order_number'   => $order->order_number . ($package->letter ? '-' . $package->letter : ''),
             'package_letter' => $package->letter,
             'package_type'   => $package->package_type ?? 'Fullset',
+            'weight'        => $package->weight,
             'customer'       => $order->customer_name,
             'phone'          => $order->phone,
             'address'        => collect([$order->district_name, $order->regency_name, $order->province_name, $order->full_address])->filter()->implode(', '),

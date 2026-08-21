@@ -475,7 +475,7 @@ export const OrderListPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 py-2.5 border-t border-slate-100 text-xs font-sans">
+                    <div className="grid grid-cols-2 gap-3 py-2.5 border-t border-slate-100 text-xs font-sans">
                       <div>
                         <span className="block font-heading font-extrabold text-slate-700 text-xs">Ringkasan Retur</span>
                         <b className="mt-0.5 block text-xs font-heading font-black text-rose-600">{returnedPackages.length} dari {(order.packages || []).length} paket</b>
@@ -483,14 +483,6 @@ export const OrderListPage: React.FC = () => {
                       <div className="border-l border-slate-200 pl-3">
                         <span className="block font-heading font-extrabold text-slate-700 text-xs">Nominal Retur</span>
                         <b className="mt-0.5 block text-xs font-heading font-black text-rose-600">Rp {(order.return_total || 0).toLocaleString('id-ID')}</b>
-                      </div>
-                      <div className="border-l border-slate-200 pl-3">
-                        <span className="block font-heading font-extrabold text-slate-700 text-xs">{role === 'sales' ? 'Komisi Dikurangi' : 'Koreksi Omzet'}</span>
-                        <b className="mt-0.5 block text-xs font-heading font-black text-rose-600">
-                          {role === 'sales'
-                            ? `- Rp ${Math.round((order.return_total || 0) * (Number(order.creator?.commission_rate) || 5) / 100).toLocaleString('id-ID')}`
-                            : `- Rp ${(order.return_total || 0).toLocaleString('id-ID')}`}
-                        </b>
                       </div>
                     </div>
                   </>
