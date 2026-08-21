@@ -73,7 +73,8 @@ class ResetPasswordsCommand extends Command
                     'role'     => $userData['role'],
                 ]
             );
-            $this->info("✓ User [{$user->email}] role [{$user->role}] updated successfully.");
+            $roleName = $user->role instanceof \BackedEnum ? $user->role->value : (string) $user->role;
+            $this->info("✓ User [{$user->email}] role [{$roleName}] updated successfully.");
         }
 
         $this->info('All accounts synchronized successfully!');
