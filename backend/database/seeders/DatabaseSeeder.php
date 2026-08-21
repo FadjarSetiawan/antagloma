@@ -17,16 +17,12 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Seed Users (Support both @antaglomaflorist.id and @antagloma.com)
+        // 1. Seed Users (Official @antaglomaflorist.id)
         $users = [
             ['email' => 'owner@antaglomaflorist.id', 'name' => 'Owner Antagloma', 'password' => Hash::make('hOyhxKx4wfNdf_0e'), 'role' => 'owner'],
             ['email' => 'admin@antaglomaflorist.id', 'name' => 'Admin Operasional', 'password' => Hash::make('dY!YWQmd2E+UeeM~'), 'role' => 'admin'],
             ['email' => 'sales@antaglomaflorist.id', 'name' => 'Sales Staff', 'password' => Hash::make('7XyY)..GrfzkEx7O'), 'role' => 'sales'],
             ['email' => 'packing@antaglomaflorist.id', 'name' => 'Packing Specialist', 'password' => Hash::make('dY!YWQmd2E+UeeM~'), 'role' => 'packing'],
-            ['email' => 'owner@antagloma.com', 'name' => 'Owner Antagloma', 'password' => Hash::make('hOyhxKx4wfNdf_0e'), 'role' => 'owner'],
-            ['email' => 'sales@antagloma.com', 'name' => 'Sales Staff', 'password' => Hash::make('7XyY)..GrfzkEx7O'), 'role' => 'sales'],
-            ['email' => 'admin@antagloma.com', 'name' => 'Admin Operasional', 'password' => Hash::make('dY!YWQmd2E+UeeM~'), 'role' => 'admin'],
-            ['email' => 'packing@antagloma.com', 'name' => 'Packing Specialist', 'password' => Hash::make('dY!YWQmd2E+UeeM~'), 'role' => 'packing'],
         ];
 
         foreach ($users as $u) {
