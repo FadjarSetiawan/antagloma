@@ -17,7 +17,9 @@ export const ReturnOrderModal: React.FC<Props> = ({ order, onClose, onConfirm })
   const packages = useMemo(() => (order?.packages || []).filter(pkg => !pkg.returned && !pkg.returned_at), [order]);
   const valueOf = (pkg: NonNullable<Order['packages']>[number]) => (pkg.items || []).reduce((sum, allocation) => {
     const item = order?.items?.find(i => i.id === allocation.order_item_id);
-    return sum + (Number(item?.price) || 0) * (Number(allocation.quantity) || 0);
+    const itemQty = Math.max(1, Number(item?.quantity) || 1);
+    const unitPrice = (Number(item?.price) || 0) / itemQty;
+    return sum + unitPrice * (Number(allocation.quantity) || 0);
   }, 0);
   const refund = packages.filter(pkg => selected.includes(pkg.id)).reduce((sum, pkg) => sum + valueOf(pkg), 0);
   if (!order) return null;

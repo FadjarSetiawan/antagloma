@@ -229,12 +229,20 @@ class OrderController extends Controller
             abort_if($packages->contains(fn ($package) => filled($package->returned_at)), 422, 'Salah satu package sudah pernah diretur.');
 
             $refund = $packages->sum(function ($package) {
-                return $package->items->sum(fn ($allocation) => (float) ($allocation->item?->price ?? 0) * (int) $allocation->quantity);
+                return $package->items->sum(function ($allocation) {
+                    $itemQty = max(1, (int) ($allocation->item?->quantity ?? 1));
+                    $unitPrice = (float) ($allocation->item?->price ?? 0) / $itemQty;
+                    return $unitPrice * (int) $allocation->quantity;
+                });
             });
             abort_if($refund <= 0, 422, 'Nilai retur tidak dapat dihitung dari package yang dipilih.');
 
             foreach ($packages as $package) {
-                $amount = $package->items->sum(fn ($allocation) => (float) ($allocation->item?->price ?? 0) * (int) $allocation->quantity);
+                $amount = $package->items->sum(function ($allocation) {
+                    $itemQty = max(1, (int) ($allocation->item?->quantity ?? 1));
+                    $unitPrice = (float) ($allocation->item?->price ?? 0) / $itemQty;
+                    return $unitPrice * (int) $allocation->quantity;
+                });
                 $package->update(['return_status' => 'RETURNED', 'returned_at' => now(), 'return_amount' => $amount]);
             }
             $return = OrderReturn::create([
