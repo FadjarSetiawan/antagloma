@@ -26,15 +26,16 @@ class PackingController extends Controller
     {
         Gate::authorize('managePackingQueue', Order::class);
 
-        // Configuration queue: WAITING_PACKING orders without packages OR orders where total allocated quantity < total required items.
+        // An order belongs in the packing queue if:
+        // 1. Status is WAITING_PACKING, OR
+        // 2. The order has unallocated items remaining (titip / belum diatur paket), regardless of whether existing packages have been photographed or shipped.
         $orders = Order::with(['creator', 'items', 'packingImages', 'packages.packingImages', 'packages.items.item'])
-            ->where('status', 'WAITING_PACKING')
+            ->whereNotIn('status', [OrderStatus::CANCELLED, OrderStatus::RETURNED])
             ->where(function ($query) {
-                $query->whereDoesntHave('packages')
+                $query->where('status', OrderStatus::WAITING_PACKING)
                     ->orWhere(function ($q) {
-                        // Order has packages, but total allocated quantity across all package items is less than total required items
-                        $q->whereHas('packages')
-                          ->whereRaw('(SELECT COALESCE(SUM(quantity), 0) FROM order_items WHERE order_items.order_id = orders.id) > (SELECT COALESCE(SUM(opi.quantity), 0) FROM order_packages op JOIN order_package_items opi ON opi.order_package_id = op.id WHERE op.order_id = orders.id)');
+                        // Order has unallocated items remaining across all packages
+                        $q->whereRaw('(SELECT COALESCE(SUM(quantity), 0) FROM order_items WHERE order_items.order_id = orders.id) > (SELECT COALESCE(SUM(opi.quantity), 0) FROM order_packages op JOIN order_package_items opi ON opi.order_package_id = op.id WHERE op.order_id = orders.id)');
                     });
             })
             ->orderBy('created_at')
@@ -53,16 +54,26 @@ class PackingController extends Controller
 
     public function configurePackages(Request $request): JsonResponse
     {
-        $request->validate(['order_id'=>'required|integer|exists:orders,id','packages'=>'required|array|min:1','packages.*.letter'=>'required|string|max:8','packages.*.package_type'=>'nullable|string','packages.*.allocations'=>'array']);
+        $request->validate([
+            'order_id'                  => 'required|integer|exists:orders,id',
+            'packages'                  => 'required|array|min:1',
+            'packages.*.letter'         => 'required|string|max:8',
+            'packages.*.package_type'   => 'nullable|string',
+            'packages.*.allocations'    => 'array',
+        ]);
+
         $order = Order::with('items')->findOrFail($request->integer('order_id'));
         Gate::authorize('approve', $order);
+
         $deliveryMethod = $order->delivery_method instanceof \BackedEnum ? $order->delivery_method->value : (string) $order->delivery_method;
         abort_unless(in_array($deliveryMethod, ['Packing Kayu', 'Kirim Paket'], true), 422, 'Metode penerimaan ini tidak menggunakan paket.');
+
         $packages = DB::transaction(function () use ($request, $order) {
             $order = Order::with('items')->lockForUpdate()->findOrFail($order->id);
             $inputs = collect($request->input('packages'));
             $allocated = [];
             $invalidItems = [];
+
             foreach ($inputs as $input) {
                 foreach (($input['allocations'] ?? []) as $itemIndex => $quantity) {
                     $item = $order->items->get((int) $itemIndex);
@@ -74,21 +85,15 @@ class PackingController extends Controller
                     $allocated[$item->id] = ($allocated[$item->id] ?? 0) + $quantity;
                 }
             }
-            $unallocated = [];
-            foreach ($order->items as $item) {
-                $required = (int) $item->quantity;
-                $actual = (int) ($allocated[$item->id] ?? 0);
-                if ($actual !== $required) {
-                    $unallocated[] = ['order_item_id' => $item->id, 'product_name' => $item->product_name, 'required' => $required, 'allocated' => $actual];
-                }
-            }
+
             if ($invalidItems) {
                 throw new HttpResponseException(response()->json([
                     'success' => false,
                     'message' => 'Alokasi item tidak valid.',
-                    'errors' => ['invalid_items' => $invalidItems],
+                    'errors'  => ['invalid_items' => $invalidItems],
                 ], 422));
             }
+
             $letters = $inputs->pluck('letter')->all();
             $lockedPackages = $order->packages()->with('items')->whereNotNull('configured_at')->get()->keyBy('letter');
 
@@ -118,30 +123,36 @@ class PackingController extends Controller
                     $used[$allocation->order_item_id] = ($used[$allocation->order_item_id] ?? 0) + (int) $allocation->quantity;
                 }
             }
+
             foreach ($inputs as $input) {
                 $package = $lockedPackages->get($input['letter']);
                 if ($package) {
                     continue;
                 }
                 $package = $order->packages()->updateOrCreate(['letter'=>$input['letter']], [
-                    'package_type'=>$input['package_type'] ?? null,
-                    'weight' => isset($input['weight']) && is_numeric($input['weight']) ? (float) $input['weight'] : null,
-                    'waiting_photo_at'=>null,
-                    'configured_at'=>now(),
+                    'package_type'     => $input['package_type'] ?? null,
+                    'weight'           => isset($input['weight']) && is_numeric($input['weight']) ? (float) $input['weight'] : null,
+                    'waiting_photo_at' => null,
+                    'configured_at'    => now(),
                 ]);
                 $assignedItemIds = [];
                 foreach (($input['allocations'] ?? []) as $itemIndex => $quantity) {
-                    $item = $order->items->get((int) $itemIndex); $quantity = (int) $quantity;
-                    if (!$item || $quantity < 1 || (($used[$item->id] ?? 0) + $quantity) > $item->quantity) abort(422, "Quantity {$item?->product_name} melebihi jumlah tanaman dalam order.");
+                    $item = $order->items->get((int) $itemIndex);
+                    $quantity = (int) $quantity;
+                    if (!$item || $quantity < 1 || (($used[$item->id] ?? 0) + $quantity) > $item->quantity) {
+                        abort(422, "Quantity {$item?->product_name} melebihi jumlah tanaman dalam order.");
+                    }
                     $used[$item->id] = ($used[$item->id] ?? 0) + $quantity;
                     $assignedItemIds[] = $item->id;
                     $package->items()->updateOrCreate(['order_item_id'=>$item->id], ['quantity'=>$quantity]);
                 }
                 $package->items()->whereNotIn('order_item_id', $assignedItemIds ?: [0])->delete();
             }
+
             return $order->packages()->with('packingImages')->get();
         });
-        return response()->json(['success'=>true,'data'=>$packages]);
+
+        return response()->json(['success' => true, 'data' => $packages]);
     }
 
     /**
@@ -158,7 +169,11 @@ class PackingController extends Controller
     public function completePackageShipment(Request $request, OrderPackage $package): JsonResponse
     {
         Gate::authorize('completeShipment', $package->order);
-        $data = $request->validate(['tracking_number'=>'required|string|max:255','shipping_cost'=>'required|numeric|min:0']);
+        $data = $request->validate([
+            'tracking_number' => 'required|string|max:255',
+            'shipping_cost'   => 'required|numeric|min:0',
+        ]);
+
         $trackingNumber = strtoupper(trim(strip_tags($data['tracking_number'])));
         $used = OrderPackage::with('order')
             ->whereRaw('UPPER(tracking_number) = ?', [$trackingNumber])
@@ -174,8 +189,8 @@ class PackingController extends Controller
                     'message' => 'Nomor resi sudah digunakan.',
                     'duplicate' => [
                         'tracking_number' => $trackingNumber,
-                        'order_number' => $usedOrder->order_number,
-                        'customer' => $usedOrder->customer_name,
+                        'order_number'    => $usedOrder->order_number,
+                        'customer'        => $usedOrder->customer_name,
                     ],
                 ], 422);
             }
@@ -184,52 +199,73 @@ class PackingController extends Controller
                 'message' => 'Nomor resi sudah digunakan.',
                 'duplicate' => [
                     'tracking_number' => $trackingNumber,
-                    'order_number' => $used->order?->order_number,
-                    'customer' => $used->order?->customer_name,
+                    'order_number'    => $used->order?->order_number,
+                    'customer'        => $used->order?->customer_name,
                 ],
             ], 422);
         }
 
         $orderStatus = $package->order->status instanceof \BackedEnum ? $package->order->status->value : (string) $package->order->status;
-        abort_unless($orderStatus === 'PACKING_COMPLETED', 422, 'Package belum berada pada tahap siap input resi.');
+        abort_unless(in_array($orderStatus, ['PACKING_COMPLETED', 'WAITING_PACKING'], true), 422, 'Package belum berada pada tahap siap input resi.');
+
         try {
-            $package->update(['tracking_number'=>$trackingNumber, 'shipping_cost'=>$data['shipping_cost'], 'completed_at'=>now()]);
+            $package->update([
+                'tracking_number' => $trackingNumber,
+                'shipping_cost'   => $data['shipping_cost'],
+                'completed_at'    => now(),
+            ]);
         } catch (QueryException $exception) {
-            // The pre-check gives a helpful response in normal use. This second
-            // check handles two admins saving the same scanned resi concurrently.
             if ((string) $exception->getCode() !== '23000') {
                 throw $exception;
             }
 
             $used = OrderPackage::with('order')->whereRaw('UPPER(tracking_number) = ?', [$trackingNumber])->first();
-            return response()->json(['message' => 'Nomor resi sudah digunakan.', 'duplicate' => [
-                'tracking_number' => $trackingNumber,
-                'order_number' => $used?->order?->order_number,
-                'customer' => $used?->order?->customer_name,
-            ]], 422);
+            return response()->json([
+                'message' => 'Nomor resi sudah digunakan.',
+                'duplicate' => [
+                    'tracking_number' => $trackingNumber,
+                    'order_number'    => $used?->order?->order_number,
+                    'customer'        => $used?->order?->customer_name,
+                ]
+            ], 422);
         }
 
-        // A package is not the final delivery state. As soon as the last
-        // package receives its resi, promote the parent order to COMPLETED so
-        // the admin sees the expected "Selesai" status everywhere.
+        // Only mark order as fully COMPLETED if:
+        // 1. ALL packages have tracking numbers, AND
+        // 2. ALL items in the order have been allocated and shipped (no remaining titip plants)
         $completedOrder = DB::transaction(function () use ($package) {
             $order = Order::whereKey($package->order_id)->lockForUpdate()->firstOrFail();
+            
             $hasPackagesWithoutTracking = $order->packages()
                 ->where(fn ($query) => $query->whereNull('tracking_number')->orWhere('tracking_number', ''))
                 ->exists();
 
-            if (!$hasPackagesWithoutTracking && $order->status !== OrderStatus::COMPLETED) {
+            $totalRequiredQty = (int) $order->items()->sum('quantity');
+            $totalAllocatedQty = (int) DB::table('order_packages')
+                ->join('order_package_items', 'order_package_items.order_package_id', '=', 'order_packages.id')
+                ->where('order_packages.order_id', $order->id)
+                ->sum('order_package_items.quantity');
+            $hasUnallocatedPlants = $totalAllocatedQty < $totalRequiredQty;
+
+            if (!$hasPackagesWithoutTracking && !$hasUnallocatedPlants && $order->status !== OrderStatus::COMPLETED) {
                 $order->update([
-                    'status' => OrderStatus::COMPLETED,
-                    'shipped_at' => now(),
+                    'status'       => OrderStatus::COMPLETED,
+                    'shipped_at'   => $order->shipped_at ?? now(),
                     'completed_at' => now(),
                 ]);
                 NotificationService::notifyShipmentCompleted($order->fresh());
+            } elseif ($hasUnallocatedPlants) {
+                // Keep order in WAITING_PACKING so remaining titip items remain accessible in packing queue
+                $order->update([
+                    'status'     => OrderStatus::WAITING_PACKING,
+                    'shipped_at' => $order->shipped_at ?? now(),
+                ]);
             }
 
             return $order->fresh(['packages']);
         });
-        return response()->json(['success'=>true,'data'=>$package->fresh(), 'order'=>$completedOrder]);
+
+        return response()->json(['success' => true, 'data' => $package->fresh(), 'order' => $completedOrder]);
     }
 
     public function uploadProof(UploadPackingImageRequest $request, int $id): JsonResponse
@@ -257,6 +293,6 @@ class PackingController extends Controller
     {
         Gate::authorize('uploadPacking', $package->order);
         $image = $this->packingService->uploadPackageProof($package, $request->file('image'), $request->input('notes'), $request->user());
-        return response()->json(['success'=>true,'data'=>new PackingImageResource($image->load('uploader'))], 201);
+        return response()->json(['success' => true, 'data' => new PackingImageResource($image->load('uploader'))], 201);
     }
 }

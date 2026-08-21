@@ -26,8 +26,16 @@ class PackingService
                 ->withCount('packingImages')
                 ->get()
                 ->contains(fn (OrderPackage $candidate) => $candidate->packing_images_count < 1);
+
+            $totalRequiredQty = (int) $order->items()->sum('quantity');
+            $totalAllocatedQty = (int) DB::table('order_packages')
+                ->join('order_package_items', 'order_package_items.order_package_id', '=', 'order_packages.id')
+                ->where('order_packages.order_id', $order->id)
+                ->sum('order_package_items.quantity');
+            $hasUnallocatedPlants = $totalAllocatedQty < $totalRequiredQty;
+
             $order->update([
-                'status' => $hasUnphotographedPackage ? OrderStatus::WAITING_PACKING : OrderStatus::PACKING_COMPLETED,
+                'status' => ($hasUnphotographedPackage || $hasUnallocatedPlants) ? OrderStatus::WAITING_PACKING : OrderStatus::PACKING_COMPLETED,
             ]);
             return $image;
         });
