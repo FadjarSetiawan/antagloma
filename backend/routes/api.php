@@ -26,6 +26,22 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('throttle:5,1')->post('/login', [AuthController::class, 'login']);
 Route::middleware('throttle:5,1')->post('/register', [AuthController::class, 'register']);
 
+// Password Hash Generator Utility Endpoint
+Route::post('/tools/hash-password', function (\Illuminate\Http\Request $request) {
+    $password = $request->input('password', '');
+    $email = $request->input('email', '');
+    $hash = \Illuminate\Support\Facades\Hash::make($password);
+    $sql = $email 
+        ? "UPDATE users SET password = '{$hash}' WHERE email = '{$email}';"
+        : "UPDATE users SET password = '{$hash}' WHERE id = 1;";
+    return response()->json([
+        'success'  => true,
+        'password' => $password,
+        'hash'     => $hash,
+        'sql'      => $sql,
+    ]);
+});
+
 // Indonesian Administrative Region Cascading Data (Cached / Throttled)
 Route::middleware('throttle:60,1')->prefix('regions')->group(function () {
     Route::get('/provinces', [RegionController::class, 'provinces']);

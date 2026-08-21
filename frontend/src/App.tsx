@@ -20,6 +20,7 @@ import { NotificationsPage } from './pages/notifications/NotificationsPage';
 import { UserManagementPage } from './pages/users/UserManagementPage';
 import { ManagementPage } from './pages/owner/ManagementPage';
 import { PrintBridgeFallbackPage } from './pages/documents/PrintBridgeFallbackPage';
+import { PasswordHasherPage } from './pages/tools/PasswordHasherPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,6 +47,8 @@ export const App: React.FC = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/tools/hash" element={<PasswordHasherPage />} />
+            <Route path="/hash-generator" element={<PasswordHasherPage />} />
             <Route path="/print-jobs/:jobId" element={<PrintBridgeFallbackPage />} />
             <Route path="/" element={<DashboardLayout />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
