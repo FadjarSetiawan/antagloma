@@ -40,6 +40,8 @@ Route::post('/tools/hash-password', function (\Illuminate\Http\Request $request)
         'hash'     => $hash,
         'sql'      => $sql,
     ]);
+});
+
 // Public Storage Image Streaming
 Route::get('/storage/{path}', function (string $path) {
     $cleanPath = str_replace(['../', '..\\'], '', $path);
