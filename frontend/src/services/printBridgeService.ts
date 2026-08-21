@@ -11,20 +11,18 @@ export interface CreatedPrintJob {
   expiresAt?: string;
 }
 
-export function isMobileDevice(): boolean {
-  if (typeof window === 'undefined') return false;
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-    (window.innerWidth <= 768 && 'ontouchstart' in window);
-}
-
-export function isAndroidDevice(): boolean {
+export function isAndroidPhone(): boolean {
   if (typeof window === 'undefined') return false;
   return /Android/i.test(navigator.userAgent);
 }
 
-export function isWindowsDevice(): boolean {
+export function isWindowsDesktop(): boolean {
   if (typeof window === 'undefined') return false;
-  return /Windows|Win32|Win64/i.test(navigator.userAgent);
+  return /Windows NT/i.test(navigator.userAgent) && !/Android|Mobile/i.test(navigator.userAgent);
+}
+
+export function buildWindowsPrintUri(jobId: string, token: string): string {
+  return `antaglomaprint://print-jobs/${encodeURIComponent(jobId)}?token=${encodeURIComponent(token)}`;
 }
 
 export async function createPrintJob(
@@ -61,23 +59,24 @@ export async function createPrintJob(
   };
 }
 
+export function handoffPrintJob(job: CreatedPrintJob, token: string): void {
+  if (isWindowsDesktop()) {
+    const targetUri = job.windowsAppLink || buildWindowsPrintUri(job.jobId, token);
+    window.location.assign(targetUri);
+    return;
+  }
+
+  // Android memakai HTTPS App Link; iOS/desktop non-Windows memakai fallback web.
+  window.location.assign(job.androidAppLink || job.appLink);
+}
+
 export async function openPrintBridge(
   packageId: number,
   documentType: BridgeDocumentType,
   notes?: string
 ): Promise<CreatedPrintJob> {
   const job = await createPrintJob(packageId, documentType, notes);
-
-  if (isAndroidDevice()) {
-    // Android: Direct navigation to App Link
-    window.location.assign(job.androidAppLink);
-  } else if (isMobileDevice()) {
-    window.location.assign(job.appLink);
-  } else {
-    // Desktop / PC: Navigate to fallback/handoff page where custom URI & copy-paste options are presented
-    window.location.assign(job.appLink);
-  }
-
+  handoffPrintJob(job, job.token);
   return job;
 }
 
