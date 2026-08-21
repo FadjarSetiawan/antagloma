@@ -37,17 +37,25 @@ export async function createPrintJob(
   });
 
   const data = response.data?.data;
-  if (!data?.app_link) {
-    throw new Error('Server tidak mengembalikan App Link print job.');
+  if (!data?.job_id || typeof data.job_id !== 'string') {
+    throw new Error('Server tidak mengembalikan job_id print job yang valid.');
+  }
+  if (!data?.token || typeof data.token !== 'string') {
+    throw new Error('Server tidak mengembalikan token print job yang valid.');
+  }
+  if (!data?.app_link || typeof data.app_link !== 'string') {
+    throw new Error('Server tidak mengembalikan app_link print job yang valid.');
   }
 
-  const jobId = data.job_id || '';
-  const token = data.token || '';
-  const appLink = data.app_link;
-  const androidAppLink = data.android_app_link || appLink;
-  const windowsAppLink =
-    data.windows_app_link ||
-    `antaglomaprint://print-jobs/${encodeURIComponent(jobId)}?token=${encodeURIComponent(token)}`;
+  const jobId = data.job_id.trim();
+  const token = data.token.trim();
+  const appLink = data.app_link.trim();
+  const androidAppLink = (data.android_app_link && typeof data.android_app_link === 'string')
+    ? data.android_app_link.trim()
+    : appLink;
+  const windowsAppLink = (data.windows_app_link && typeof data.windows_app_link === 'string')
+    ? data.windows_app_link.trim()
+    : buildWindowsPrintUri(jobId, token);
 
   return {
     jobId,

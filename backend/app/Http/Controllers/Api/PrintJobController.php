@@ -101,18 +101,19 @@ class PrintJobController extends Controller
         $job = $this->authorizeToken($request, $jobId, false);
 
         DB::transaction(function () use ($job, $data) {
+            $isPrinted = $data['status'] === 'PRINTED';
             $job->update([
-                'printed_at' => $data['status'] === 'PRINTED' ? now() : null,
-                'printer'    => $data['printer'] ?? null,
+                'printed_at' => $isPrinted ? ($job->printed_at ?? now()) : null,
+                'printer'    => $data['printer'] ?? $job->printer,
                 'result'     => $data,
             ]);
 
-            if ($data['status'] === 'PRINTED') {
+            if ($isPrinted && $job->package) {
                 $field = $job->document_type === 'NOTA' ? 'nota_printed' : 'label_printed';
                 $at = $field . '_at';
                 $job->package->update([
                     $field => true,
-                    $at    => now(),
+                    $at    => $job->package->{$at} ?? now(),
                 ]);
             }
         });

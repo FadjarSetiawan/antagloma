@@ -21,20 +21,23 @@ class ApiCorsMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $origin = $request->headers->get('Origin');
-        // Handle preflight before route matching. This is important on the
-        // production API subdomain where /api/login is a POST-only route.
+        // Handle preflight before route matching.
         if ($request->isMethod('OPTIONS')) {
             $response = response('', 204);
         } else {
             $response = $next($request);
         }
-        if ($origin && in_array($origin, self::ALLOWED_ORIGINS, true)) {
-            $response->headers->set('Access-Control-Allow-Origin', $origin);
-            $response->headers->set('Vary', 'Origin');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Authorization, Content-Type, Accept, X-Requested-With, Origin');
-            $response->headers->set('Access-Control-Max-Age', '86400');
-        }
+
+        $allowedOrigin = ($origin && in_array($origin, self::ALLOWED_ORIGINS, true))
+            ? $origin
+            : 'https://antaglomaflorist.id';
+
+        $response->headers->set('Access-Control-Allow-Origin', $allowedOrigin);
+        $response->headers->set('Vary', 'Origin');
+        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+        $response->headers->set('Access-Control-Allow-Headers', 'Authorization, Content-Type, Accept, X-Requested-With, Origin');
+        $response->headers->set('Access-Control-Max-Age', '86400');
+
         return $response;
     }
 }

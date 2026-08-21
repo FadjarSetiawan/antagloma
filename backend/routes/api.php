@@ -74,7 +74,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::post('/packages/{package}/shipment', [PackingController::class, 'completePackageShipment']);
     });
 
-    // Web creates a short-lived, one-time job; no customer data is placed in the App Link.
+    // Web creates a short-lived print job (valid for 5 minutes); no customer data is placed in the App Link.
     Route::post('/print-jobs', [PrintJobController::class, 'create']);
     Route::get('/print-layout-profiles/{documentType}', [PrintLayoutProfileController::class, 'show']);
     Route::put('/print-layout-profiles/{documentType}', [PrintLayoutProfileController::class, 'update']);
@@ -111,7 +111,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     });
 });
 
-// The bridge authenticates these endpoints with the job's one-time bearer token, not a user session.
+// The bridge authenticates these endpoints with the job's short-lived (5 minutes) bearer token, not a user session.
 Route::middleware('throttle:30,1')->group(function () {
     Route::get('/print-jobs/{jobId}', [PrintJobController::class, 'show']);
     Route::post('/print-jobs/{jobId}/result', [PrintJobController::class, 'result']);

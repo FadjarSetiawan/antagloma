@@ -1,5 +1,10 @@
 DirectoryIndex index.php index.html
 
+<IfModule mod_headers.c>
+    # Unset any server-level wildcard CORS headers from LiteSpeed/cPanel
+    Header unset Access-Control-Allow-Origin
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
