@@ -15,11 +15,12 @@ class AuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'email'    => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
-        $user = User::where('email', $credentials['email'])->first();
+        $cleanEmail = strtolower(trim($credentials['email']));
+        $user = User::whereRaw('LOWER(TRIM(email)) = ?', [$cleanEmail])->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return response()->json([
