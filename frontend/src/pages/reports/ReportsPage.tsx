@@ -116,10 +116,25 @@ export const ReportsPage: React.FC = () => {
       (sum, item) => sum + (Number(item.price) || 0),
       0
     );
+    if (order.status === 'RETURNED') return 0;
     return Math.max(0, gross - (Number(order.return_total) || 0));
   };
 
-  const calculateOrderReturnTotal = (order: Order) => Number(order.return_total) || 0;
+  const calculateOrderReturnTotal = (order: Order) => {
+    if (Number(order.return_total) > 0) return Number(order.return_total);
+    if (order.status === 'RETURNED') {
+      return (order.items || []).reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+    }
+    return 0;
+  };
+
+  const calculateOrderReturnedPackages = (order: Order) => {
+    if (Number(order.returned_package_count) > 0) return Number(order.returned_package_count);
+    if (order.status === 'RETURNED') {
+      return order.packages && order.packages.length > 0 ? order.packages.length : 1;
+    }
+    return (order.packages || []).filter(p => p.returned || p.returned_at).length;
+  };
 
   const calculateOrderGrandTotal = (order: Order) => {
     const itemsTotal = calculateOrderItemsTotal(order);
@@ -171,7 +186,7 @@ export const ReportsPage: React.FC = () => {
   const totalShippingDifference = totalShippingCost - totalExpeditionShipping;
   const totalReturnAmount = orders.reduce((sum, order) => sum + calculateOrderReturnTotal(order), 0);
   const totalReturnedPackages = orders.reduce(
-    (sum, order) => sum + (Number(order.returned_package_count) || 0),
+    (sum, order) => sum + calculateOrderReturnedPackages(order),
     0
   );
   const totalPlantsCount = totalPlantsSold;
@@ -211,7 +226,7 @@ export const ReportsPage: React.FC = () => {
       const creatorId = order.creator ? String(order.creator.id) : '';
       const creatorName = order.creator?.name || 'Sales Staff';
       const orderOmzet = calculateOrderItemsTotal(order);
-      const orderReturns = Number(order.returned_package_count) || 0;
+      const orderReturns = calculateOrderReturnedPackages(order);
       const orderReturnTotal = calculateOrderReturnTotal(order);
       const orderComm = calculateOrderCommission(order);
 

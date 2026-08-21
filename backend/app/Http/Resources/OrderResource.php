@@ -15,8 +15,33 @@ class OrderResource extends JsonResource
         $isSales = $role === 'sales';
 
         $grossPlantTotal = $this->items ? $this->items->sum(fn ($item) => (float) $item->price) : 0;
-        $returnedAmount = $this->packages ? $this->packages->sum(fn ($package) => (float) ($package->return_amount ?? 0)) : 0;
+        $packageReturnedAmount = $this->packages ? $this->packages->sum(fn ($package) => (float) ($package->return_amount ?? 0)) : 0;
+        
+        $returnedAmount = $packageReturnedAmount;
+        if ($statusStr === 'RETURNED' && $returnedAmount <= 0) {
+            $returnedAmount = $grossPlantTotal;
+        }
         $plantTotal = max(0, $grossPlantTotal - $returnedAmount);
+
+        $returnedPackageCount = 0;
+        if ($this->packages && $this->packages->count() > 0) {
+            $returnedPackageCount = $this->packages->filter(fn ($package) => filled($package->returned_at) || ($package->return_status ?? null) === 'RETURNED')->count();
+            if ($statusStr === 'RETURNED' && $returnedPackageCount === 0) {
+                $returnedPackageCount = $this->packages->count();
+            }
+        } elseif ($statusStr === 'RETURNED') {
+            $returnedPackageCount = 1;
+        }
+
+        $returnedItemCount = 0;
+        if ($this->packages && $this->packages->count() > 0) {
+            $returnedItemCount = $this->packages->filter(fn ($package) => filled($package->returned_at) || ($package->return_status ?? null) === 'RETURNED')->sum(fn ($package) => $package->items->sum('quantity'));
+            if ($statusStr === 'RETURNED' && $returnedItemCount === 0) {
+                $returnedItemCount = $this->items ? $this->items->sum('quantity') : 0;
+            }
+        } elseif ($statusStr === 'RETURNED') {
+            $returnedItemCount = $this->items ? $this->items->sum('quantity') : 0;
+        }
 
         $isVerified = !in_array($statusStr, ['WAITING_PROCESS', 'CANCELLED', 'RETURNED']);
         $commissionRate = (float) ($this->creator?->commission_rate ?? 5);
@@ -46,8 +71,8 @@ class OrderResource extends JsonResource
             'gross_plant_total'   => $grossPlantTotal,
             'sales_commission'    => $salesCommission,
             'return_total'        => $returnedAmount,
-            'returned_package_count' => $this->packages ? $this->packages->filter(fn ($package) => filled($package->returned_at))->count() : 0,
-            'returned_item_count' => $this->packages ? $this->packages->whereNotNull('returned_at')->sum(fn ($package) => $package->items->sum('quantity')) : 0,
+            'returned_package_count' => $returnedPackageCount,
+            'returned_item_count' => $returnedItemCount,
             'returns'             => $this->whenLoaded('returns', fn () => $this->returns->map(fn ($return) => [
                 'id' => $return->id, 'reason' => $return->reason, 'item_status' => $return->item_status,
                 'notes' => $return->notes, 'refund_amount' => $return->refund_amount,

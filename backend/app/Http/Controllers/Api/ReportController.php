@@ -21,6 +21,10 @@ class ReportController extends Controller
 
     private static function calculateOrderPlantNet(Order $order): float
     {
+        $statusStr = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
+        if ($statusStr === 'RETURNED') {
+            return 0.0;
+        }
         $gross = collect($order->items ?? [])->sum(fn ($item) => (float) ($item->price ?? 0));
         $returnAmount = (float) ($order->return_total ?? collect($order->packages ?? [])->sum(fn ($p) => (float) ($p->return_amount ?? 0)));
         return max(0, $gross - $returnAmount);
@@ -28,12 +32,24 @@ class ReportController extends Controller
 
     private static function calculateOrderReturnAmount(Order $order): float
     {
-        return (float) ($order->return_total ?? collect($order->packages ?? [])->sum(fn ($p) => (float) ($p->return_amount ?? 0)));
+        $statusStr = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
+        $gross = collect($order->items ?? [])->sum(fn ($item) => (float) ($item->price ?? 0));
+        $packageReturn = collect($order->packages ?? [])->sum(fn ($p) => (float) ($p->return_amount ?? 0));
+        if ($statusStr === 'RETURNED') {
+            return $packageReturn > 0 ? $packageReturn : $gross;
+        }
+        return (float) ($order->return_total ?? $packageReturn);
     }
 
     private static function calculateOrderReturnedPackages(Order $order): int
     {
-        return (int) ($order->returned_package_count ?? collect($order->packages ?? [])->filter(fn ($p) => filled($p->returned_at) || ($p->return_status ?? null) === 'RETURNED')->count());
+        $statusStr = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
+        $count = collect($order->packages ?? [])->filter(fn ($p) => filled($p->returned_at) || ($p->return_status ?? null) === 'RETURNED')->count();
+        if ($statusStr === 'RETURNED') {
+            if ($count > 0) return $count;
+            return count($order->packages ?? []) > 0 ? count($order->packages) : 1;
+        }
+        return (int) ($order->returned_package_count ?? $count);
     }
 
     public function sales(Request $request): JsonResponse
