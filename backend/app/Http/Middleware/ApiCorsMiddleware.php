@@ -11,8 +11,11 @@ class ApiCorsMiddleware
     private const ALLOWED_ORIGINS = [
         'https://antaglomaflorist.id',
         'https://www.antaglomaflorist.id',
-        // Keep the development domain available during the migration window.
         'https://floristyan.web.id',
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:3000',
     ];
 
     public function handle(Request $request, Closure $next): Response

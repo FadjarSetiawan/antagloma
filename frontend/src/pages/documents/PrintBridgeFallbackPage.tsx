@@ -61,7 +61,7 @@ export const PrintBridgeFallbackPage: React.FC = () => {
     setTimeout(() => setCopied(false), 3000);
   };
 
-  // Auto-attempt handoff upon landing
+  // Auto-attempt handoff and clipboard copy upon landing
   useEffect(() => {
     if (isAndroid) {
       const timer = window.setTimeout(() => {
@@ -69,13 +69,17 @@ export const PrintBridgeFallbackPage: React.FC = () => {
       }, 300);
       return () => window.clearTimeout(timer);
     } else {
+      // Auto-copy URL to clipboard on desktop for instant paste
+      if (navigator.clipboard && fullUrl) {
+        navigator.clipboard.writeText(fullUrl).catch(() => {});
+      }
       // On PC / Windows: Try triggering protocol automatically
       const timer = window.setTimeout(() => {
         window.location.href = windowsProtocolUri;
       }, 400);
       return () => window.clearTimeout(timer);
     }
-  }, [isAndroid, windowsProtocolUri, intentUrl]);
+  }, [isAndroid, windowsProtocolUri, intentUrl, fullUrl]);
 
   return (
     <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6 text-slate-900 font-sans">
@@ -170,7 +174,7 @@ export const PrintBridgeFallbackPage: React.FC = () => {
             </ol>
           ) : (
             <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-600 font-medium">
-              <li>Pastikan aplikasi <b>Antagloma Print (Windows)</b> sudah terpasang/berjalan di PC.</li>
+              <li>Pastikan Anda telah menjalankan aplikasi <b>AntaglomaPrint.exe</b> setidaknya satu kali di PC ini agar protokol terdaftar.</li>
               <li>Jika aplikasi tidak otomatis terbuka, klik tombol <b>Buka Aplikasi Antagloma Print (PC)</b> di atas.</li>
               <li>Atau salin URL di atas, buka aplikasi PC dan klik <b>Ambil Job Web</b>.</li>
             </ol>
