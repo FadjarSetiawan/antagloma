@@ -4,16 +4,26 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/storage/{path}', function (string $path) {
     $cleanPath = str_replace(['../', '..\\'], '', $path);
-    $filePath = storage_path('app/public/' . $cleanPath);
+    
+    $locations = [
+        storage_path('app/public/' . $cleanPath),
+        storage_path('app/' . $cleanPath),
+        public_path('storage/' . $cleanPath),
+        base_path('storage/app/public/' . $cleanPath),
+    ];
 
-    if (!file_exists($filePath) || !is_file($filePath)) {
-        abort(404, 'Gambar tidak ditemukan.');
+    foreach ($locations as $filePath) {
+        if (file_exists($filePath) && is_file($filePath)) {
+            $mimeType = function_exists('mime_content_type') ? (mime_content_type($filePath) ?: 'image/jpeg') : 'image/jpeg';
+            return response()->file($filePath, [
+                'Content-Type'               => $mimeType,
+                'Cache-Control'              => 'public, max-age=86400',
+                'Access-Control-Allow-Origin' => '*',
+            ]);
+        }
     }
 
-    return response()->file($filePath, [
-        'Cache-Control' => 'public, max-age=86400',
-        'Access-Control-Allow-Origin' => '*',
-    ]);
+    abort(404, 'Gambar tidak ditemukan.');
 })->where('path', '.*');
 
 Route::get('/{any}', function () {
