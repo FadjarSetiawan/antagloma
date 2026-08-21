@@ -79,7 +79,7 @@ class PrintJobController extends Controller
             'notes'          => $job->notes_override ?? $order->notes ?? '',
             'sales'          => $order->creator?->name ?? 'Sales Staff',
             'admin'          => $order->verifier?->name ?? 'Admin',
-            'layout_profile' => PrintLayoutProfile::where('document_type', $job->document_type)->value('layout') ?? [],
+            'layout_profile' => $job->layout_override ?? PrintLayoutProfile::where('document_type', $job->document_type)->value('layout') ?? [],
         ];
 
         return response()->json([
@@ -120,7 +120,7 @@ class PrintJobController extends Controller
         return response()->json(['success' => true]);
     }
 
-    /** Scoped to the short-lived print-job token; no general public layout write exists. */
+    /** Scoped to the short-lived print-job token: updates layout for this job specifically. */
     public function layout(Request $request, string $jobId): JsonResponse
     {
         $data = $request->validate([
@@ -131,12 +131,9 @@ class PrintJobController extends Controller
         ]);
 
         $job = $this->authorizeToken($request, $jobId, false);
-        $profile = PrintLayoutProfile::updateOrCreate(
-            ['document_type' => $job->document_type],
-            ['layout' => $data['layout']]
-        );
+        $job->update(['layout_override' => $data['layout']]);
 
-        return response()->json(['success' => true, 'layout' => $profile->layout]);
+        return response()->json(['success' => true, 'layout' => $job->layout_override]);
     }
 
     private function authorizeToken(Request $request, string $jobId, bool $consume): PrintJob

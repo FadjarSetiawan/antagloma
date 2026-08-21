@@ -59,15 +59,18 @@ export async function createPrintJob(
   };
 }
 
-export function handoffPrintJob(job: CreatedPrintJob, token: string): void {
-  if (isWindowsDesktop()) {
-    const targetUri = job.windowsAppLink || buildWindowsPrintUri(job.jobId, token);
-    window.location.assign(targetUri);
+export function handoffPrintJob(job: CreatedPrintJob, _token?: string): void {
+  if (isAndroidPhone()) {
+    // Android: use verified App Link
+    window.location.assign(job.androidAppLink || job.appLink);
     return;
   }
 
-  // Android memakai HTTPS App Link; iOS/desktop non-Windows memakai fallback web.
-  window.location.assign(job.androidAppLink || job.appLink);
+  // Windows Desktop & Other Platforms:
+  // Navigate to the HTTPS fallback page (job.appLink).
+  // This page safely triggers antaglomaprint:// in the background while
+  // ALWAYS providing the UI with auto-copy, 1-click launch button, and clear guidance!
+  window.location.assign(job.appLink);
 }
 
 export async function openPrintBridge(

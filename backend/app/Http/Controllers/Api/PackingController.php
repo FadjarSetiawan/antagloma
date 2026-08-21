@@ -144,19 +144,15 @@ class PackingController extends Controller
         return response()->json(['success'=>true,'data'=>$packages]);
     }
 
+    /**
+     * @deprecated Gunakan POST /api/print-jobs untuk integrasi print bridge resmi.
+     */
     public function printDocument(Request $request, OrderPackage $package, string $document): JsonResponse
     {
-        Gate::authorize('approve', $package->order);
-        abort_unless(in_array($document, ['nota','label']), 422, 'Dokumen tidak valid.');
-        $field = $document.'_printed'; $at = $field.'_at';
-        $willBeFullyPrinted = ($document === 'nota' ? true : $package->nota_printed)
-            && ($document === 'label' ? true : $package->label_printed);
-        $package->update([
-            $field => true,
-            $at => now(),
-            'waiting_photo_at' => ($willBeFullyPrinted && !$package->waiting_photo_at) ? now() : $package->waiting_photo_at,
-        ]);
-        return response()->json(['success'=>true,'data'=>$package->fresh('packingImages')]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Endpoint ini sudah dideprecate. Gunakan alur POST /api/print-jobs untuk integrasi cetak resmi.',
+        ], 410);
     }
 
     public function completePackageShipment(Request $request, OrderPackage $package): JsonResponse

@@ -7,6 +7,7 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 import { OwnerDashboard } from './pages/dashboard/OwnerDashboard';
 import { SalesDashboard } from './pages/dashboard/SalesDashboard';
 import { AdminDashboard } from './pages/dashboard/AdminDashboard';
+import { PackingDashboard } from './pages/dashboard/PackingDashboard';
 import { OrderListPage } from './pages/orders/OrderListPage';
 import { OrderCreatePage } from './pages/orders/OrderCreatePage';
 import { AdminVerificationPage } from './pages/orders/AdminVerificationPage';
@@ -33,6 +34,7 @@ const RoleDashboardRouter: React.FC = () => {
   const { user } = useAuth();
   if (user?.role === 'owner') return <OwnerDashboard />;
   if (user?.role === 'admin') return <AdminDashboard />;
+  if (user?.role === 'packing') return <PackingDashboard />;
   if (user?.role === 'sales') return <SalesDashboard />;
   return <AdminDashboard />;
 };
