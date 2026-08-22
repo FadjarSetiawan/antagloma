@@ -6,7 +6,7 @@ import { orderService } from '../../services/orderService';
 import { Order, OrderPackage } from '../../types/order';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
 
-const packageType = (order: Order, pkg: OrderPackage) => {
+const packageType = (order: Order, pkg: OrderPackage): string => {
   const value = (pkg.package_type || '').trim().toLowerCase();
   if (value === 'fullset') return 'Fullset';
   if (value === 'non-fullset' || value === 'non fullset' || value === 'non_fullset') return 'Non Fullset';
@@ -14,8 +14,9 @@ const packageType = (order: Order, pkg: OrderPackage) => {
   return pkg.package_type || (order.delivery_method === 'Packing Kayu' ? 'Packing Kayu' : 'Menunggu konfigurasi Admin');
 };
 
-const hasPackagePhoto = (pkg: OrderPackage) => Boolean(pkg.photo_uploaded && pkg.packing_images?.length);
-const packageLabel = (order: Order, pkg: OrderPackage) => {
+const hasPackagePhoto = (pkg: OrderPackage): boolean => Boolean(pkg.photo_uploaded && pkg.packing_images?.length);
+
+const packageLabel = (order: Order, pkg: OrderPackage): string => {
   const typeStr = packageType(order, pkg);
   const itemsList = pkg.items?.map(i => i.product_name || 'Tanaman').join(', ');
   return itemsList 
@@ -29,7 +30,9 @@ export const SalesDashboard: React.FC = () => {
 
   useEffect(() => {
     if (location.hash === '#riwayat-pesanan') {
-      window.requestAnimationFrame(() => document.getElementById('riwayat-pesanan')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      window.requestAnimationFrame(() => {
+        document.getElementById('riwayat-pesanan')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     }
   }, [location.hash]);
 
@@ -38,7 +41,7 @@ export const SalesDashboard: React.FC = () => {
   const [photos, setPhotos] = useState<OrderPackage | null>(null);
   const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
   const [confirm, setConfirm] = useState<Order | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string>('');
 
   const ordersQuery = useQuery({
     queryKey: ['sales-orders-lifecycle'],
@@ -63,22 +66,22 @@ export const SalesDashboard: React.FC = () => {
     onError: (e: any) => setError(e?.response?.data?.message || 'Gagal menandai pesanan.'),
   });
 
-  const orders = ordersQuery.data?.data || [];
-  const progress = progressQuery.data?.data || [];
+  const orders: Order[] = (ordersQuery.data?.data as Order[]) || [];
+  const progress: Order[] = (progressQuery.data?.data as Order[]) || [];
 
-  const allTracked = (o: Order) => !!o.packages?.length && o.packages.every(p => !!p.tracking_number);
-  const allPhotos = (o: Order) => !!o.packages?.length && o.packages.every(hasPackagePhoto);
+  const allTracked = (o: Order): boolean => !!o.packages?.length && o.packages.every(p => !!p.tracking_number);
+  const allPhotos = (o: Order): boolean => !!o.packages?.length && o.packages.every(hasPackagePhoto);
 
-  const waiting = orders.filter(o => o.status === 'WAITING_PACKING');
-  const completed = progress.filter(o => o.status === 'PACKING_COMPLETED' && !!o.packages?.length && o.packages.every(hasPackagePhoto) && !(o.packages || []).some(p => p.tracking_number));
-  const ready = progress.filter(o => o.status === 'PACKING_COMPLETED' && (o.packages || []).some(p => p.tracking_number) && !o.sales_informed_at);
-  const history = orders.filter(o => o.sales_informed_at);
+  const waiting: Order[] = orders.filter((o: Order) => o.status === 'WAITING_PACKING');
+  const completed: Order[] = progress.filter((o: Order) => o.status === 'PACKING_COMPLETED' && !!o.packages?.length && o.packages.every(hasPackagePhoto) && !(o.packages || []).some(p => p.tracking_number));
+  const ready: Order[] = progress.filter((o: Order) => o.status === 'PACKING_COMPLETED' && (o.packages || []).some(p => p.tracking_number) && !o.sales_informed_at);
+  const history: Order[] = orders.filter((o: Order) => !!o.sales_informed_at);
 
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
-  const todayCount = orders.filter(o => o.order_date === today).length;
-  const waitingVerification = orders.filter(o => o.status === 'WAITING_PROCESS');
+  const todayCount = orders.filter((o: Order) => o.order_date === today).length;
+  const waitingVerification: Order[] = orders.filter((o: Order) => o.status === 'WAITING_PROCESS');
 
-  const waitingConfigure = orders.filter((order) => {
+  const waitingConfigure: Order[] = orders.filter((order: Order) => {
     if (order.status !== 'WAITING_PACKING') return false;
     const orderedQuantity = (order.items || []).reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
     const allocatedQuantity = (order.packages || []).reduce(
@@ -88,7 +91,7 @@ export const SalesDashboard: React.FC = () => {
     return allocatedQuantity < orderedQuantity;
   });
 
-  const waitingPackingOrders = orders.filter(o => o.status === 'WAITING_PACKING' && !!o.packages?.length);
+  const waitingPackingOrders: Order[] = orders.filter((o: Order) => o.status === 'WAITING_PACKING' && !!o.packages?.length);
   const waitingPackingPackageCount = waitingPackingOrders.reduce((sum, order) => sum + (order.packages?.length || 0), 0);
   const completedPackageCount = completed.reduce((sum, order) => sum + (order.packages?.length || 0), 0);
 
@@ -130,7 +133,7 @@ export const SalesDashboard: React.FC = () => {
     },
   ];
 
-  const plants = (o: Order) => o.items?.map(i => `${i.product_name} ×${i.quantity}`) || [];
+  const plants = (o: Order): string[] => o.items?.map(i => `${i.product_name} ×${i.quantity}`) || [];
 
   return (
     <div className="space-y-4 sm:space-y-5 max-w-5xl pb-24 font-sans text-slate-900 px-1 sm:px-0">
