@@ -17,7 +17,9 @@ export interface PackingNotaCanvasData {
 const WIDTH = 576;
 // A small tail prevents thermal clipping, without creating a fake page bottom.
 // Windows and Android use the same value and the same flowing footer position.
-const FOOTER_RESERVE = 32;
+// Blank safety tail after the staff/signature block (~18 mm at 203 dpi). It prevents
+// physical printer feed/cutter tolerance from cutting the final text.
+const FOOTER_RESERVE = 144;
 const WORKING_HEIGHT = 4096;
 const wrap = (value: string, max: number) => {
   const lines: string[] = [];
