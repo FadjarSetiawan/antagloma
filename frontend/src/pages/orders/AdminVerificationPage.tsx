@@ -85,7 +85,7 @@ export const AdminVerificationPage: React.FC = () => {
     },
   });
 
-  const orders = data?.data || [];
+  const orders: Order[] = (data?.data as Order[]) || [];
 
   return (
     <div className="max-w-4xl mx-auto space-y-5 pb-28">
@@ -185,9 +185,9 @@ export const AdminVerificationPage: React.FC = () => {
             </p>
           </div>
         ) : (
-          orders.map((order) => {
-            const plantTotalPrice = order.items ? order.items.reduce((s, item) => s + item.price, 0) : 0;
-            const totalAmount = plantTotalPrice + (order.buyer_shipping_cost || 0);
+          orders.map((order: Order) => {
+            const plantTotalPrice = order.items ? order.items.reduce((s: number, item) => s + Number(item.price || 0), 0) : 0;
+            const totalAmount = plantTotalPrice + (Number(order.buyer_shipping_cost) || 0);
 
             return (
               <div
