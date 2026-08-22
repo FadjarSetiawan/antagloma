@@ -18,7 +18,7 @@ const WIDTH = 576;
 // Keep a safe white tail after the staff signatures. This is also reserved by
 // the Windows and Android bitmap renderers so the browser preview has the same
 // final height and footer position as the physical printout.
-const FOOTER_RESERVE = 132;
+const FOOTER_RESERVE = 64;
 const wrap = (value: string, max: number) => {
   const lines: string[] = [];
   value.trim().split(/\s+/).filter(Boolean).forEach((word) => {
@@ -28,6 +28,10 @@ const wrap = (value: string, max: number) => {
   });
   return lines.length ? lines : [''];
 };
+
+const normalizeItemName = (value: string) => value.trim()
+  .replace(/\s*\(\s*Grade\s+([A-Z](?:\+)?|\d+)\s*\)\s*\(\s*Grade\s+\1\s*\)/gi, ' (Grade $1)')
+  .replace(/\s{2,}/g, ' ');
 
 const today = () => new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date());
 
@@ -43,7 +47,7 @@ export const createPackingNotaCanvas = (data: PackingNotaCanvasData) => {
   const noteLines = wrap(data.note.trim() || '-', 36);
   const canvas = document.createElement('canvas');
   canvas.width = WIDTH;
-  const targetHeight = 875 + addressLines.length * 36 + data.items.length * 64 + noteLines.length * 36 + FOOTER_RESERVE;
+  const targetHeight = 790 + addressLines.length * 36 + data.items.length * 64 + noteLines.length * 36 + FOOTER_RESERVE;
   canvas.height = targetHeight;
   const c = canvas.getContext('2d');
   if (!c) throw new Error('Gagal menyiapkan bitmap nota.');
@@ -66,13 +70,14 @@ export const createPackingNotaCanvas = (data: PackingNotaCanvasData) => {
   text(data.customerName, 18, y, 29, true); y += 31;
   text(data.customerPhone, 18, y, 22); y += 31;
   const packageType = data.packageType.trim() || 'NON FULLSET';
-  const packageTypeLabel = `[ ${packageType.toUpperCase()} ]${data.weight ? `  •  ${data.weight}` : ''}`;
+  const weight = data.weight?.trim() || 'Berat belum tersedia';
+  const packageTypeLabel = `[ ${packageType.toUpperCase()} ]  •  ${weight}`;
   text(packageTypeLabel, 18, y, 19, true); y += 28; divider(y); y += 36;
   text('ALAMAT PENGIRIMAN:', 18, y, 19, true); y += 33;
   addressLines.forEach((line) => { text(line, 18, y, 23, true); y += 32; }); y += 7; divider(y); y += 36;
   text('ITEM TANAMAN & BONSAI POT', 18, y, 21, true); y += 36;
   text('NO  VARIAN ADENIUM', 18, y, 20, true); text('UKURAN', WIDTH - 160, y, 19, true); text('QTY', WIDTH - 18, y, 20, true, 'right'); y += 15; divider(y); y += 36;
-  data.items.forEach((item, index) => { text(`${index + 1}  ${item.name}`, 26, y, 21, true); text('Package', WIDTH - 150, y, 19); text(String(item.quantity), WIDTH - 24, y, 21, true, 'right'); y += 38; divider(y); y += 26; });
+  data.items.forEach((item, index) => { text(`${index + 1}  ${normalizeItemName(item.name)}`, 26, y, 21, true); text('Package', WIDTH - 150, y, 19); text(String(item.quantity), WIDTH - 24, y, 21, true, 'right'); y += 38; divider(y); y += 26; });
   c.lineWidth = 2; c.beginPath(); c.roundRect(18, y, WIDTH - 36, 142, 10); c.stroke();
   text('CATATAN PENGIRIMAN / PACKING KAYU:', 30, y + 33, 20, true); let noteY = y + 69;
   noteLines.forEach((line) => { text(line, 30, noteY, 19); noteY += 29; });

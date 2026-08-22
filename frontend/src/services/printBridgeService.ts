@@ -80,20 +80,17 @@ export function handoffPrintJob(job: CreatedPrintJob, _token?: string): void {
     navigator.clipboard.writeText(job.appLink).catch(() => {});
   }
 
-  // 2. Trigger the native Windows Protocol directly (antaglomaprint://...)
-  const uri = job.windowsAppLink || buildWindowsPrintUri(job.jobId, job.token);
-  
-  // Use a hidden iframe so the web application doesn't redirect or close modals
+  // 2. Trigger the native Windows Protocol directly (antaglomaprint://...).
+  // A hidden iframe can open the app but lose the URI query on some Chrome /
+  // Windows combinations, so navigate directly and pass the complete job id
+  // and token to the desktop app.
+  // Always rebuild the URI from the canonical job id and one-time token. This
+  // prevents an older/malformed windows_app_link response from opening the PC
+  // app without the complete URL query, which would leave the user needing to
+  // click "Ambil & Proses Job" manually.
+  const uri = buildWindowsPrintUri(job.jobId, job.token);
   try {
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = uri;
-    document.body.appendChild(iframe);
-    setTimeout(() => {
-      if (document.body.contains(iframe)) {
-        document.body.removeChild(iframe);
-      }
-    }, 3000);
+    window.location.assign(uri);
   } catch {
     window.location.href = uri;
   }
@@ -108,4 +105,3 @@ export async function openPrintBridge(
   handoffPrintJob(job, job.token);
   return job;
 }
-

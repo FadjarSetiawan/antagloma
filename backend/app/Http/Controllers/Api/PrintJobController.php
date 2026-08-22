@@ -62,6 +62,7 @@ class PrintJobController extends Controller
         $package = $job->package()->with(['order.creator', 'order.verifier', 'items.item'])->firstOrFail();
         $order = $package->order;
 
+        $weight = $package->weight ?? $this->estimatePackageWeight($package);
         $canonicalData = [
             'id'             => $job->public_id,
             'job_id'         => $job->public_id,
@@ -69,12 +70,12 @@ class PrintJobController extends Controller
             'order_number'   => $order->order_number . ($package->letter ? '-' . $package->letter : ''),
             'package_letter' => $package->letter,
             'package_type'   => $package->package_type ?? 'Fullset',
-            'weight'         => $job->document_type === 'NOTA' ? $package->weight : null,
+            'weight'         => $job->document_type === 'NOTA' ? $weight : null,
             'customer'       => $order->customer_name,
             'phone'          => $order->phone,
             'address'        => collect([$order->district_name, $order->regency_name, $order->province_name, $order->full_address])->filter()->implode(', '),
             'package_items'  => $package->items->map(fn ($item) => [
-                'name'     => ($item->item?->product_name ?? 'Tanaman') . ($item->item?->grade ? ' (Grade ' . $item->item->grade . ')' : ''),
+                'name'     => $this->itemNameWithGrade($item->item?->product_name ?? 'Tanaman', $item->item?->grade),
                 'quantity' => $item->quantity,
             ])->values(),
             'notes'          => $job->notes_override ?? $order->notes ?? '',
@@ -88,6 +89,55 @@ class PrintJobController extends Controller
             'data'    => $canonicalData,
             ...$canonicalData,
         ]);
+    }
+
+    private function itemNameWithGrade(string $name, mixed $grade): string
+    {
+        $name = trim($name) ?: 'Tanaman';
+        $name = preg_replace(
+            '/\s*\(\s*Grade\s+([A-Z](?:\+)?|\d+)\s*\)\s*\(\s*Grade\s+\1\s*\)/i',
+            ' (Grade $1)',
+            $name
+        ) ?? $name;
+        $grade = trim((string) $grade);
+        if ($grade === '') return $name;
+
+        // Product names may already contain “(Grade C+)”; do not append it twice.
+        return preg_match('/\(\s*grade\s+' . preg_quote($grade, '/') . '\s*\)/i', $name)
+            ? $name
+            : $name . ' (Grade ' . $grade . ')';
+    }
+
+    private function estimatePackageWeight(OrderPackage $package): ?float
+    {
+        $packageType = strtolower(trim((string) $package->package_type));
+        $isFullset = $packageType === 'fullset';
+        $total = 0.0;
+
+        foreach ($package->items as $allocation) {
+            $grade = strtoupper(trim((string) ($allocation->item?->grade ?? 'A')));
+            $unit = $isFullset
+                ? match ($grade) {
+                    'D', 'D+' => 6.0,
+                    'J' => 8.0,
+                    'J+' => 10.0,
+                    default => 1.0,
+                }
+                : match ($grade) {
+                    'A' => 0.2,
+                    'B' => 0.4,
+                    'B+' => 0.5,
+                    'C' => 0.6,
+                    'C+' => 1.0,
+                    'D', 'D+' => 2.0,
+                    'J' => 4.0,
+                    'J+' => 5.0,
+                    default => 2.0,
+                };
+            $total += $unit * max(1, (int) $allocation->quantity);
+        }
+
+        return $total > 0 ? round($total, 2) : null;
     }
 
     public function result(Request $request, string $jobId): JsonResponse
