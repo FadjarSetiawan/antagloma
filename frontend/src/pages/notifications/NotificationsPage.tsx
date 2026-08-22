@@ -51,10 +51,10 @@ export const NotificationsPage: React.FC = () => {
     },
   });
 
-  const allNotifications = data?.data || [];
-  const unreadCount = data?.unread_count || 0;
+  const allNotifications: AppNotification[] = (data?.data as AppNotification[]) || [];
+  const unreadCount: number = data?.unread_count || 0;
 
-  const filteredNotifications = allNotifications.filter((n) => {
+  const filteredNotifications: AppNotification[] = allNotifications.filter((n: AppNotification) => {
     if (filter === 'unread') return !n.is_read;
     return true;
   });
@@ -200,7 +200,7 @@ export const NotificationsPage: React.FC = () => {
           </div>
         ) : (
           <div className="divide-y divide-slate-200/80">
-            {filteredNotifications.map((notif) => {
+            {filteredNotifications.map((notif: AppNotification) => {
               const meta = getNotifMeta(notif.type);
               const IconComponent = meta.icon;
 
