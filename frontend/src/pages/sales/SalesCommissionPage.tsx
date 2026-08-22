@@ -230,16 +230,14 @@ export const SalesCommissionPage: React.FC = () => {
       </div>
 
       {/* ── GREEN BANNER CARD: TOTAL KOMISI PERIODE (PERFECT MOBILE FIT) ── */}
-      <div className="bg-gradient-to-br from-[#04593f] via-[#04593f] to-emerald-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg relative overflow-hidden border border-emerald-950 font-sans space-y-3">
-        <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-600/20 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="space-y-3 relative z-10">
+      <div className="bg-[#04593f] text-white rounded-2xl p-5 sm:p-6 shadow-sm border border-emerald-800 font-sans space-y-3">
+        <div className="space-y-3">
           {/* Header Row */}
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-white/15 text-emerald-100 flex items-center justify-center shrink-0 shadow-inner">
-              <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <div className="w-8 h-8 rounded-xl bg-white/15 text-emerald-100 flex items-center justify-center shrink-0">
+              <Wallet className="w-4 h-4" />
             </div>
-            <span className="text-[9.5px] sm:text-[10px] font-extrabold text-emerald-200 uppercase tracking-wider">
+            <span className="text-xs font-bold text-emerald-200 uppercase tracking-wider">
               TOTAL KOMISI ({filterPeriodLabel.toUpperCase()})
             </span>
           </div>

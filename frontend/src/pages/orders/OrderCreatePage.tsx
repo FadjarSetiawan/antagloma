@@ -740,11 +740,9 @@ export const OrderCreatePage: React.FC = () => {
               />
             </div>
 
-            {/* RICH EMERALD GRADIENT FINANCIAL SUMMARY BOX WITH AMBIENT GLOW */}
-            <div className="bg-gradient-to-br from-[#04593f] via-[#04593f] to-emerald-950 text-white rounded-3xl p-5 shadow-lg relative overflow-hidden border border-emerald-900 space-y-3">
-              <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
-
-              <div className="relative z-10 space-y-2 text-xs">
+            {/* CLEAN SOLID EMERALD FINANCIAL SUMMARY BOX */}
+            <div className="bg-[#04593f] text-white rounded-2xl p-5 shadow-sm border border-emerald-850 space-y-3">
+              <div className="space-y-2 text-xs sm:text-sm">
                 <div className="flex justify-between items-center text-emerald-100/90 font-semibold">
                   <span className="flex items-center gap-1.5">
                     <Package className="w-4 h-4 text-emerald-300 shrink-0" />
