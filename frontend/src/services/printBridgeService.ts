@@ -75,10 +75,28 @@ export function handoffPrintJob(job: CreatedPrintJob, _token?: string): void {
   }
 
   // Windows Desktop & Other Platforms:
-  // Navigate to the HTTPS fallback page (job.appLink).
-  // This page safely triggers antaglomaprint:// in the background while
-  // ALWAYS providing the UI with auto-copy, 1-click launch button, and clear guidance!
-  window.location.assign(job.appLink);
+  // 1. Silently copy the HTTPS link to clipboard in the background as an instant fallback
+  if (typeof navigator !== 'undefined' && navigator.clipboard && job.appLink) {
+    navigator.clipboard.writeText(job.appLink).catch(() => {});
+  }
+
+  // 2. Trigger the native Windows Protocol directly (antaglomaprint://...)
+  const uri = job.windowsAppLink || buildWindowsPrintUri(job.jobId, job.token);
+  
+  // Use a hidden iframe so the web application doesn't redirect or close modals
+  try {
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = uri;
+    document.body.appendChild(iframe);
+    setTimeout(() => {
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
+    }, 3000);
+  } catch {
+    window.location.href = uri;
+  }
 }
 
 export async function openPrintBridge(
