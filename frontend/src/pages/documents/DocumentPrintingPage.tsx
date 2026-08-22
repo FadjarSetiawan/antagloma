@@ -33,7 +33,7 @@ export const DocumentPrintingPage: React.FC = () => {
     queryFn: () => orderService.getOrders({ per_page: 100 }),
   });
 
-  const orders = data?.data || [];
+  const orders: Order[] = (data?.data as Order[]) || [];
 
   // Backend package records are the source of truth for both identity and print state.
   // Packages that already have a tracking number automatically disappear from this list.
@@ -106,6 +106,7 @@ export const DocumentPrintingPage: React.FC = () => {
 
   const unprintedCards = expandedPackageCards.filter((card) => !getCardPrintStatus(card).isBothPrinted);
   const printedCards = expandedPackageCards.filter((card) => getCardPrintStatus(card).isBothPrinted);
+
   const handlePrintNota = (order: Order, packageId?: number) => {
     if (packageId) {
       setSelectedNotaPackage(order.packages?.find((pkg) => pkg.id === packageId) || null);
@@ -154,6 +155,7 @@ export const DocumentPrintingPage: React.FC = () => {
     setSelectedNotaOrder(null);
     setSelectedLabelOrder(null);
   };
+
   return (
     <div className="space-y-5 max-w-5xl mx-auto pb-24 font-sans text-slate-900">
       {/* Header Bar */}
@@ -166,10 +168,10 @@ export const DocumentPrintingPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5 text-slate-700" />
           </button>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-950 leading-tight">
+            <h1 className="text-xl sm:text-2xl font-heading font-extrabold text-slate-950 leading-tight">
               Dokumen Pengiriman
             </h1>
-            <p className="text-sm text-slate-600 font-normal mt-1">
+            <p className="text-xs sm:text-sm text-slate-600 font-normal mt-0.5">
               Cetak nota packing & label alamat pengiriman
             </p>
           </div>
@@ -177,41 +179,41 @@ export const DocumentPrintingPage: React.FC = () => {
       </div>
 
       {/* Top Batch Action Buttons */}
-      <div className="grid grid-cols-2 gap-3 pt-1">
+      <div className="flex flex-wrap sm:flex-nowrap gap-2.5 pt-1">
         <button
           disabled={bulkPrintQueue !== null || unprintedCards.every((card) => card.printedNota)}
           onClick={() => startBulkPrint('nota', unprintedCards.filter((card) => !card.printedNota))}
-          className="min-h-11 py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer disabled:opacity-50 active:scale-95 leading-normal"
+          className="flex-1 min-w-[140px] py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs sm:text-sm font-heading font-bold flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer disabled:opacity-40 active:scale-95"
         >
-          <Printer className="w-3.5 h-3.5 text-white shrink-0" />
-          <span className="truncate">{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Nota'}</span>
+          <Printer className="w-4 h-4 text-white shrink-0" />
+          <span>{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Nota'}</span>
         </button>
 
         <button
           disabled={bulkPrintQueue !== null || unprintedCards.every((card) => card.printedLabel)}
           onClick={() => startBulkPrint('label', unprintedCards.filter((card) => !card.printedLabel))}
-          className="min-h-11 py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer disabled:opacity-50 active:scale-95 leading-normal"
+          className="flex-1 min-w-[140px] py-2.5 px-3 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs sm:text-sm font-heading font-bold flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer disabled:opacity-40 active:scale-95"
         >
-          <Tag className="w-3.5 h-3.5 text-white shrink-0" />
-          <span className="truncate">{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Label'}</span>
+          <Tag className="w-4 h-4 text-white shrink-0" />
+          <span>{bulkPrintQueue ? 'Mencetak...' : 'Cetak Semua Label'}</span>
         </button>
       </div>
 
-      {/* Top Navigation Tabs: Belum Dicetak vs Sudah Dicetak */}
-      <div className="grid grid-cols-2 gap-3 text-sm">
+      {/* Top Navigation Tabs */}
+      <div className="flex bg-slate-100/90 p-1 rounded-2xl gap-1.5 font-heading text-xs sm:text-sm border border-slate-200/80">
         <button
           type="button"
           onClick={() => setActiveTab('unprinted')}
-            className={`min-h-11 py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`flex-1 py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer font-bold ${
             activeTab === 'unprinted'
-              ? 'bg-[#04593f] text-white shadow-sm font-bold'
-              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium'
+              ? 'bg-[#04593f] text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          <FileText className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'unprinted' ? 'text-white' : 'text-slate-500'}`} />
-          <span className="text-sm">Belum Dicetak</span>
-          <span className={`px-1.5 py-0.2 rounded-full text-[9.5px] font-bold ${
-            activeTab === 'unprinted' ? 'bg-white/20 text-white border border-white/30' : 'bg-slate-200 text-slate-700'
+          <FileText className="w-4 h-4 shrink-0" />
+          <span>Belum Dicetak</span>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${
+            activeTab === 'unprinted' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
           }`}>
             {unprintedCards.length}
           </span>
@@ -220,16 +222,16 @@ export const DocumentPrintingPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('printed')}
-            className={`min-h-11 py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`flex-1 py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer font-bold ${
             activeTab === 'printed'
-              ? 'bg-[#04593f] text-white shadow-sm font-bold'
-              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium'
+              ? 'bg-[#04593f] text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Printer className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'printed' ? 'text-white' : 'text-slate-500'}`} />
-          <span className="text-sm">Sudah Dicetak</span>
-          <span className={`px-1.5 py-0.2 rounded-full text-[9.5px] font-bold ${
-            activeTab === 'printed' ? 'bg-white/20 text-white border border-white/30' : 'bg-slate-200 text-slate-700'
+          <Printer className="w-4 h-4 shrink-0" />
+          <span>Sudah Dicetak</span>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${
+            activeTab === 'printed' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
           }`}>
             {printedCards.length}
           </span>
@@ -240,19 +242,19 @@ export const DocumentPrintingPage: React.FC = () => {
       <div className="pt-0.5">
         {activeTab === 'unprinted' ? (
           <div>
-            <h2 className="text-sm font-bold uppercase text-[#04593f] tracking-wide">
+            <h2 className="text-xs sm:text-sm font-heading font-extrabold uppercase text-[#04593f] tracking-wide">
               BELUM DICETAK ({unprintedCards.length})
             </h2>
-            <p className="text-sm text-slate-600 font-normal mt-1">
+            <p className="text-xs sm:text-sm text-slate-600 font-normal mt-0.5">
               Pesanan yang belum lengkap cetak nota & label resinya
             </p>
           </div>
         ) : (
           <div>
-            <h2 className="text-sm font-bold uppercase text-[#04593f] tracking-wide">
+            <h2 className="text-xs sm:text-sm font-heading font-extrabold uppercase text-[#04593f] tracking-wide">
               SUDAH DICETAK ({printedCards.length})
             </h2>
-            <p className="text-sm text-slate-600 font-normal mt-1">
+            <p className="text-xs sm:text-sm text-slate-600 font-normal mt-0.5">
               Pesanan yang telah lengkap dicetak nota & resinya
             </p>
           </div>
@@ -285,7 +287,7 @@ export const DocumentPrintingPage: React.FC = () => {
               return (
                 <div
                   key={pkgCard.id}
-                  className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm hover:border-[#04593f] transition-all"
+                  className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 space-y-3 shadow-2xs hover:border-[#04593f] transition-all"
                 >
                   {/* Header Package Card */}
                   <div className="flex items-start justify-between">
@@ -294,7 +296,7 @@ export const DocumentPrintingPage: React.FC = () => {
                         <PackageIcon className="w-3.5 h-3.5 text-amber-700" />
                       </div>
                       <div>
-                        <h3 className="text-sm sm:text-base font-bold text-slate-950 leading-tight">
+                        <h3 className="text-sm sm:text-base font-heading font-extrabold text-slate-950 leading-tight">
                           {pkgCard.subOrderNumber}
                         </h3>
                         <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -303,27 +305,27 @@ export const DocumentPrintingPage: React.FC = () => {
                       </div>
                     </div>
 
-                      <span className="px-2.5 py-1 font-semibold text-xs rounded-lg bg-slate-50 text-slate-700 border border-slate-200">
+                    <span className="px-2.5 py-1 font-heading font-bold text-xs rounded-lg bg-slate-100 text-slate-700">
                       {pkgCard.packageType}
                     </span>
                   </div>
 
                   {/* Customer Info & Plant Count */}
-                  <div className="space-y-1 text-sm">
-                    <h4 className="text-sm font-bold text-slate-950">{pkgCard.order.customer_name}</h4>
-                    <p className="text-sm text-slate-600 font-normal">
+                  <div className="space-y-0.5 text-xs sm:text-sm">
+                    <h4 className="font-heading font-bold text-slate-950">{pkgCard.order.customer_name}</h4>
+                    <p className="text-slate-600 font-medium">
                       {pkgCard.plantCount} tanaman{pkgCard.weightInfo ? ` • ${pkgCard.weightInfo}` : ''}
                     </p>
                   </div>
 
                   {/* Info Callout Box (Belum Dicetak) */}
-                  <div className="py-2.5 border-y border-emerald-200 space-y-1.5 text-sm">
-                    <div className="flex items-center justify-between font-semibold text-[#04593f]">
+                  <div className="py-2.5 border-y border-emerald-100 space-y-1 text-xs">
+                    <div className="flex items-center justify-between font-bold text-[#04593f]">
                       <div className="flex items-center gap-1.5">
                         <FileText className="w-3.5 h-3.5 text-[#04593f]" />
-                        <span className="text-sm">Status Cetak:</span>
+                        <span>Status Cetak:</span>
                       </div>
-                      <span className="text-xs px-2 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-200 font-semibold text-right">
+                      <span className="px-2 py-0.5 rounded-md bg-amber-100/90 text-amber-900 font-bold text-[11px]">
                         {printedStatus.printedNota
                           ? '✓ Nota (Belum Label)'
                           : printedStatus.printedLabel
@@ -331,37 +333,37 @@ export const DocumentPrintingPage: React.FC = () => {
                           : 'Belum Nota & Label'}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 font-normal pl-5">
+                    <p className="text-slate-500 font-normal pl-5">
                       Cetak kedua dokumen (Nota & Label) agar berpindah ke tab Sudah Dicetak.
                     </p>
                   </div>
 
                   {/* Action Buttons Row */}
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
+                  <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
-                      className={`min-h-10 py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer ${
+                      className={`py-2 px-2.5 rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer ${
                         printedStatus.printedNota
-                          ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm'
+                          ? 'bg-amber-600 hover:bg-amber-700 text-white'
                           : 'bg-[#04593f] hover:bg-emerald-900 text-white'
                       }`}
                     >
                       {printedStatus.printedNota ? <CheckCircle2 className="w-3.5 h-3.5 text-white shrink-0" /> : <Printer className="w-3.5 h-3.5 text-white shrink-0" />}
-                      <span className="truncate">{printedStatus.printedNota ? 'Cetak Ulang Nota' : 'Cetak Nota'}</span>
+                      <span>{printedStatus.printedNota ? 'Ulang Nota' : 'Cetak Nota'}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className={`min-h-10 py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer ${
+                      className={`py-2 px-2.5 rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer ${
                         printedStatus.printedLabel
-                          ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm'
+                          ? 'bg-amber-600 hover:bg-amber-700 text-white'
                           : 'bg-[#04593f] hover:bg-emerald-900 text-white'
                       }`}
                     >
                       {printedStatus.printedLabel ? <CheckCircle2 className="w-3.5 h-3.5 text-white shrink-0" /> : <Tag className="w-3.5 h-3.5 text-white shrink-0" />}
-                      <span className="truncate">{printedStatus.printedLabel ? 'Cetak Ulang Label' : 'Cetak Label'}</span>
+                      <span>{printedStatus.printedLabel ? 'Ulang Label' : 'Cetak Label'}</span>
                     </button>
                   </div>
                 </div>
@@ -388,7 +390,7 @@ export const DocumentPrintingPage: React.FC = () => {
               return (
                 <div
                   key={pkgCard.id}
-                  className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm hover:border-[#04593f] transition-all"
+                  className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 space-y-3 shadow-2xs hover:border-[#04593f] transition-all"
                 >
                   {/* Header Package Card */}
                   <div className="flex items-start justify-between">
@@ -397,7 +399,7 @@ export const DocumentPrintingPage: React.FC = () => {
                         <PackageIcon className="w-3.5 h-3.5 text-amber-700" />
                       </div>
                       <div>
-                        <h3 className="text-sm sm:text-base font-bold text-slate-950 leading-tight">
+                        <h3 className="text-sm sm:text-base font-heading font-extrabold text-slate-950 leading-tight">
                           {pkgCard.subOrderNumber}
                         </h3>
                         <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -406,38 +408,35 @@ export const DocumentPrintingPage: React.FC = () => {
                       </div>
                     </div>
 
-                      <span className="px-2.5 py-1 font-semibold text-xs rounded-lg bg-slate-50 text-slate-700 border border-slate-200">
+                    <span className="px-2.5 py-1 font-heading font-bold text-xs rounded-lg bg-slate-100 text-slate-700">
                       {pkgCard.packageType}
                     </span>
                   </div>
 
                   {/* Customer Info & Plant Count */}
-                  <div className="space-y-1 text-sm">
-                    <h4 className="text-sm font-bold text-slate-950">{pkgCard.order.customer_name}</h4>
-                    <p className="text-sm text-slate-600 font-normal">
+                  <div className="space-y-0.5 text-xs sm:text-sm">
+                    <h4 className="font-heading font-bold text-slate-950">{pkgCard.order.customer_name}</h4>
+                    <p className="text-slate-600 font-medium">
                       {pkgCard.plantCount} tanaman • {pkgCard.weightInfo}
                     </p>
                   </div>
 
                   {/* Info Callout Box (Sudah Dicetak) */}
-                  <div className="py-2.5 border-y border-emerald-200 space-y-1.5 text-sm">
-                    <div className="flex items-center gap-1.5 font-semibold text-[#04593f]">
+                  <div className="py-2.5 border-y border-emerald-100 space-y-1 text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-[#04593f]">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#04593f] shrink-0" />
-                      <span className="text-sm">Nota & Label sudah lengkap dicetak</span>
+                      <span>Nota & Label sudah lengkap dicetak</span>
                     </div>
-                    <p className="text-xs text-slate-600 font-normal pl-5">
-                      Dicetak pada status tersimpan di server
-                    </p>
 
                     {/* Resi & Courier Sub-box */}
-                    <div className="pt-2 flex items-center justify-between text-sm border-t border-emerald-200">
-                      <div className="flex items-center gap-1.5 text-slate-800 font-semibold text-sm">
+                    <div className="pt-2 flex items-center justify-between text-xs border-t border-emerald-100/70">
+                      <div className="flex items-center gap-1.5 text-slate-800 font-bold">
                         <Printer className="w-3.5 h-3.5 text-[#04593f] shrink-0" />
                         <span>{pkgCard.order.delivery_method || 'Kirim Paket'}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[9.5px] text-slate-400 font-normal block">Status Foto</span>
-                        <span className="text-[#04593f] font-bold text-xs">
+                        <span className="text-slate-400 text-[10px] block">Status Foto</span>
+                        <span className="text-[#04593f] font-bold text-[11px]">
                           Menunggu Foto Kebun
                         </span>
                       </div>
@@ -445,23 +444,23 @@ export const DocumentPrintingPage: React.FC = () => {
                   </div>
 
                   {/* Action Buttons Row */}
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
+                  <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => handlePrintNota(pkgCard.order, pkgCard.packageId)}
-                      className="min-h-10 py-2 px-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+                      className="py-2 px-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
                       <Printer className="w-3.5 h-3.5 text-white shrink-0" />
-                      <span className="truncate">Cetak Ulang Nota</span>
+                      <span>Cetak Ulang Nota</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handlePrintLabel(pkgCard)}
-                      className="min-h-10 py-2 px-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+                      className="py-2 px-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                     >
                       <Tag className="w-3.5 h-3.5 text-white shrink-0" />
-                      <span className="truncate">Cetak Ulang Label</span>
+                      <span>Cetak Ulang Label</span>
                     </button>
                   </div>
                 </div>
