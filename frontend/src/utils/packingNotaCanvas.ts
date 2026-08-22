@@ -83,9 +83,9 @@ export const createPackingNotaCanvas = (data: PackingNotaCanvasData) => {
   c.lineWidth = 2; c.beginPath(); c.roundRect(18, y, WIDTH - 36, noteHeight, 10); c.stroke();
   text('CATATAN PENGIRIMAN / PACKING KAYU:', 30, y + 33, 20, true); let noteY = y + 69;
   noteLines.forEach((line) => { text(line, 30, noteY, 19); noteY += 29; });
-  // Signature rows follow the note box with one fixed writing margin. Do not
-  // anchor them to canvas height: that created the large blank gap on print.
-  y += noteHeight + 32; divider(y); y += 39;
+  // Signature rows follow the note box with a controlled 44-dot writing margin.
+  // Do not anchor them to canvas height: that created the large blank gap on print.
+  y += noteHeight + 44; divider(y); y += 39;
   text('Sales', WIDTH * .16, y, 21, true, 'center'); text('Admin', WIDTH * .5, y, 21, true, 'center'); text('Packing', WIDTH * .84, y, 21, true, 'center');
   y += 40; divider(y); y += 35;
   text(data.salesName || 'Sales Staff', WIDTH * .16, y, 19, true, 'center'); text(data.adminName || 'Admin Operasional', WIDTH * .5, y, 19, true, 'center'); text('( Staff )', WIDTH * .84, y, 19, true, 'center');
