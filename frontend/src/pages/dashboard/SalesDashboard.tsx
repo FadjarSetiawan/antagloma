@@ -5,6 +5,7 @@ import { Eye, Package, Tag, X, CheckCircle2, Clock, ChevronRight } from 'lucide-
 import { orderService } from '../../services/orderService';
 import { Order, OrderPackage } from '../../types/order';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 const packageType = (order: Order, pkg: OrderPackage): string => {
   const value = (pkg.package_type || '').trim().toLowerCase();
@@ -524,7 +525,7 @@ const PhotoModal: React.FC<{ pkg: OrderPackage; onClose: () => void }> = ({ pkg,
       </div>
       <div className="grid gap-3">
         {pkg.packing_images?.map(img => (
-          <img key={img.id} src={img.image_url} alt={`Foto Paket ${pkg.letter}`} className="w-full rounded-2xl object-contain max-h-[60vh] border border-slate-200" />
+          <img key={img.id} src={resolveImageUrl(img.image_url)} alt={`Foto Paket ${pkg.letter}`} className="w-full rounded-2xl object-contain max-h-[60vh] border border-slate-200" />
         ))}
       </div>
     </div>

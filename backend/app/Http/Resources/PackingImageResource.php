@@ -12,7 +12,7 @@ class PackingImageResource extends JsonResource
     {
         return [
             'id'            => $this->id,
-            'image_url'     => $this->image_path ? asset('storage/' . $this->image_path) : null,
+            'image_url'     => $this->image_path ? url('/api/storage/' . ltrim($this->image_path, '/')) : null,
             'original_name' => $this->original_name,
             'notes'         => $this->notes,
             'uploader'      => new UserResource($this->whenLoaded('uploader')),

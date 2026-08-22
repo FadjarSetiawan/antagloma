@@ -4,6 +4,7 @@ import { orderService } from '../../services/orderService';
 import { OrderDetailModal } from '../../components/orders/OrderDetailModal';
 import { OrderEditModal } from '../../components/orders/OrderEditModal';
 import { Order } from '../../types/order';
+import { resolveImageUrl } from '../../utils/imageUrl';
 import { UpdateOrderPayload } from '../../services/orderService';
 import {
   ArrowLeft,
@@ -239,10 +240,10 @@ export const AdminVerificationPage: React.FC = () => {
                   <div className="space-y-1">
                     <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Foto Bukti Transfer</span>
                     <div
-                      onClick={() => setZoomProofUrl(order.payment_proof_url || null)}
+                      onClick={() => setZoomProofUrl(resolveImageUrl(order.payment_proof_url) || null)}
                       className="relative w-full h-36 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 cursor-pointer group"
                     >
-                      <img src={order.payment_proof_url} alt="Bukti Pembayaran" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      <img src={resolveImageUrl(order.payment_proof_url)} alt="Bukti Pembayaran" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white font-extrabold text-xs transition-opacity gap-1.5">
                         <ZoomIn className="w-4 h-4" /> Perbesar Bukti
                       </div>
@@ -452,7 +453,7 @@ export const AdminVerificationPage: React.FC = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <img src={zoomProofUrl} alt="Zoom Bukti" className="w-full max-h-[80vh] object-contain rounded-2xl border border-slate-200" />
+            <img src={resolveImageUrl(zoomProofUrl)} alt="Zoom Bukti" className="w-full max-h-[80vh] object-contain rounded-2xl border border-slate-200" />
           </div>
         </div>
       )}

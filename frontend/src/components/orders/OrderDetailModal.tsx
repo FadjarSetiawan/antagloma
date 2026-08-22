@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Order, OrderItem, PackingImage } from '../../types/order';
+import { resolveImageUrl } from '../../utils/imageUrl';
 import { OrderStatusBadge } from '../shared/OrderStatusBadge';
 import { StatusTimeline } from './StatusTimeline';
 import {
@@ -249,11 +250,11 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 <div className="pt-1">
                   <span className="text-xs text-slate-600 font-bold block mb-1">Bukti Transfer Pembayaran:</span>
                   <div
-                    onClick={() => setZoomImage(order.payment_proof_url || null)}
+                    onClick={() => setZoomImage(resolveImageUrl(order.payment_proof_url))}
                     className="relative w-28 h-28 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-2xs"
                   >
                     <img
-                      src={order.payment_proof_url}
+                      src={resolveImageUrl(order.payment_proof_url)}
                       alt="Bukti Transfer"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
@@ -274,11 +275,11 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
                 <div className="flex items-start gap-3 pt-0.5">
                   <div
-                    onClick={() => setZoomImage(order.plant_photo_url || null)}
+                    onClick={() => setZoomImage(resolveImageUrl(order.plant_photo_url))}
                     className="relative w-32 h-32 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-2xs shrink-0"
                   >
                     <img
-                      src={order.plant_photo_url}
+                      src={resolveImageUrl(order.plant_photo_url)}
                       alt="Foto Tanaman Pesanan"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
@@ -291,7 +292,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                       Foto dokumentasi tanaman yang diunggah Sales saat pembuatan order untuk pengecekan Admin & Packing.
                     </p>
                     <a
-                      href={order.plant_photo_url}
+                      href={resolveImageUrl(order.plant_photo_url)}
                       download={`foto-tanaman-${order.order_number}.jpg`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -308,19 +309,19 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             {/* FOTO BUKTI PACKING TANAMAN (Jika ada) */}
             {order.packing_images && order.packing_images.length > 0 && (
               <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 space-y-2">
-                <span className="text-[10px] font-bold uppercase text-slate-400 block border-b border-slate-200/80 pb-1.5 tracking-wider">
-                  FOTO BUKTI PACKING KEBUAN
+                <span className="text-xs font-heading font-extrabold uppercase text-slate-700 block border-b border-slate-200/80 pb-1.5 tracking-wider">
+                  Foto Bukti Packing Kebun
                 </span>
 
                 <div className="flex gap-3 flex-wrap pt-0.5">
                   {order.packing_images.map((img: PackingImage) => (
                     <div key={img.id} className="space-y-1">
                       <div
-                        onClick={() => setZoomImage(img.image_url)}
+                        onClick={() => setZoomImage(resolveImageUrl(img.image_url))}
                         className="relative w-28 h-28 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-2xs"
                       >
                         <img
-                          src={img.image_url}
+                          src={resolveImageUrl(img.image_url)}
                           alt="Foto Packing"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />
@@ -329,13 +330,13 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                         </div>
                       </div>
                       <a
-                        href={img.image_url}
+                        href={resolveImageUrl(img.image_url)}
                         download={`foto-packing-${order.order_number}-${img.id}.jpg`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-28 py-1 bg-[#04593f] hover:bg-emerald-900 text-white rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"
+                        className="w-28 py-1.5 bg-[#04593f] hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs"
                       >
-                        <Download className="w-3 h-3 text-white" />
+                        <Download className="w-3.5 h-3.5 text-white" />
                         <span>Unduh Foto</span>
                       </a>
                     </div>
