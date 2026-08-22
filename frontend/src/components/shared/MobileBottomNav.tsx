@@ -60,35 +60,39 @@ export const MobileBottomNav: React.FC = () => {
   return (
     <>
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-lg md:hidden font-sans">
-        <div className="flex items-center justify-around h-16 max-w-md mx-auto px-2 relative">
+        <div className="flex items-center justify-around h-16 max-w-md mx-auto px-2 relative font-heading">
           {/* Slot 0: Dashboard */}
           <NavLink
             to="/dashboard"
             onClick={() => setIsProfileOpen(false)}
-            className="relative z-10 flex flex-col items-center justify-center flex-1 py-1.5 transition-colors cursor-pointer"
+            className="relative z-10 flex flex-col items-center justify-center flex-1 py-1 transition-colors cursor-pointer"
           >
             <LayoutGrid
-              className={`w-6 h-6 transition-colors duration-200 ${
+              className={`w-5.5 h-5.5 transition-colors duration-200 ${
                 activeIndex === 0 && !isProfileOpen ? 'text-[#04593f]' : 'text-slate-400 hover:text-slate-600'
               }`}
               strokeWidth={activeIndex === 0 && !isProfileOpen ? 2.4 : 1.8}
             />
-            <span className="text-[10px] font-semibold text-slate-500">Dashboard</span>
+            <span className={`text-xs font-semibold mt-0.5 ${activeIndex === 0 && !isProfileOpen ? 'text-[#04593f] font-bold' : 'text-slate-500'}`}>
+              Dashboard
+            </span>
           </NavLink>
 
           {/* Slot 1: Orders */}
           <NavLink
             to="/orders"
             onClick={() => setIsProfileOpen(false)}
-            className="relative z-10 flex flex-col items-center justify-center flex-1 py-1.5 transition-colors cursor-pointer"
+            className="relative z-10 flex flex-col items-center justify-center flex-1 py-1 transition-colors cursor-pointer"
           >
             <ShoppingBag
-              className={`w-6 h-6 transition-colors duration-200 ${
+              className={`w-5.5 h-5.5 transition-colors duration-200 ${
                 activeIndex === 1 && !isProfileOpen ? 'text-[#04593f]' : 'text-slate-400 hover:text-slate-600'
               }`}
               strokeWidth={activeIndex === 1 && !isProfileOpen ? 2.4 : 1.8}
             />
-            <span className="text-[10px] font-semibold text-slate-500">Pesanan</span>
+            <span className={`text-xs font-semibold mt-0.5 ${activeIndex === 1 && !isProfileOpen ? 'text-[#04593f] font-bold' : 'text-slate-500'}`}>
+              Pesanan
+            </span>
           </NavLink>
 
           {/* Slot 2: Center Action Floating Circle Button */}
@@ -113,30 +117,34 @@ export const MobileBottomNav: React.FC = () => {
           <NavLink
             to={rightTab3.to}
             onClick={() => setIsProfileOpen(false)}
-            className="relative z-10 flex flex-col items-center justify-center flex-1 py-1.5 transition-colors cursor-pointer"
+            className="relative z-10 flex flex-col items-center justify-center flex-1 py-1 transition-colors cursor-pointer"
           >
             <Right3Icon
-              className={`w-6 h-6 transition-colors duration-200 ${
+              className={`w-5.5 h-5.5 transition-colors duration-200 ${
                 activeIndex === 3 && !isProfileOpen ? 'text-[#04593f]' : 'text-slate-400 hover:text-slate-600'
               }`}
               strokeWidth={activeIndex === 3 && !isProfileOpen ? 2.4 : 1.8}
             />
-            <span className="text-[8.5px] tracking-tighter font-semibold text-slate-500 whitespace-nowrap">{rightTab3.label}</span>
+            <span className={`text-xs font-semibold mt-0.5 truncate max-w-[70px] text-center ${activeIndex === 3 && !isProfileOpen ? 'text-[#04593f] font-bold' : 'text-slate-500'}`}>
+              {rightTab3.label}
+            </span>
           </NavLink>
 
           {/* Slot 4: Profil Trigger */}
           <button
             type="button"
             onClick={() => setIsProfileOpen(true)}
-            className="relative z-10 flex flex-col items-center justify-center flex-1 py-1.5 transition-colors cursor-pointer"
+            className="relative z-10 flex flex-col items-center justify-center flex-1 py-1 transition-colors cursor-pointer"
           >
             <UserIcon
-              className={`w-6 h-6 transition-colors duration-200 ${
+              className={`w-5.5 h-5.5 transition-colors duration-200 ${
                 isProfileOpen ? 'text-[#04593f]' : 'text-slate-400 hover:text-slate-600'
               }`}
               strokeWidth={isProfileOpen ? 2.4 : 1.8}
             />
-            <span className="text-[10px] font-semibold text-slate-500">Profil</span>
+            <span className={`text-xs font-semibold mt-0.5 ${isProfileOpen ? 'text-[#04593f] font-bold' : 'text-slate-500'}`}>
+              Profil
+            </span>
           </button>
         </div>
       </nav>
